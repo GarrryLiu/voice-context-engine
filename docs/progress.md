@@ -11,6 +11,10 @@ SQLite reference backend; production services and audio transport remain pending
    and boosts exact memory keys. Context packing includes serialized provenance
    overhead, reports omitted records and accepts a model tokenizer cost function;
    its default budget is UTF-8 bytes, not tokens.
-3. Durable background task orchestration (pending).
+3. Durable SQLite task queue: deduplicated requests, lease-based claiming,
+   attempt limits, exponential retry delay, dead-letter state and cancellation.
+   Stale workers cannot acknowledge after expiration. Handlers run outside the
+   queue transaction and must use idempotent side effects; leases do not interrupt
+   running network calls. The reference worker is single-task, not a parallel DAG.
 4. Pluggable model extraction (pending).
 5. Transcript gateway and end-to-end experiments (pending).
