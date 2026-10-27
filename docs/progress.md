@@ -16,5 +16,9 @@ SQLite reference backend; production services and audio transport remain pending
    Stale workers cannot acknowledge after expiration. Handlers run outside the
    queue transaction and must use idempotent side effects; leases do not interrupt
    running network calls. The reference worker is single-task, not a parallel DAG.
-4. Pluggable model extraction (pending).
+4. Extractive candidate routing with provider identities, explicit fallback,
+   input/output limits and exact source-evidence checks. Offline `remember key:
+   value` parsing is implemented; an Ollama HTTP adapter can call configured local
+   models. Tests mock its transport; no live model/quality evaluation has run.
+   Quoted evidence is not proof that a source is true or a decision is authorized.
 5. Transcript gateway and end-to-end experiments (pending).
