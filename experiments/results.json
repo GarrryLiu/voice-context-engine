@@ -1,0 +1,42 @@
+{
+  "seed": 42,
+  "python": "3.14.7",
+  "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
+  "scope": "Synthetic structured text events on local SQLite; no audio, Kafka, PostgreSQL, Redis or model calls",
+  "persistence": {
+    "events": 500,
+    "duplicate_retries_deduplicated": 100,
+    "events_applied": 500,
+    "pending_after_reopen": 0
+  },
+  "branch_retrieval": {
+    "queries": 100,
+    "scoped_accuracy": 1.0,
+    "global_latest_baseline_accuracy": 0.0,
+    "fixture": "100 parent decisions contradicted in a child branch"
+  },
+  "local_measurements": {
+    "ingest_p50_ms": 0.25995844043791294,
+    "ingest_p95_ms": 0.9962909389287233,
+    "materialize_events_per_second": 2234.6501852015695,
+    "recall_p50_ms": 1.063374918885529
+  },
+  "compaction": {
+    "budget_words": 60,
+    "packed_words": 60,
+    "records": 20,
+    "limitation": "Word packing only; no semantic summarization or tokenizer budget"
+  },
+  "routing_simulation": {
+    "calls": 1000,
+    "assumed_cost_units_per_call": {
+      "realtime": 3,
+      "small": 1,
+      "reasoning": 10
+    },
+    "all_reasoning_cost": 10000,
+    "routed_cost": 3000,
+    "cost_reduction": 0.7,
+    "limitation": "Arithmetic scenario only; quality, actual cost and latency unmeasured"
+  }
+}
