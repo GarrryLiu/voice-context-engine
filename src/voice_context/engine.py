@@ -7,11 +7,18 @@ import json
 import re
 import sqlite3
 import uuid
+import math
+import hashlib
 from dataclasses import dataclass
 
 
 def tokens(text):
-    return set(re.findall(r"\w+", text.lower()))
+    text = text.lower()
+    terms = set(re.findall(r"[^\W_]+", re.sub(r"[\u3400-\u9fff]", " ", text)))
+    for span in re.findall(r"[\u3400-\u9fff]+", text):
+        terms.update(span)
+        terms.update(span[i:i+2] for i in range(len(span)-1))
+    return terms
 
 
 @dataclass(frozen=True)
@@ -98,15 +105,22 @@ class Engine:
         return count
 
     def recall(self, branch, query="", limit=10):
+        if limit < 0:
+            raise ValueError("limit must be nonnegative")
         rows = self.db.execute('''SELECT m.* FROM memory m JOIN
           (SELECT key,MAX(version) v FROM memory WHERE branch=? GROUP BY key) latest
           ON m.key=latest.key AND m.version=latest.v WHERE m.branch=? ORDER BY m.key''',
           (branch, branch)).fetchall()
         terms = tokens(query)
         ranked = []
-        for row in rows:
+        documents = [tokens(row["key"] + " " + row["value"]) for row in rows]
+        frequencies = {term: sum(term in doc for doc in documents) for term in terms}
+        for row, doc in zip(rows, documents):
             item = dict(row)
-            item["score"] = len(terms & tokens(item["key"] + " " + item["value"]))
+            item["score"] = sum(1 + math.log((len(rows) + 1) / (frequencies[t] + 1))
+                                for t in terms & doc) / math.sqrt(max(1, len(doc)))
+            if query and query.lower() == row["key"].lower():
+                item["score"] += 2
             if not terms or item["score"]:
                 ranked.append(item)
         return sorted(ranked, key=lambda x: (-x["score"], x["key"]))[:limit]
@@ -174,3 +188,24 @@ class Engine:
                 self.db.execute("INSERT INTO memory VALUES (?,?,?,?,?)", (target, key, version, value, eid))
             self.db.execute("UPDATE fork_bases SET snapshot=? WHERE branch=?", (json.dumps(child, sort_keys=True), source))
             return {"applied": len(changes), "conflicts": conflicts, "resolved": True}
+
+    def assemble_context(self, branch, query="", budget=4096, count=None):
+        """Pack complete serialized records, charging provenance and JSON overhead.
+
+        Default cost is UTF-8 bytes, NOT model tokens. Inject a tokenizer counter
+        for an actual model token budget. The returned text is exactly what was
+        counted; callers must reserve space for prompts and generated output.
+        """
+        count = count or (lambda text: len(text.encode("utf-8")))
+        if budget < 0 or count("[]") > budget:
+            raise ValueError("budget cannot fit an empty context")
+        records = self.recall(branch, query, limit=1000000)
+        selected = []
+        for record in records:
+            candidate = json.dumps(selected + [record], ensure_ascii=False, sort_keys=True)
+            if count(candidate) <= budget:
+                selected.append(record)
+        text = json.dumps(selected, ensure_ascii=False, sort_keys=True)
+        revision = hashlib.sha256(json.dumps(self._current(branch), sort_keys=True).encode()).hexdigest()
+        return {"text": text, "cost": count(text), "budget": budget,
+                "records": selected, "omitted": len(records)-len(selected), "revision": revision}

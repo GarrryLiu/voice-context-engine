@@ -7,7 +7,10 @@ SQLite reference backend; production services and audio transport remain pending
    no writes until callers choose source or target; merges retain source-event
    provenance and advance a checkpoint. Old databases remain readable, but forks
    predating the baseline table cannot be merged without a recorded baseline.
-2. Retrieval and context assembly (pending).
+2. Retrieval now weights rare matches, supports Chinese character/bigram matching,
+   and boosts exact memory keys. Context packing includes serialized provenance
+   overhead, reports omitted records and accepts a model tokenizer cost function;
+   its default budget is UTF-8 bytes, not tokens.
 3. Durable background task orchestration (pending).
 4. Pluggable model extraction (pending).
 5. Transcript gateway and end-to-end experiments (pending).
