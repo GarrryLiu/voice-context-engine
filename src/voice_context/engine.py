@@ -6,6 +6,7 @@ idempotency keys. Forks snapshot the parent's visible memory at fork time.
 import json
 import re
 import sqlite3
+import uuid
 from dataclasses import dataclass
 
 
@@ -39,6 +40,8 @@ class Engine:
           seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE NOT NULL,
           branch TEXT NOT NULL REFERENCES branches(id), session TEXT NOT NULL,
           payload TEXT NOT NULL, processed INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS fork_bases (
+          branch TEXT PRIMARY KEY REFERENCES branches(id), snapshot TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS memory (
           branch TEXT NOT NULL REFERENCES branches(id), key TEXT NOT NULL,
           version INTEGER NOT NULL, value TEXT NOT NULL, source TEXT NOT NULL,
@@ -55,6 +58,8 @@ class Engine:
                 self.db.execute('''INSERT INTO memory
                   SELECT ?,key,version,value,source FROM memory WHERE branch=?''',
                   (branch, parent))
+                self.db.execute("INSERT INTO fork_bases VALUES (?,?)",
+                    (branch, json.dumps(self._current(parent), sort_keys=True)))
 
     def ingest(self, event_id, branch, session, *, key, value):
         if not all(isinstance(x, str) and x.strip() for x in
@@ -117,3 +122,55 @@ class Engine:
                 selected.append(item)
                 used += size
         return {"records": selected, "words": used, "budget": word_budget}
+
+    def _current(self, branch):
+        return {r["key"]: r["value"] for r in self.recall(branch, limit=1000000)}
+
+    def history(self, branch, key):
+        return [dict(r) for r in self.db.execute(
+            "SELECT * FROM memory WHERE branch=? AND key=? ORDER BY version", (branch, key))]
+
+    def merge(self, source, target, resolutions=None):
+        """Three-way direct-child merge. Unresolved conflicts apply no writes.
+
+        Resolutions map conflicting keys to 'source' or 'target'. Repeated merges
+        use a checkpoint so unchanged child values cannot undo parent edits.
+        """
+        resolutions = resolutions or {}
+        with self.db:
+            self.db.execute("BEGIN IMMEDIATE")
+            branch = self.db.execute("SELECT parent FROM branches WHERE id=?", (source,)).fetchone()
+            base_row = self.db.execute("SELECT snapshot FROM fork_bases WHERE branch=?", (source,)).fetchone()
+            if not branch or branch["parent"] != target or not base_row:
+                raise ValueError("merge requires a direct child with a recorded fork baseline")
+            if self.db.execute("SELECT 1 FROM events WHERE processed=0 AND branch IN (?,?)", (source, target)).fetchone():
+                raise ValueError("drain pending events before merging")
+            base = json.loads(base_row["snapshot"])
+            child, parent = self._current(source), self._current(target)
+            conflicts, changes = [], {}
+            for key, value in child.items():
+                if value == base.get(key) or value == parent.get(key):
+                    continue
+                if parent.get(key) != base.get(key):
+                    conflicts.append({"key": key, "base": base.get(key),
+                                      "source": value, "target": parent.get(key)})
+                else:
+                    changes[key] = value
+            conflict_keys = {c["key"] for c in conflicts}
+            if set(resolutions) - conflict_keys or any(v not in {"source", "target"} for v in resolutions.values()):
+                raise ValueError("resolutions must select source/target for conflicting keys only")
+            if conflict_keys - resolutions.keys():
+                return {"applied": 0, "conflicts": conflicts, "resolved": False}
+            for conflict in conflicts:
+                if resolutions[conflict["key"]] == "source":
+                    changes[conflict["key"]] = conflict["source"]
+            for key, value in changes.items():
+                origin = self.history(source, key)[-1]["source"]
+                eid = "merge:" + uuid.uuid4().hex
+                payload = json.dumps({"key": key, "value": value, "origin": origin, "source_branch": source})
+                self.db.execute("INSERT INTO events(id,branch,session,payload,processed) VALUES (?,?,?,?,1)",
+                                (eid, target, "merge", payload))
+                version = len(self.history(target, key)) + 1
+                self.db.execute("INSERT INTO memory VALUES (?,?,?,?,?)", (target, key, version, value, eid))
+            self.db.execute("UPDATE fork_bases SET snapshot=? WHERE branch=?", (json.dumps(child, sort_keys=True), source))
+            return {"applied": len(changes), "conflicts": conflicts, "resolved": True}
