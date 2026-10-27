@@ -71,6 +71,14 @@ Each block was committed and pushed independently. See [progress](docs/progress.
   Long tasks may outlive leases; failed calls retry later. There is no heartbeat,
   hard call cancellation, distributed exactly-once claim or production SLA.
 
+## Optional hierarchical model routing
+
+The new [routing module](docs/routing.md) adds ordered model tiers, pre-call
+selection, quality-gated escalation, per-request budgets and durable route audits.
+Enable it with `python3 -m voice_context.gateway --db context.db --cascade`
+under `PYTHONPATH=src`. Default behavior remains unchanged. The controlled
+routing comparison uses scripted providers; no real model savings are claimed.
+
 ## Experiments
 
 ```sh

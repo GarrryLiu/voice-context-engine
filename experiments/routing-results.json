@@ -1,0 +1,60 @@
+{
+  "kind": "scripted_routing_control_flow",
+  "seed": 42,
+  "requests": 100,
+  "results": {
+    "always_small": {
+      "correct_complete_outputs": 60,
+      "unresolved": 40,
+      "provider_calls": 100,
+      "declared_cost_units": 100,
+      "final_tiers": {
+        "small": 60
+      }
+    },
+    "always_strong": {
+      "correct_complete_outputs": 100,
+      "unresolved": 0,
+      "provider_calls": 100,
+      "declared_cost_units": 800,
+      "final_tiers": {
+        "reasoning": 100
+      }
+    },
+    "random_single": {
+      "correct_complete_outputs": 81,
+      "unresolved": 19,
+      "provider_calls": 100,
+      "declared_cost_units": 394,
+      "final_tiers": {
+        "reasoning": 34,
+        "small": 25,
+        "standard": 22
+      }
+    },
+    "heuristic_single": {
+      "correct_complete_outputs": 80,
+      "unresolved": 20,
+      "provider_calls": 100,
+      "declared_cost_units": 200,
+      "final_tiers": {
+        "rules": 40,
+        "small": 20,
+        "reasoning": 20
+      }
+    },
+    "cascade": {
+      "correct_complete_outputs": 100,
+      "unresolved": 0,
+      "provider_calls": 120,
+      "declared_cost_units": 260,
+      "final_tiers": {
+        "rules": 40,
+        "small": 20,
+        "standard": 20,
+        "reasoning": 20
+      }
+    }
+  },
+  "limitations": "Providers have scripted record-count capacities. Gate observes explicit remember commands. Cost units are arbitrary. No live LLM, learned router, calibrated semantic quality, measured model costs or latency savings."
+}

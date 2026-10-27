@@ -93,11 +93,24 @@ def main():
     p.add_argument('--db',default='context.db')
     p.add_argument('--model',help='installed Ollama model; otherwise explicit rule mode')
     p.add_argument('--reasoning-model')
+    p.add_argument('--standard-model')
+    p.add_argument('--cascade',action='store_true')
+    p.add_argument('--route-cost-units',type=float,default=20)
+    p.add_argument('--route-deadline',type=float,default=45)
     args=p.parse_args()
     router=None
     if args.model:
         router=ExtractionRouter({'small':OllamaExtractor(args.model),
                                  'reasoning':OllamaExtractor(args.reasoning_model or args.model)})
+    if args.cascade:
+        from .routing import CascadeRouter, Tier, AuditLog
+        from .models import RuleExtractor
+        tiers=[Tier('rules',RuleExtractor())]
+        for label,model,cost in [('small',args.model,1),('standard',args.standard_model,3),('reasoning',args.reasoning_model,8)]:
+            if model:
+                tiers.append(Tier(label,OllamaExtractor(model,timeout=min(30,args.route_deadline)),cost))
+        router=CascadeRouter(tiers,max_cost_units=args.route_cost_units,
+                             deadline_seconds=args.route_deadline,audit=AuditLog(args.db))
     pipeline=Pipeline(args.db,router)
     if not pipeline.engine.db.execute("SELECT 1 FROM branches WHERE id='main'").fetchone():
         pipeline.engine.fork('main')
