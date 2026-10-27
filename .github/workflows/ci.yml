@@ -14,3 +14,4 @@ jobs:
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - run: PYTHONPATH=src python -m voice_context
       - run: PYTHONPATH=src python experiments/run.py --output /tmp/results.json
+      - run: PYTHONPATH=src python experiments/end_to_end.py --output /tmp/end-to-end.json

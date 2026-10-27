@@ -206,6 +206,6 @@ class Engine:
             if count(candidate) <= budget:
                 selected.append(record)
         text = json.dumps(selected, ensure_ascii=False, sort_keys=True)
-        revision = hashlib.sha256(json.dumps(self._current(branch), sort_keys=True).encode()).hexdigest()
+        revision = hashlib.sha256(json.dumps(self.recall(branch, limit=1000000), sort_keys=True).encode()).hexdigest()
         return {"text": text, "cost": count(text), "budget": budget,
                 "records": selected, "omitted": len(records)-len(selected), "revision": revision}

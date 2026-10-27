@@ -29,5 +29,8 @@ class RetrievalTests(unittest.TestCase):
         before=self.e.assemble_context('main')['revision']
         self.e.ingest('new','main','s2',key='cache',value='local'); self.e.drain()
         self.assertNotEqual(before,self.e.assemble_context('main')['revision'])
+        same_value_revision=self.e.assemble_context('main')['revision']
+        self.e.ingest('same-value','main','s3',key='cache',value='local'); self.e.drain()
+        self.assertNotEqual(same_value_revision,self.e.assemble_context('main')['revision'])
         with self.assertRaises(ValueError): self.e.recall('main',limit=-1)
         with self.assertRaises(ValueError): self.e.assemble_context('main',budget=0)

@@ -1,0 +1,16 @@
+{
+  "kind": "offline_end_to_end",
+  "provider": "rules-v1",
+  "transcripts": 40,
+  "duplicate_submissions_deduplicated": 10,
+  "tasks_completed_after_restart": 40,
+  "cross_session_exact_key_retrieval_correct": 40,
+  "retrieval_queries": 40,
+  "unconfirmed_memory_writes": 0,
+  "conflicts_detected": 1,
+  "explicit_merge_changes": 1,
+  "context_cost_bytes": 359,
+  "context_budget_bytes": 512,
+  "elapsed_seconds": 0.08489804109558463,
+  "limitations": "Explicit remember syntax and synthetic Chinese fixtures; no microphone, live LLM, embeddings or distributed services."
+}

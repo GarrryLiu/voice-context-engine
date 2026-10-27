@@ -21,4 +21,7 @@ SQLite reference backend; production services and audio transport remain pending
    value` parsing is implemented; an Ollama HTTP adapter can call configured local
    models. Tests mock its transport; no live model/quality evaluation has run.
    Quoted evidence is not proof that a source is true or a decision is authorized.
-5. Transcript gateway and end-to-end experiments (pending).
+5. JSON-lines transcript gateway: ignores partial transcripts, deduplicates final
+   transcripts, persists extraction tasks and candidates, and writes only caller-
+   confirmed records. End-to-end experiments cover restart, cross-session Chinese
+   retrieval, conflict detection and explicit merge. 33 tests pass; see the report.
