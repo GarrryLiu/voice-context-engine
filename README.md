@@ -110,3 +110,10 @@ flowchart LR
 This remains the target service architecture. The current backend uses SQLite
 and finalized text input. See [architecture](docs/architecture.md) for future
 adapter contracts, production acceptance gates and known limitations.
+
+## Development and research workflow
+
+Start from [CONTRIBUTING](CONTRIBUTING.md). Product acceptance is defined in
+[M1](docs/product/m1.md), routing research in the [evaluation protocol](docs/research/protocol.md),
+and the next PRs in the [roadmap](docs/roadmap.md). New work goes through branches
+and Draft PRs; experimental policies remain opt-in until evaluated.
