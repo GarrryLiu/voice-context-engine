@@ -76,3 +76,23 @@ class PostgresTests(unittest.TestCase):
         self.assertFalse(any(t.is_alive() for t in threads))
         self.assertEqual(errors, [])
         self.assertEqual(sum(x is not None for x in claimed), 1)
+
+    @unittest.skipUnless(os.environ.get('VOICE_RUNTIME_LIBRARY'), 'requires native library')
+    def test_real_native_conversation_uses_postgres_and_cache(self):
+        from voice_context.conversation import Conversation
+        class Text:
+            def stream(self, context, cancelled, request_id):yield 'Hello!'
+        class TTS:
+            def stream(self, text, cancelled, request_id):yield text.encode()
+        c = Conversation(self.scoped, 'native', publish_on_submit=False,
+                         redis_url=os.environ.get('VOICE_TEST_REDIS'))
+        try:
+            c.respond('answer', Text(), TTS())
+            data, size = c.render(256)
+            self.assertEqual(data[:size], b'Hello!')
+            row = c.pipeline.sessions.delivery('native')[0]
+            c.pipeline.sessions.acknowledge('native', 'answer', row['sequence'], size)
+            self.assertEqual(c.pipeline.context(branch='main')['responses'][0]['text'], 'Hello!')
+            c.interrupt()
+            self.assertEqual(c.render(256)[1], 0)
+        finally:c.close()

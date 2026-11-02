@@ -95,7 +95,7 @@ class Sessions:
             if old:
                 if old['session']!=session:raise ValueError('request id reused across sessions')
                 return self._ticket(old)
-            context=self.pipeline.transcripts.context(state['branch'],budget=budget,count=count)
+            context=self.pipeline.context(branch=state['branch'],budget=budget,count=count)
             if context['latest_event_omitted']:raise ValueError('context budget cannot fit latest confirmed utterance')
             state=self._advance(session)
             self.db.execute('INSERT INTO replies VALUES (?,?,?,?,?,?)',

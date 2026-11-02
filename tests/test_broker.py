@@ -11,6 +11,7 @@ class BrokerTests(pg.PostgresTests):
     test_atomic_final_outbox_restart_and_versions = None
     test_transaction_rollback_and_epoch_fencing = None
     test_two_workers_cannot_claim_same_task = None
+    test_real_native_conversation_uses_postgres_and_cache = None
 
     def test_duplicate_delivery_and_crash_before_offset_commit(self):
         from confluent_kafka.admin import AdminClient, NewTopic

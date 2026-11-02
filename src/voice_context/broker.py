@@ -65,13 +65,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('role', choices=['relay', 'worker', 'init-topic'])
     parser.add_argument('--once', action='store_true')
+    parser.add_argument('--topic', default='voice.extract.v1')
+    parser.add_argument('--group', default='voice-extract-v1')
     parser.add_argument('--db', default=os.environ.get('VOICE_DATABASE_URL'))
     parser.add_argument('--bootstrap', default=os.environ.get('VOICE_KAFKA_BOOTSTRAP', '127.0.0.1:59092'))
     args = parser.parse_args()
     if args.role == 'init-topic':
         from confluent_kafka.admin import AdminClient, NewTopic
         from confluent_kafka import KafkaException, KafkaError
-        futures = AdminClient({'bootstrap.servers': args.bootstrap}).create_topics([NewTopic('voice.extract.v1', num_partitions=3, replication_factor=1)])
+        futures = AdminClient({'bootstrap.servers': args.bootstrap}).create_topics([NewTopic(args.topic, num_partitions=3, replication_factor=1)])
         for future in futures.values():
             try:future.result(timeout=15)
             except KafkaException as error:
@@ -79,8 +81,8 @@ def main():
         return
     if not args.db:parser.error('--db or VOICE_DATABASE_URL required')
     pipeline = Pipeline(args.db, publish_on_submit=False)
-    relay = KafkaRelay(args.bootstrap) if args.role == 'relay' else None
-    intake = KafkaIntake(args.bootstrap) if args.role == 'worker' else None
+    relay = KafkaRelay(args.bootstrap, args.topic) if args.role == 'relay' else None
+    intake = KafkaIntake(args.bootstrap, args.group, args.topic) if args.role == 'worker' else None
     try:
         while True:
             if relay:relay.publish(pipeline)

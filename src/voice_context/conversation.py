@@ -21,11 +21,11 @@ class Conversation:
     STT provider: stream(audio_chunks, cancelled, request_id) -> Transcript events.
     A callback always rechecks durable ownership before native enqueue/render.
     """
-    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=True,audio_wait_seconds=.25,deadline_seconds=30,max_text_bytes=32000,max_audio_bytes=16777216,token_counter=None):
+    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=True,audio_wait_seconds=.25,deadline_seconds=30,max_text_bytes=32000,max_audio_bytes=16777216,token_counter=None,publish_on_submit=True,redis_url=None):
         if not math.isfinite(deadline_seconds) or deadline_seconds<=0 or not math.isfinite(audio_wait_seconds) or audio_wait_seconds<0 or min(max_text_bytes,max_audio_bytes)<1:raise ValueError('positive operation limits required')
         self.token_counter=token_counter
         self.deadline_seconds=deadline_seconds;self.max_text_bytes=max_text_bytes;self.max_audio_bytes=max_audio_bytes
-        self.lock=threading.RLock();self.pipeline=Pipeline(path,check_same_thread=False)
+        self.lock=threading.RLock();self.pipeline=Pipeline(path,check_same_thread=False,publish_on_submit=publish_on_submit,redis_url=redis_url)
         self.native=None
         try:
             existing=self.pipeline.engine.db.execute('SELECT branch FROM interaction_sessions WHERE id=?',(session,)).fetchone()
