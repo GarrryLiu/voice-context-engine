@@ -152,6 +152,25 @@ class VoiceServerTests(unittest.TestCase):
             import time
             deadline=time.monotonic()+2
             while 'test-session' in self.service.active and time.monotonic()<deadline:time.sleep(.01)
+    def test_late_provider_failure_still_delivers_error_after_epoch_abort(self):
+        import time
+        original=self.service.factory
+        class PartialFailure:
+            name='late-failure'
+            def stream(self,*args):
+                yield 'First sentence.'
+                time.sleep(.05)
+                raise RuntimeError('private failure body')
+        def factory(*args):
+            stt,_,tts,client,journal=original(*args)
+            return stt,PartialFailure(),tts,client,journal
+        self.service.factory=factory
+        lease=self.service.acquire('test-session')
+        events=list(self.service.stream(lease,b'x','test.wav'))
+        self.assertTrue(any(e['type']=='audio' for e in events))
+        self.assertTrue(any(e['type']=='error' for e in events))
+        self.assertEqual(events[-1]['type'],'done')
+        self.assertNotIn('private failure',json.dumps(events))
     def test_provider_failure_emits_safe_terminal_and_releases_slot(self):
         class Broken:
             name='broken'

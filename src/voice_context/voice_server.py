@@ -154,8 +154,8 @@ class VoiceService:
                 frame=None
                 if meta:
                     with c.lock:
-                        if meta['epoch']!=c.pipeline.sessions.get(c.session)['epoch']:break
-                        row=c.pipeline.engine.db.execute('SELECT sequence,bytes,rendered FROM output_chunks WHERE reply=? AND rendered<bytes ORDER BY sequence LIMIT 1',(reply_id,)).fetchone()
+                        row=None
+                        if meta['epoch']==c.pipeline.sessions.get(c.session)['epoch']:row=c.pipeline.engine.db.execute('SELECT sequence,bytes,rendered FROM output_chunks WHERE reply=? AND rendered<bytes ORDER BY sequence LIMIT 1',(reply_id,)).fetchone()
                         if row:
                             pcm,n=c.render(min(4096,row['bytes']-row['rendered']))
                             if n:frame={'type':'audio',**meta,'sequence':row['sequence'],'offset':row['rendered']+n,
