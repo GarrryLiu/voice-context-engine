@@ -1,11 +1,13 @@
 """Opt-in OpenAI Responses adapters. No credentials or requests at import time
-import uuid."""
+import uuid
+from threading import RLock."""
 import hashlib
 import json
 import math
 import os
 import time
 import uuid
+from threading import RLock
 from urllib.parse import urlsplit
 from .models import validate_candidates
 from .storage import connect
@@ -22,7 +24,8 @@ class ModelJournal:
     Monetary fields are estimates, not reconciled invoices.
     """
     def __init__(self, path):
-        self.db = connect(path)
+        self.lock=RLock()
+        self.db = connect(path,check_same_thread=False)
         with self.db:
             self.db.execute('''CREATE TABLE IF NOT EXISTS model_calls (
               id TEXT PRIMARY KEY, model TEXT NOT NULL, input_hash TEXT NOT NULL,
@@ -30,7 +33,7 @@ class ModelJournal:
               response_id TEXT, usage TEXT, error_code TEXT)''')
 
     def begin(self, call_id, model, digest):
-        with self.db:
+        with self.lock,self.db:
             self.db.execute('BEGIN IMMEDIATE')
             if self.db.execute('SELECT 1 FROM model_calls WHERE id=?', (call_id,)).fetchone():
                 raise ProviderFailure('duplicate_model_call_requires_reconciliation')
@@ -38,12 +41,13 @@ class ModelJournal:
                             (call_id,model,digest,'started',time.time()))
 
     def finish(self, call_id, result):
-        with self.db:
+        with self.lock,self.db:
             self.db.execute('UPDATE model_calls SET state=?,elapsed=?,first_delta=?,response_id=?,usage=?,error_code=? WHERE id=?',
                 (result['state'],result['elapsed_seconds'],result['first_delta_seconds'],result['response_id'],
                  json.dumps(result['usage']) if result['usage'] is not None else None,result['error_code'],call_id))
 
-    def close(self):self.db.close()
+    def close(self):
+        with self.lock:self.db.close()
 
 
 def settings(env_file='.env'):

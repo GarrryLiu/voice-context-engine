@@ -88,3 +88,63 @@ class OpenAITests(unittest.TestCase):
         response.output_text=json.dumps({'records':[{'key':'db','value':'PostgreSQL','evidence':'Use PostgreSQL'}]})
         self.assertEqual(extractor.extract('Use PostgreSQL')[0]['value'],'PostgreSQL')
         self.assertTrue(client.responses.create.call_args.kwargs['text']['format']['strict'])
+
+    def test_journal_can_be_written_from_provider_thread(self):
+        import threading
+        with tempfile.TemporaryDirectory() as directory:
+            journal=ModelJournal(str(Path(directory)/'state.db'));errors=[]
+            p,s=self.provider([event('response.output_text.delta',delta='ok'),completed()]);p.journal=journal
+            def run():
+                try:list(p.stream({'text':'{}'},Event(),'thread-call'))
+                except Exception as error:errors.append(type(error).__name__)
+            thread=threading.Thread(target=run);thread.start();thread.join(3)
+            try:
+                self.assertFalse(thread.is_alive());self.assertEqual(errors,[])
+                self.assertEqual(journal.db.execute('SELECT state FROM model_calls').fetchone()[0],'completed')
+            finally:journal.close()
+
+    def test_usage_known_on_extraction_validation_failure_is_retained(self):
+        with tempfile.TemporaryDirectory() as directory:
+            journal=ModelJournal(str(Path(directory)/'state.db'))
+            client=Mock();usage=Mock();usage.model_dump.return_value={'input_tokens':10,'output_tokens':3,'total_tokens':13}
+            client.responses.create.return_value=Obj(id='resp_bad',status='completed',usage=usage,
+                output_text=json.dumps({'records':[{'key':'db','value':'invented','evidence':'invented'}]}))
+            p=OpenAIExtractor('test',client,journal)
+            try:
+                with self.assertRaises(ProviderFailure):p.extract('real input')
+                row=journal.db.execute('SELECT * FROM model_calls').fetchone()
+                self.assertEqual(row['state'],'failed')
+                self.assertEqual(json.loads(row['usage'])['total_tokens'],13)
+            finally:journal.close()
+
+
+@unittest.skipUnless(__import__('importlib').util.find_spec('openai'), 'optional official SDK required')
+class SDKWireTests(unittest.TestCase):
+    def test_real_sdk_sse_decode_and_local_config(self):
+        import httpx
+        from openai import OpenAI
+        from voice_context.openai_provider import settings,make_client
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'.env'
+            path.write_text('LLM_API_KEY=test-not-a-real-key\nLLM_MODEL=test-model\nLLM_BASE_URL=https://api.openai.com/v1\n')
+            from unittest.mock import patch
+            with patch.dict('os.environ',{},clear=True):config=settings(path)
+            configured=make_client(config)
+            try:self.assertEqual(configured.max_retries,0)
+            finally:configured.close()
+        response={'id':'resp_fixture','object':'response','created_at':0,'status':'completed','model':'test-model','output':[],
+                  'usage':{'input_tokens':10,'output_tokens':1,'total_tokens':11}}
+        events=[{'type':'response.created','response':{**response,'status':'in_progress'},'sequence_number':0},
+                {'type':'response.output_text.delta','delta':'READY','sequence_number':1,'item_id':'msg_1','output_index':0,'content_index':0,'logprobs':[]},
+                {'type':'response.completed','response':response,'sequence_number':2}]
+        def handler(request):
+            body=json.loads(request.content)
+            self.assertEqual(request.url.path,'/v1/responses');self.assertFalse(body['store'])
+            return httpx.Response(200,headers={'content-type':'text/event-stream'},
+                content=''.join('event: '+e['type']+'\ndata: '+json.dumps(e)+'\n\n' for e in events))
+        client=OpenAI(api_key='test-not-a-real-key',http_client=httpx.Client(transport=httpx.MockTransport(handler)),max_retries=0)
+        p=OpenAITextProvider('test-model',client)
+        try:
+            self.assertEqual(list(p.stream({'text':'{}'},Event(),'sdk-fixture')),['READY'])
+            self.assertEqual(p.last_call['usage']['total_tokens'],11)
+        finally:p.close()
