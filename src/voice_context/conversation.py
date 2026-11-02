@@ -55,8 +55,10 @@ class Conversation:
         if not valid:self.cancelled.get(ticket['request_id'],threading.Event()).set()
         return valid
 
-    def begin(self,request_id=None,budget=4096):
+    def begin(self,request_id=None,budget=4096,expected_epoch=None):
         with self.lock:
+            if expected_epoch is not None and self.pipeline.sessions.get(self.session)["epoch"]!=expected_epoch:
+                raise StaleInteraction("turn superseded before dispatch")
             retry=request_id and self.pipeline.engine.db.execute('SELECT 1 FROM replies WHERE id=?',(request_id,)).fetchone()
             if not retry and len(self.running)>=8:raise Backpressure('too many outstanding provider calls')
             ticket=self.pipeline.sessions.begin(self.session,request_id,budget,count=self.token_counter)
@@ -169,8 +171,8 @@ class Conversation:
         if status==2:raise Backpressure('bounded queue full; caller must drain or pause generation')
         if status!=1:raise ValueError('invalid or out-of-order provider output')
 
-    def respond(self,request_id,text_provider:TextProvider,tts_provider:TTSProvider,reason_cost=1,tts_cost=1,context_budget=4096):
-        ticket=self.begin(request_id,context_budget);cancel=self.cancelled[ticket['request_id']]
+    def respond(self,request_id,text_provider:TextProvider,tts_provider:TTSProvider,reason_cost=1,tts_cost=1,context_budget=4096,expected_epoch=None):
+        ticket=self.begin(request_id,context_budget,expected_epoch);cancel=self.cancelled[ticket['request_id']]
         reason_id=request_id+':reason';tick=time.perf_counter();audio_seq=0;first_audio=None;audio_bytes=0;text_bytes=0
         deadline=time.monotonic()+self.deadline_seconds
         if not self._admit(ticket,reason_id,'reason',reason_cost,getattr(text_provider,'name',type(text_provider).__name__)):return {'status':'duplicate','ticket':ticket}
@@ -228,8 +230,8 @@ class Conversation:
         return {'status':'queued','ticket':ticket,'audio_chunks':audio_seq,
                 'first_audio_queued_seconds':first_audio,'total_seconds':time.perf_counter()-tick}
 
-    def transcribe(self,transcript_id,provider:STTProvider,audio,cost=1):
-        ticket=self.begin('capture:'+transcript_id);cancel=self.cancelled[ticket['request_id']]
+    def transcribe(self,transcript_id,provider:STTProvider,audio,cost=1,expected_epoch=None):
+        ticket=self.begin('capture:'+transcript_id,expected_epoch=expected_epoch);cancel=self.cancelled[ticket['request_id']]
         call_id='capture:'+transcript_id+':stt';tick=time.perf_counter()
         if not self._admit(ticket,call_id,'stt',cost,getattr(provider,'name',type(provider).__name__)):return {'status':'duplicate'}
         deadline=time.monotonic()+self.deadline_seconds
