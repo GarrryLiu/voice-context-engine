@@ -1,4 +1,5 @@
 """Durable session generations, frozen reply context and session-wide stage budget."""
+from .storage import columns
 import hashlib
 import json
 import math
@@ -33,9 +34,9 @@ class Sessions:
         ''')
         with self.db:
             self.db.execute('BEGIN IMMEDIATE')
-            columns={r['name'] for r in self.db.execute('PRAGMA table_info(stage_calls)')}
+            existing_columns=columns(self.db, 'stage_calls')
             for name,kind in [('started_at','REAL'),('finished_at','REAL'),('elapsed','REAL'),('provider',"TEXT NOT NULL DEFAULT 'unspecified'")]:
-                if name not in columns:self.db.execute(f'ALTER TABLE stage_calls ADD COLUMN {name} {kind}')
+                if name not in existing_columns:self.db.execute(f'ALTER TABLE stage_calls ADD COLUMN {name} {kind}')
 
     def get(self,session):
         row=self.db.execute('SELECT * FROM interaction_sessions WHERE id=?',(session,)).fetchone()
