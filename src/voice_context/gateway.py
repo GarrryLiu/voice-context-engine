@@ -7,13 +7,17 @@ import sqlite3
 from .engine import Engine
 from .models import ExtractionRouter, OllamaExtractor
 from .tasks import TaskQueue
+from .transcripts import Transcripts
+from .sessions import Sessions
 
 
 class Pipeline:
-    def __init__(self, path, router=None):
-        self.engine = Engine(path)
-        self.queue = TaskQueue(path)
+    def __init__(self, path, router=None, check_same_thread=True):
+        self.engine = Engine(path,check_same_thread=check_same_thread)
+        self.queue = TaskQueue(path,check_same_thread=check_same_thread)
         self.router = router or ExtractionRouter()
+        self.transcripts = Transcripts(self.engine)
+        self.sessions = Sessions(self)
 
     def close(self):
         self.queue.close()
@@ -29,10 +33,12 @@ class Pipeline:
         if not self.engine.db.execute('SELECT 1 FROM branches WHERE id=?',(branch,)).fetchone():
             raise ValueError('unknown branch')
         task_id = 'transcript:' + transcript_id
-        accepted = self.queue.enqueue(task_id, 'extract', {'branch':branch,'session':session,'text':text,'complex':complex})
+        accepted = self.transcripts.append(transcript_id,branch,session,text,complex)
+        self.transcripts.publish(self.queue)
         return {'accepted':accepted,'task_id':task_id}
 
     def work_once(self):
+        self.transcripts.publish(self.queue)
         def handler(task):
             if task['kind'] != 'extract':
                 raise ValueError('unsupported task kind')
@@ -52,9 +58,14 @@ class Pipeline:
         records={r['key']:r for r in task['result']['records']}
         if not isinstance(keys,list) or any(not isinstance(k,str) for k in keys) or len(set(keys))!=len(keys) or set(keys)-records.keys():
             raise ValueError('select unique candidate keys')
+        expected=task['payload'].get('expected_versions')
+        if expected is None:raise ValueError('legacy task needs resubmission with version metadata')
         inserted=0
         with self.engine.db:
             self.engine.db.execute('BEGIN IMMEDIATE')
+            transcript=self.engine.db.execute('SELECT revoked FROM transcripts WHERE id=?',
+                (task['payload']['transcript_id'],)).fetchone()
+            if not transcript or transcript['revoked']:raise ValueError('transcript revoked or missing')
             for key in keys:
                 record=records[key]
                 eid='approved:'+hashlib.sha256(json.dumps([task_id,key]).encode()).hexdigest()
@@ -65,22 +76,58 @@ class Pipeline:
                     if (old['branch'],old['session'],old['payload'])!=(branch,session,payload):
                         raise ValueError('confirmation event collision')
                     continue
-                self.engine.db.execute('INSERT INTO events(id,branch,session,payload) VALUES (?,?,?,?)',(eid,branch,session,payload))
+                current=self.engine.db.execute('SELECT COALESCE(MAX(version),0) FROM memory WHERE branch=? AND key=?',(branch,key)).fetchone()[0]
+                pending=self.engine.db.execute('SELECT payload FROM events WHERE branch=? AND processed=0',(branch,)).fetchall()
+                if current!=expected.get(key,0) or any(json.loads(p[0])['key']==key for p in pending):
+                    raise ValueError('stale candidate; inspect current memory and submit a correction')
+                self.engine.db.execute('INSERT INTO events(id,branch,session,payload,processed) VALUES (?,?,?,?,1)',(eid,branch,session,payload))
+                self.engine.db.execute('INSERT INTO memory VALUES (?,?,?,?,?)',(branch,key,current+1,record['value'],eid))
                 inserted+=1
         self.engine.drain()
         return {'inserted':inserted}
 
+    def correct(self,event_id,branch,session,key,value,expected_version):
+        if not all(isinstance(x,str) and x.strip() for x in (event_id,branch,session,key,value)) or not isinstance(expected_version,int) or expected_version<0:
+            raise ValueError('correction identity, text and expected version required')
+        payload=json.dumps({'key':key,'value':value,'confirmed':True,'provider':'user','kind':'correction'},sort_keys=True)
+        with self.engine.db:
+            self.engine.db.execute('BEGIN IMMEDIATE')
+            old=self.engine.db.execute('SELECT * FROM events WHERE id=?',(event_id,)).fetchone()
+            if old:
+                if (old['branch'],old['session'],old['payload'])!=(branch,session,payload):raise ValueError('correction id reused')
+                return {'inserted':0}
+            current=self.engine.db.execute('SELECT COALESCE(MAX(version),0) FROM memory WHERE branch=? AND key=?',(branch,key)).fetchone()[0]
+            pending=self.engine.db.execute('SELECT payload FROM events WHERE branch=? AND processed=0',(branch,)).fetchall()
+            if current!=expected_version or any(json.loads(p[0])['key']==key for p in pending):raise ValueError('memory version changed')
+            self.engine.db.execute('INSERT INTO events(id,branch,session,payload,processed) VALUES (?,?,?,?,1)',(event_id,branch,session,payload))
+            self.engine.db.execute('INSERT INTO memory VALUES (?,?,?,?,?)',(branch,key,current+1,value,event_id))
+        return {'inserted':1,'version':current+1}
+
     def dispatch(self, request):
         action=request['action']
         args={k:v for k,v in request.items() if k!='action'}
+        if action=='session_open': return self.sessions.open(**args)
+        if action=='session_interrupt' or action=='session_switch': return self.sessions.interrupt(**args)
+        if action=='session_submit': return self.sessions.submit(**args)
+        if action=='playback_ack': return {'advanced':self.sessions.acknowledge(**args)}
+        if action=='session_delivery': return self.sessions.delivery(**args)
+        if action=='reply_seal': return {'sealed':self.sessions.seal(**args)}
+        if action=='reply_begin': return self.sessions.begin(**args)
+        if action=='reply_check': return {'valid':self.sessions.valid(**args)}
+        if action=='stage_reserve': return {'reserved':self.sessions.reserve(**args)}
+        if action=='stage_finish': return {'finished':self.sessions.finish(**args)}
         if action=='submit': return self.submit(**args)
         if action=='work': return {'worked':self.work_once()}
         if action=='status':
             result=self.queue.get(**args)
             result.pop('lease_token',None)
             return result
+        if action=='correct': return self.correct(**args)
+        if action=='history': return self.engine.history(**args)
         if action=='approve': return self.approve(**args)
-        if action=='context': return self.engine.assemble_context(**args)
+        if action=='context': return self.transcripts.context(**args)
+        if action=='recent': return self.transcripts.recent(**args)
+        if action=='revoke': return {'revoked':self.transcripts.revoke(**args)}
         if action=='fork':
             self.engine.fork(**args); return {'created':True}
         if action=='merge': return self.engine.merge(**args)

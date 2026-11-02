@@ -1,0 +1,124 @@
+{
+  "kind": "synthetic_cpu_sentence_buffer_ablation",
+  "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
+  "python": "3.14.7",
+  "native_source_sha256": "46c065ef71a705c7957a88e56fd2f05eda1f5c88dbc712e546855b84e965e1f9",
+  "protocol": "Five shuffled same-process rounds, five documents per sample; identical bytes/chunk sizes. Includes ctypes and buffer copies. No network/STT/TTS/device playback.",
+  "cases": {
+    "short_sentences": {
+      "input_bytes": 312,
+      "chunk_bytes": 32,
+      "median_document_us": {
+        "python_regex": 27.708,
+        "cpp_rescan": 171.833,
+        "cpp_incremental": 161.791
+      },
+      "round_medians_us": {
+        "python_regex": [
+          29.583,
+          60.208,
+          27.625,
+          27.041,
+          27.708
+        ],
+        "cpp_rescan": [
+          217.292,
+          296.375,
+          171.833,
+          166.291,
+          162.625
+        ],
+        "cpp_incremental": [
+          162.0,
+          157.667,
+          172.625,
+          161.791,
+          158.208
+        ]
+      },
+      "scan_positions_last_document": {
+        "cpp_rescan": 371,
+        "python_regex": 0,
+        "cpp_incremental": 312
+      },
+      "incremental_speedup_vs_cpp_rescan": 1.0620677293545377
+    },
+    "long_sentence": {
+      "input_bytes": 16001,
+      "chunk_bytes": 32,
+      "median_document_us": {
+        "python_regex": 865.375,
+        "cpp_rescan": 98968.666,
+        "cpp_incremental": 2739.0
+      },
+      "round_medians_us": {
+        "python_regex": [
+          965.458,
+          864.584,
+          876.292,
+          858.417,
+          865.375
+        ],
+        "cpp_rescan": [
+          112378.542,
+          100787.209,
+          98924.5,
+          98968.666,
+          98948.084
+        ],
+        "cpp_incremental": [
+          2771.084,
+          2696.291,
+          2739.0,
+          2754.709,
+          2693.375
+        ]
+      },
+      "scan_positions_last_document": {
+        "python_regex": 0,
+        "cpp_rescan": 4024001,
+        "cpp_incremental": 16001
+      },
+      "incremental_speedup_vs_cpp_rescan": 36.133138371668494
+    },
+    "utf8_fragmented": {
+      "input_bytes": 7503,
+      "chunk_bytes": 17,
+      "median_document_us": {
+        "python_regex": 707.666,
+        "cpp_rescan": 43018.834,
+        "cpp_incremental": 2050.0
+      },
+      "round_medians_us": {
+        "python_regex": [
+          723.417,
+          715.458,
+          707.666,
+          691.167,
+          684.959
+        ],
+        "cpp_rescan": [
+          42938.208,
+          43018.834,
+          43008.625,
+          43022.291,
+          43041.959
+        ],
+        "cpp_incremental": [
+          2032.25,
+          2029.5,
+          2089.0,
+          2082.375,
+          2050.0
+        ]
+      },
+      "scan_positions_last_document": {
+        "python_regex": 0,
+        "cpp_rescan": 1663897,
+        "cpp_incremental": 7501
+      },
+      "incremental_speedup_vs_cpp_rescan": 20.984797073170732
+    }
+  },
+  "limitations": "Python reference is a valid-input regex fixture, not a full bounded audio runtime. Cross-language results include implementation and FFI differences. Same-process samples are not independent hardware trials."
+}

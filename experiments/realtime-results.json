@@ -1,0 +1,47 @@
+{
+  "kind": "three_identical_source_synthetic_runs",
+  "run_files": [
+    "realtime-final-1.json",
+    "realtime-final-2.json",
+    "realtime-final-3.json"
+  ],
+  "source_sha256": {
+    "native/runtime.hpp": "84118eea5eacc344656de42f327d60b9d029ec2b7df0f2b9b82a6b2172f40dda",
+    "src/voice_context/conversation.py": "1a28948a93e5452291c92086ea6c9e6e4110f65ac7217c9347bb66b4ace8a80e",
+    "src/voice_context/sessions.py": "28357d55395e2557cbc4891c60c85ae7f46dfb15ce7a56d5709fd8f4754a282d"
+  },
+  "correctness_counts_total": {
+    "immediate_context": 60,
+    "late_output_rejected": 60,
+    "out_of_order_approval_rejected": 60,
+    "reconnect_preserved_context": 60,
+    "duplicate_outbox_deduplicated": 60
+  },
+  "metrics": {
+    "queue_clear_with_sqlite_ms": {
+      "per_run_p95_ms": [
+        0.4364592023193836,
+        0.4252081271260977,
+        0.472125131636858
+      ],
+      "median_of_run_p95_ms": 0.4364592023193836
+    },
+    "reopen_with_context_ms": {
+      "per_run_p95_ms": [
+        1.742833061143756,
+        1.4270420651882887,
+        1.2068329378962517
+      ],
+      "median_of_run_p95_ms": 1.4270420651882887
+    },
+    "four_session_first_synthetic_chunk_queued_ms": {
+      "per_run_p95_ms": [
+        92.50749996863306,
+        49.158958019688725,
+        66.9371250551194
+      ],
+      "median_of_run_p95_ms": 66.9371250551194
+    }
+  },
+  "limitations": "All runs on one local Mac, scripted providers and synthetic byte payloads. Queue clearing is not speaker stop latency. First synthetic chunk queue time is not speech latency. No actual model billing or measured cost savings. No pooled independence or significance claim."
+}

@@ -36,8 +36,8 @@ def route(task, *, complex=False):
 
 
 class Engine:
-    def __init__(self, path=":memory:"):
-        self.db = sqlite3.connect(path)
+    def __init__(self, path=":memory:", check_same_thread=True):
+        self.db = sqlite3.connect(path, check_same_thread=check_same_thread)
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA foreign_keys=ON")
         self.db.executescript('''
@@ -67,6 +67,9 @@ class Engine:
                   (branch, parent))
                 self.db.execute("INSERT INTO fork_bases VALUES (?,?)",
                     (branch, json.dumps(self._current(parent), sort_keys=True)))
+                if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='transcript_visibility'").fetchone():
+                    self.db.execute('INSERT INTO transcript_visibility SELECT ?,transcript_id FROM transcript_visibility WHERE branch=?',
+                                    (branch,parent))
 
     def ingest(self, event_id, branch, session, *, key, value):
         if not all(isinstance(x, str) and x.strip() for x in

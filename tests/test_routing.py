@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from contextlib import closing
 import tempfile
 import unittest
 from pathlib import Path
@@ -49,7 +50,7 @@ class RoutingTests(unittest.TestCase):
             path=str(Path(d)/'audit.db')
             router=CascadeRouter([Tier('empty',Provider('empty',lambda t:[]))],audit=AuditLog(path))
             with self.assertRaises(RoutingFailed): router.extract('undecided discussion')
-            with sqlite3.connect(path) as db: raw=db.execute('SELECT trace FROM routing_audit').fetchone()[0]
+            with closing(sqlite3.connect(path)) as db, db: raw=db.execute('SELECT trace FROM routing_audit').fetchone()[0]
             self.assertEqual(json.loads(raw)['status'],'quality_gate_exhausted')
             self.assertNotIn('undecided discussion',raw)
     def test_pipeline_keeps_trace_and_confirmation(self):

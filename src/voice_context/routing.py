@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 import sqlite3
+from contextlib import closing
 import time
 import uuid
 from dataclasses import dataclass
@@ -61,12 +62,12 @@ class CoverageGate:
 class AuditLog:
     def __init__(self, path):
         self.path = path
-        with sqlite3.connect(path) as db:
+        with closing(sqlite3.connect(path)) as db, db:
             db.execute('''CREATE TABLE IF NOT EXISTS routing_audit
               (id TEXT PRIMARY KEY, created REAL NOT NULL, trace TEXT NOT NULL)''')
 
     def __call__(self, trace):
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute('INSERT INTO routing_audit VALUES (?,?,?)',
                        (trace['id'], time.time(), json.dumps(trace,sort_keys=True)))
 
