@@ -7,12 +7,14 @@ background tasks. A JSON-lines gateway accepts finalized transcript text.
 **Status:** runnable local reference with versioned SQLite memory, branch-aware
 final transcript context, a recoverable outbox, durable session epochs, staged
 provider interfaces and an opt-in C++ audio/text queue core. The scripted demo
-uses synthetic byte payloads, not real speech. No microphone/speaker transport,
-embeddings, web UI or deployed server yet. Optional PostgreSQL, Kafka relay/worker
+uses synthetic byte payloads, while the opt-in local voice server supports browser
+recording and real synthesized speech. No semantic embeddings or deployed service yet. Optional PostgreSQL, Kafka relay/worker
 and revision-fenced Redis context cache now run against real local services.
 Opt-in OpenAI streaming text and structured extraction are available; eight synthetic
 live-model scenarios have been exercised. See [model setup and limits](docs/live-model.md).
-General model quality, actual speech latency and billed-cost savings remain unmeasured.
+A [local voice page](docs/local-voice.md) now connects completed-recording STT,
+streaming LLM, C++ segmentation/queues and real PCM TTS with browser playback ACK.
+Physical microphone/speaker latency and billed-cost savings remain unmeasured.
 
 ## Quick start
 

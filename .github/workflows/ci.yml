@@ -46,13 +46,24 @@ jobs:
       VOICE_TEST_POSTGRES: postgresql://voice:local-dev-only@localhost:55432/voice
       VOICE_TEST_KAFKA: 127.0.0.1:59092
       VOICE_TEST_REDIS: redis://127.0.0.1:56379/0
+      VOICE_BROWSER_TEST: "1"
+      VOICE_SCREENSHOT: /tmp/voice-browser.png
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install -e '.[infra,llm]'
-      - run: docker compose up -d
+      - run: pip install -e '.[infra,voice,dev]'
+      - name: Pull local service images with bounded retry
+        run: |
+          for attempt in 1 2 3; do
+            if docker compose pull; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - run: docker compose up -d --pull never
+      - run: python -m playwright install --with-deps chromium
+      - run: node --check src/voice_context/web/app.js
       - run: python scripts/wait_infra.py
       - run: python scripts/build_runtime.py
       - run: python -m unittest discover -s tests -v
@@ -61,7 +72,9 @@ jobs:
         if: always()
         with:
           name: infrastructure-results
-          path: /tmp/infrastructure-results.json
+          path: |
+            /tmp/infrastructure-results.json
+            /tmp/voice-browser.png
       - run: docker compose logs --tail=80
         if: failure()
       - run: docker compose down

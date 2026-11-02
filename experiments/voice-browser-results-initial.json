@@ -1,0 +1,14 @@
+{
+  "protocol": "fixed recording upload in headless Chrome; real STT/LLM/TTS; WebAudio ended ACK, not physical speaker measurement",
+  "passed": true,
+  "transcript": "The project codename is Cedar. What is the project codename? Please reply in one short sentence.",
+  "answer": "The project codename is Cedar.",
+  "ui_metrics": {
+    "stt": "0.74s",
+    "first": "3.32s",
+    "total": "3.59s"
+  },
+  "total_through_browser_ended_seconds": 6.983419707976282,
+  "browser_errors": [],
+  "state_epoch": 4
+}
