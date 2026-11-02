@@ -5,12 +5,12 @@ import threading
 
 
 class NativeRuntime:
-    def __init__(self,path=None,capacity=65536,max_items=256,incremental=False):
+    def __init__(self,path=None,capacity=65536,max_items=256,incremental=True):
         path=path or os.environ.get('VOICE_RUNTIME_LIBRARY')
         if not path:raise ValueError('build native runtime and set VOICE_RUNTIME_LIBRARY')
         if not isinstance(capacity,int) or not isinstance(max_items,int) or not 0<capacity<=16*1024*1024 or not 0<max_items<=100000:
             raise ValueError('bounded positive capacities required')
-        self.capacity=capacity;self._lock=threading.RLock();self.lib=C.CDLL(path)
+        self.capacity=capacity;self._buffer=C.create_string_buffer(capacity);self._lock=threading.RLock();self.lib=C.CDLL(path)
         signatures={'vr_create':([C.c_size_t,C.c_size_t,C.c_int],C.c_void_p),
           'vr_destroy':([C.c_void_p],None),'vr_advance':([C.c_void_p,C.c_uint64],C.c_int),
           'vr_push':([C.c_void_p,C.c_int,C.c_uint64,C.c_uint64,C.c_void_p,C.c_size_t],C.c_int),
@@ -42,15 +42,17 @@ class NativeRuntime:
         return self._call('vr_append',self._number(epoch),data,len(data),finish)
     def pop(self,lane):
         if lane not in (0,1,2):raise ValueError('unknown lane')
-        data=C.create_string_buffer(self.capacity);size=C.c_size_t();seq=C.c_uint64();epoch=C.c_uint64()
-        status=self._call('vr_pop',lane,data,self.capacity,C.byref(size),C.byref(seq),C.byref(epoch))
-        if status==0:return None
-        if status!=1:raise RuntimeError('native pop failed')
-        return {'epoch':epoch.value,'sequence':seq.value,'data':data.raw[:size.value]}
+        with self._lock:
+            size=C.c_size_t();seq=C.c_uint64();epoch=C.c_uint64()
+            status=self._call('vr_pop',lane,self._buffer,self.capacity,C.byref(size),C.byref(seq),C.byref(epoch))
+            if status==0:return None
+            if status!=1:raise RuntimeError('native pop failed')
+            return {'epoch':epoch.value,'sequence':seq.value,'data':C.string_at(self._buffer,size.value)}
     def render(self,epoch,size):
         if not isinstance(size,int) or not 0<=size<=self.capacity:raise ValueError('render size outside capacity')
-        data=C.create_string_buffer(size);written=self._call('vr_render',self._number(epoch),data,size)
-        return data.raw,written
+        with self._lock:
+            written=self._call('vr_render',self._number(epoch),self._buffer,size)
+            return C.string_at(self._buffer,size),written
     def stats(self):
-        names=['epoch','capture_bytes','text_bytes','playback_bytes','capture_items','text_items','playback_items','pending_bytes','stale_rejections','backpressure_rejections','scanned_bytes','rendered_bytes']
+        names=['epoch','capture_bytes','text_bytes','playback_bytes','capture_items','text_items','playback_items','pending_bytes','stale_rejections','backpressure_rejections','scan_steps','rendered_bytes']
         return {name:self._call('vr_stat',i) for i,name in enumerate(names)}

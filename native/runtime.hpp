@@ -68,7 +68,7 @@ public:
       unsigned char c=candidate[i];
       if(c=='.'||c=='!'||c=='?'||c=='\n')delimiter=1;
       // UTF-8 Chinese full stop / fullwidth exclamation and question mark.
-      if(i+3<=complete&&(candidate.compare(i,3,"。")==0||candidate.compare(i,3,"！")==0||candidate.compare(i,3,"？")==0))delimiter=3;
+      if((c==0xe3||c==0xef)&&i+3<=complete&&(candidate.compare(i,3,"。")==0||candidate.compare(i,3,"！")==0||candidate.compare(i,3,"？")==0))delimiter=3;
       if(delimiter){i+=delimiter;segments.push_back(candidate.substr(consumed,i-consumed));consumed=i;}
       else ++i;
     }

@@ -26,13 +26,14 @@ int main(){
     expect(r.render(2,output,8)==0&&std::string(output,8)==std::string(8,'\0'));
     expect(r.push(2,2,0,"new",3)==1);expect(r.render(1,output,8)==0);
     expect(r.render(2,output,8)==3&&std::string(output,3)=="new");
-    voice::Runtime concurrent(1024,64,optimized);std::atomic<bool> start{false};
+    voice::Runtime concurrent(1024,64,optimized);std::atomic<bool> start{false};std::atomic<int> ready{0};
     std::vector<std::thread> producers;
     for(int worker=0;worker<4;++worker)producers.emplace_back([&]{
       while(!start.load())std::this_thread::yield();
+      int initial=concurrent.append(1,"x.",2,false);expect(initial==1||initial==2);++ready;
       for(int i=0;i<10000;++i){int code=concurrent.append(1,"x.",2,false);expect(code==0||code==1||code==2);}
     });
-    start=true;concurrent.advance(2);
+    start=true;while(ready.load()<4)std::this_thread::yield();concurrent.advance(2);
     for(auto& t:producers)t.join();
     expect(concurrent.stat(2)==0&&concurrent.stat(7)==0);
     expect(concurrent.append(1,"late!",5,true)==0);

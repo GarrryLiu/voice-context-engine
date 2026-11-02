@@ -1,0 +1,1 @@
+{"kind":"cpp_direct_sentence_cpu_ablation","runs":[{"incremental":false,"samples":25,"median_document_us":7444.08,"p95_document_us":8910.29,"scan_positions_total":100600025},{"incremental":true,"samples":25,"median_document_us":286.75,"p95_document_us":310.5,"scan_positions_total":400025}]}
