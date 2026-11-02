@@ -93,18 +93,9 @@ class LiveTests(unittest.TestCase):
         self.run_browser_capture(True)
 
     def run_browser_capture(self,delay_resume):
-        import math,socket,struct,threading,time,wave
+        import socket,threading,time
         import uvicorn
         from playwright.sync_api import sync_playwright,expect
-        fixture=Path(self.tmp.name)/'vad.wav'
-        with wave.open(str(fixture),'wb') as f:
-            f.setnchannels(1);f.setsampwidth(2);f.setframerate(48000)
-            data=[]
-            for i in range(48000*12):
-                seconds=i/48000
-                voiced=.2<=seconds<.9 or 1.9<=seconds<2.6
-                data.append(struct.pack('<h',int(10000*math.sin(2*math.pi*220*seconds)) if voiced else 0))
-            f.writeframes(b''.join(data))
         listener=socket.socket();listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
         server=uvicorn.Server(uvicorn.Config(self.app,log_level='error'))
         thread=threading.Thread(target=lambda:server.run(sockets=[listener]),daemon=True);thread.start()
@@ -114,19 +105,39 @@ class LiveTests(unittest.TestCase):
                 if time.monotonic()>deadline:self.fail('server start timeout')
                 time.sleep(.02)
             with sync_playwright() as pw:
-                options={'headless':True,'args':['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream',
-                    '--use-file-for-fake-audio-capture='+str(fixture),'--autoplay-policy=no-user-gesture-required']}
+                options={'headless':True,'args':['--autoplay-policy=no-user-gesture-required']}
                 if os.environ.get('VOICE_CHROME_PATH'):options['executable_path']=os.environ['VOICE_CHROME_PATH']
                 browser=pw.chromium.launch(**options)
                 try:
                     page=browser.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
                     page.add_init_script("""window.playbackStops=0;const originalStop=AudioBufferSourceNode.prototype.stop;
-                        AudioBufferSourceNode.prototype.stop=function(...args){window.playbackStops++;return originalStop.apply(this,args);};""")
+                        AudioBufferSourceNode.prototype.stop=function(...args){window.playbackStops++;return originalStop.apply(this,args);};
+                        navigator.mediaDevices.getUserMedia=async()=>{
+                            const ctx=new AudioContext({sampleRate:48000});await ctx.resume();
+                            const oscillator=ctx.createOscillator(),gain=ctx.createGain(),destination=ctx.createMediaStreamDestination();
+                            gain.gain.value=0;oscillator.frequency.value=220;oscillator.connect(gain);gain.connect(destination);oscillator.start();
+                            window.testMic={ctx,gain};return destination.stream;
+                        };""")
                     page.goto('http://127.0.0.1:'+str(port));expect(page.locator('#record')).to_be_enabled()
                     requests=[];page.on('request',lambda request:requests.append(request.url) if request.url.endswith('/api/reply') else None)
                     if delay_resume:
                         page.evaluate('''()=>{const original=audioContext;let delayed=false;audioContext=async()=>{const ctx=await original();if(liveReady&&!delayed){delayed=true;await new Promise(resolve=>window.releaseContext=resolve);}return ctx;};}''')
-                    page.click('#live');expect(page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=15000)
+                    page.click('#live');expect(page.locator('#status')).to_have_text('连续对话中，可以开始说话',timeout=10000)
+                    def utterance():
+                        page.evaluate('()=>testMic.gain.gain.value=.3');page.wait_for_timeout(700)
+                        page.evaluate('()=>testMic.gain.gain.value=0')
+                    utterance()
+                    if delay_resume:
+                        deadline=time.monotonic()+5
+                        while not page.evaluate("()=>typeof window.releaseContext==='function'"):
+                            if time.monotonic()>deadline:self.fail('context suspension not reached')
+                            page.wait_for_timeout(20)
+                    else:
+                        expect(page.locator('#status')).to_have_text('正在播放',timeout=10000)
+                        self.assertGreater(page.evaluate('()=>sources.size'),0)
+                    # Supply the second microphone utterance only after the tested phase.
+                    utterance()
+                    expect(page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=15000)
                     if delay_resume:
                         self.assertEqual(len(requests),1)
                         page.evaluate('()=>window.releaseContext()');page.wait_for_timeout(200)
@@ -134,12 +145,10 @@ class LiveTests(unittest.TestCase):
                     else:self.assertGreaterEqual(page.evaluate('()=>window.playbackStops'),1)
                     sid=page.evaluate("()=>localStorage.getItem('voice-session')")
                     state=self.service.state(sid)
-                    self.assertGreaterEqual(len(state['recent']),2);self.assertTrue(state['responses'])
+                    self.assertEqual(len(state['recent']),2);self.assertTrue(state['responses'])
                     expect(page.locator('#record')).to_be_disabled()
-                    requests=[];page.on('request',lambda request:requests.append(request.url) if request.url.endswith('/api/reply') else None)
-                    if delay_resume:
-                        page.evaluate('''()=>{const original=audioContext;let delayed=false;audioContext=async()=>{const ctx=await original();if(liveReady&&!delayed){delayed=true;await new Promise(resolve=>window.releaseContext=resolve);}return ctx;};}''')
                     page.click('#live');expect(page.locator('#status')).to_have_text('连续对话已结束')
                     expect(page.locator('#record')).to_be_enabled();self.assertEqual(errors,[])
+                    page.evaluate('()=>testMic.ctx.close()')
                 finally:browser.close()
         finally:server.should_exit=True;thread.join(10)

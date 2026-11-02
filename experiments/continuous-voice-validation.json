@@ -60,5 +60,21 @@
     "tests/test_voice_faults.py": "c51a7a84a0daee1aafc7aeab262af2ca374b55dcf9e16dc001d51a7633e7b68b",
     "tests/test_capture_worklet.py": "a5940bb32f0f6037e7343b3230ea147b6ab9890e4cc12f634b209b34d985fe5b",
     "tests/test_realtime_stt.py": "7d0091cfa2e5acf5e286cffad4c86d53807b7354122d0e1a2866a4317f4ae100"
+  },
+  "ci_diagnostic": {
+    "run_id": 41497956667,
+    "head": "bdd3f4710facef268787c251ffd2b09b81e5cff1",
+    "tests": 121,
+    "failures": 1,
+    "failed_test": "test_continuous_fake_microphone_and_automatic_barge_in",
+    "observation": "Fixed two-utterance file did not guarantee playback had begun before second onset on Linux; stop-count assertion was 0.",
+    "fix": "Use a controllable synthetic MediaStream microphone; wait for active playback or suspended context before emitting the second utterance."
+  },
+  "targeted_phase_validation": {
+    "tests": 5,
+    "passed": true,
+    "seconds": 14.582,
+    "test_file_sha256": "05b5028d43f6b01e028101ba12e208a3985ea3604de7567a5f0768ed654e170f",
+    "log_sha256": "0d0255e89feef6b872e9ad2344247ea046957f384ecc7dcc5cc90452d4567e44"
   }
 }
