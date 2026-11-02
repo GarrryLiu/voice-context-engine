@@ -75,5 +75,6 @@
     "run": 110,
     "failed": 1,
     "reason": "old pending HTTP ACKs could occupy browser connections and delay new-turn ACKs"
-  }
+  },
+  "subsequent_test_correction": "Wait for explicit stopped UI before programmatically uploading; assert stop within 2s and old ACK still blocked when the new turn completes."
 }

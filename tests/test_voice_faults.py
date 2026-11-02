@@ -112,7 +112,7 @@ class VoiceFaultTests(unittest.TestCase):
         self.expect(self.page.locator('#branch')).to_be_enabled(timeout=1500)
         self.page.select_option('#branch','child');self.release.set();self.idle()
         self.expect(self.page.locator('#branch')).to_have_value('child')
-        self.page.wait_for_timeout(100)
+        self.expect(self.page.locator('#status')).to_have_text('已切换到 child',timeout=5000)
         self.assertEqual(self.c.pipeline.sessions.get(self.sid)['branch'],'child')
         self.assertNotIn('LATE',self.page.locator('#answer').inner_text())
         self.assertEqual(self.c.pipeline.context(branch='child')['recent'],[])
@@ -156,11 +156,12 @@ class VoiceFaultTests(unittest.TestCase):
         self.record('failed_ack_not_claimed_as_played')
 
     def test_delayed_old_ack_cannot_block_new_turn(self):
-        entered=threading.Event();release=threading.Event();old_epoch=[None]
+        entered=threading.Event();release=threading.Event();old_epoch=[None];old_finished=threading.Event()
         original=self.service.acknowledge
         def delayed(session,data):
             if old_epoch[0] is None:old_epoch[0]=data['epoch']
-            if data['epoch']==old_epoch[0]:entered.set();release.wait(8)
+            if data['epoch']==old_epoch[0]:
+                entered.set();release.wait(8);old_finished.set()
             return original(session,data)
         self.service.acknowledge=delayed
         self.upload('normal')
@@ -170,9 +171,12 @@ class VoiceFaultTests(unittest.TestCase):
             self.page.wait_for_timeout(20)
         self.expect(self.page.locator('#record')).to_be_disabled()
         self.assertEqual(self.c.pipeline.context(branch='main')['responses'],[])
-        self.page.click('#interrupt');self.idle()
-        self.upload('normal')
-        try:self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=5000)
+        self.page.click('#interrupt')
+        self.expect(self.page.locator('#status')).to_have_text('已停止',timeout=2000)
+        self.idle();self.upload('normal')
+        try:
+            self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=5000)
+            self.assertFalse(old_finished.is_set(),'old ACK must remain blocked until new turn has completed')
         finally:release.set()
         self.page.wait_for_timeout(100)
         self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说')

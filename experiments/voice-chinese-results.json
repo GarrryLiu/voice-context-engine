@@ -31,5 +31,54 @@
     "src/voice_context/storage.py": "d5199193ff23d0bd89a33b2aa5e2d59d4d5da607dceb5254be1f8163642df85e",
     "src/voice_context/broker.py": "21e59f502d8373e48e056621428cd39114c8c9b016b16fd1ba8490bef5afba7b",
     "src/voice_context/__main__.py": "b39e560eafdf161b1c4a737a765ea903c74e733ef000a7beb708493145e4dca7"
+  },
+  "durable_usage_audit": {
+    "source": "isolated SQLite model_calls after browser trial",
+    "calls": [
+      {
+        "model": "gpt-transcribe",
+        "state": "completed",
+        "elapsed": 1.9203753340989351,
+        "usage": {
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "type": "duration",
+          "input_token_details": null,
+          "seconds": 7
+        },
+        "error_code": null
+      },
+      {
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "elapsed": 3.2365615421440452,
+        "usage": {
+          "input_tokens": 231,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 12,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 243
+        },
+        "error_code": null
+      },
+      {
+        "model": "gpt-4o-mini-tts",
+        "state": "completed",
+        "elapsed": 1.3228908339515328,
+        "usage": {
+          "source": "local_measurement_not_billing",
+          "input_characters": 9,
+          "output_pcm_bytes": 129600
+        },
+        "error_code": null
+      }
+    ],
+    "billing_reconciled": false
   }
 }
