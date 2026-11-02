@@ -12,9 +12,9 @@ from .sessions import Sessions
 
 
 class Pipeline:
-    def __init__(self, path, router=None):
-        self.engine = Engine(path)
-        self.queue = TaskQueue(path)
+    def __init__(self, path, router=None, check_same_thread=True):
+        self.engine = Engine(path,check_same_thread=check_same_thread)
+        self.queue = TaskQueue(path,check_same_thread=check_same_thread)
         self.router = router or ExtractionRouter()
         self.transcripts = Transcripts(self.engine)
         self.sessions = Sessions(self)
@@ -92,6 +92,8 @@ class Pipeline:
         if action=='session_open': return self.sessions.open(**args)
         if action=='session_interrupt' or action=='session_switch': return self.sessions.interrupt(**args)
         if action=='session_submit': return self.sessions.submit(**args)
+        if action=='playback_ack': return {'advanced':self.sessions.acknowledge(**args)}
+        if action=='session_delivery': return self.sessions.delivery(**args)
         if action=='reply_begin': return self.sessions.begin(**args)
         if action=='reply_check': return {'valid':self.sessions.valid(**args)}
         if action=='stage_reserve': return {'reserved':self.sessions.reserve(**args)}

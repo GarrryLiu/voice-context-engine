@@ -10,9 +10,9 @@ class LeaseLost(RuntimeError):
 
 
 class TaskQueue:
-    def __init__(self, path=":memory:", clock=time.time):
+    def __init__(self, path=":memory:", clock=time.time, check_same_thread=True):
         self.clock = clock
-        self.db = sqlite3.connect(path)
+        self.db = sqlite3.connect(path, check_same_thread=check_same_thread)
         self.db.row_factory = sqlite3.Row
         self.db.execute('''CREATE TABLE IF NOT EXISTS tasks (
           seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE NOT NULL,

@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 import uuid
+import time
 
 
 class StaleInteraction(ValueError):pass
@@ -19,10 +20,22 @@ class Sessions:
         CREATE TABLE IF NOT EXISTS replies (
           id TEXT PRIMARY KEY, session TEXT NOT NULL REFERENCES interaction_sessions(id),
           branch TEXT NOT NULL, epoch INTEGER NOT NULL, context TEXT NOT NULL, state TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS response_segments (
+          reply TEXT NOT NULL REFERENCES replies(id), sequence INTEGER NOT NULL, text TEXT NOT NULL,
+          PRIMARY KEY(reply,sequence));
+        CREATE TABLE IF NOT EXISTS output_chunks (
+          reply TEXT NOT NULL REFERENCES replies(id), sequence INTEGER NOT NULL, segment INTEGER,
+          bytes INTEGER NOT NULL, sha256 TEXT NOT NULL, rendered INTEGER NOT NULL DEFAULT 0,
+          acknowledged INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(reply,sequence));
         CREATE TABLE IF NOT EXISTS stage_calls (
           id TEXT PRIMARY KEY, reply TEXT NOT NULL REFERENCES replies(id), stage TEXT NOT NULL,
           reserved REAL NOT NULL, reported REAL, state TEXT NOT NULL);
         ''')
+        with self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            columns={r['name'] for r in self.db.execute('PRAGMA table_info(stage_calls)')}
+            for name,kind in [('started_at','REAL'),('finished_at','REAL'),('elapsed','REAL')]:
+                if name not in columns:self.db.execute(f'ALTER TABLE stage_calls ADD COLUMN {name} {kind}')
 
     def get(self,session):
         row=self.db.execute('SELECT * FROM interaction_sessions WHERE id=?',(session,)).fetchone()
@@ -111,10 +124,11 @@ class Sessions:
             state=self.get(ticket['session'])
             if state['spent']+cost>state['budget']:raise ValueError('session declared-unit budget exhausted')
             self.db.execute('UPDATE interaction_sessions SET spent=spent+? WHERE id=?',(cost,ticket['session']))
-            self.db.execute('INSERT INTO stage_calls VALUES (?,?,?,?,NULL,?)',(call_id,ticket['request_id'],stage,cost,'reserved'))
+            self.db.execute('INSERT INTO stage_calls(id,reply,stage,reserved,state,started_at) VALUES (?,?,?,?,?,?)',(call_id,ticket['request_id'],stage,cost,'reserved',time.time()))
         return True
 
-    def finish(self,call_id,reported=None,failed=False):
+    def finish(self,call_id,reported=None,failed=False,elapsed=None):
+        if elapsed is not None and (not math.isfinite(elapsed) or elapsed<0):raise ValueError('finite elapsed time required')
         if reported is not None and (not math.isfinite(reported) or reported<0):raise ValueError('finite usage required')
         with self.db:
             self.db.execute('BEGIN IMMEDIATE')
@@ -125,5 +139,34 @@ class Sessions:
                 if (row['reported'],row['state'])!=(reported,state):raise ValueError('conflicting call completion')
                 return False
             # Admission accounting stays conservative; actual provider billing is separate.
-            self.db.execute('UPDATE stage_calls SET reported=?,state=? WHERE id=?',(reported,state,call_id))
+            self.db.execute('UPDATE stage_calls SET reported=?,state=?,finished_at=?,elapsed=? WHERE id=?',(reported,state,time.time(),elapsed,call_id))
         return True
+
+    def segment(self,ticket,sequence,text):
+        if not isinstance(sequence,int) or sequence<0 or not isinstance(text,str) or not text:raise ValueError('invalid segment')
+        with self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            if not self.valid(ticket):raise StaleInteraction('obsolete segment')
+            old=self.db.execute('SELECT text FROM response_segments WHERE reply=? AND sequence=?',(ticket['request_id'],sequence)).fetchone()
+            if old:
+                if old['text']!=text:raise ValueError('segment id reused')
+                return False
+            self.db.execute('INSERT INTO response_segments VALUES (?,?,?)',(ticket['request_id'],sequence,text))
+        return True
+
+    def acknowledge(self,session,request_id,sequence,played_bytes):
+        if not isinstance(played_bytes,int) or played_bytes<0:raise ValueError('nonnegative playback offset required')
+        with self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            row=self.db.execute('SELECT c.* FROM output_chunks c JOIN replies r ON r.id=c.reply WHERE c.reply=? AND c.sequence=? AND r.session=?',
+                                (request_id,sequence,session)).fetchone()
+            if not row:raise KeyError('unknown output chunk')
+            if played_bytes>row['rendered']:raise ValueError('cannot acknowledge bytes not rendered')
+            if played_bytes<=row['acknowledged']:return False
+            self.db.execute('UPDATE output_chunks SET acknowledged=? WHERE reply=? AND sequence=?',(played_bytes,request_id,sequence))
+        return True
+
+    def delivery(self,session):
+        return [dict(r) for r in self.db.execute('''SELECT r.id request_id,r.branch,r.epoch,r.state,
+          c.sequence,c.segment,c.bytes,c.rendered,c.acknowledged FROM replies r JOIN output_chunks c ON c.reply=r.id
+          WHERE r.session=? ORDER BY r.rowid,c.sequence''',(session,))]

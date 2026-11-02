@@ -36,8 +36,8 @@ def route(task, *, complex=False):
 
 
 class Engine:
-    def __init__(self, path=":memory:"):
-        self.db = sqlite3.connect(path)
+    def __init__(self, path=":memory:", check_same_thread=True):
+        self.db = sqlite3.connect(path, check_same_thread=check_same_thread)
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA foreign_keys=ON")
         self.db.executescript('''
