@@ -195,6 +195,7 @@ class Conversation:
                 except Exception:
                     self._finish(call_id,started,True);raise
                 else:self._finish(call_id,started)
+        stream=None
         reason_active=0.
         try:
             active=time.perf_counter();stream=iter(text_provider.stream(ticket['context'],cancel,reason_id))
@@ -217,10 +218,13 @@ class Conversation:
             raise
         else:self._finish(reason_id,tick,elapsed=reason_active)
         finally:
-            with self.lock:
-                event=self.cancelled.pop(ticket['request_id'],None)
-                if event:event.set()
-                self.running.discard(ticket['request_id'])
+            try:
+                if stream is not None and hasattr(stream,'close'):stream.close()
+            finally:
+                with self.lock:
+                    event=self.cancelled.pop(ticket['request_id'],None)
+                    if event:event.set()
+                    self.running.discard(ticket['request_id'])
         return {'status':'queued','ticket':ticket,'audio_chunks':audio_seq,
                 'first_audio_queued_seconds':first_audio,'total_seconds':time.perf_counter()-tick}
 
