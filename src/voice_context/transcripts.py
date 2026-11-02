@@ -1,4 +1,5 @@
 """Final transcript event log and transactional outbox on the reference SQLite DB."""
+from .storage import table_exists
 import hashlib
 import json
 
@@ -79,7 +80,7 @@ class Transcripts:
         # Generated text is not memory. Only complete, explicitly acknowledged
         # segments enter resumed dialogue, after recent input and confirmed memory.
         delivered=[]
-        if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='response_segments'").fetchone():
+        if table_exists(self.db, 'response_segments'):
             delivered=[dict(r) for r in self.db.execute('''SELECT s.reply,s.sequence,s.text,r.branch,r.epoch FROM response_segments s
               JOIN replies r ON r.id=s.reply WHERE r.branch=?
               AND EXISTS (SELECT 1 FROM output_chunks c WHERE c.reply=s.reply AND c.segment=s.sequence)

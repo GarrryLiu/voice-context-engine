@@ -3,7 +3,8 @@ import argparse
 import hashlib
 import json
 import sys
-import sqlite3
+import os
+from .storage import database_errors, Postgres
 from .engine import Engine
 from .models import ExtractionRouter, OllamaExtractor
 from .tasks import TaskQueue
@@ -12,15 +13,35 @@ from .sessions import Sessions
 
 
 class Pipeline:
-    def __init__(self, path, router=None, check_same_thread=True):
+    def __init__(self, path, router=None, check_same_thread=True, publish_on_submit=True, redis_url=None):
         self.engine = Engine(path,check_same_thread=check_same_thread)
-        self.queue = TaskQueue(path,check_same_thread=check_same_thread)
-        self.router = router or ExtractionRouter()
-        self.transcripts = Transcripts(self.engine)
-        self.sessions = Sessions(self)
+        self.queue = self.context_cache = None
+        try:
+            self.queue = TaskQueue(path,check_same_thread=check_same_thread)
+            self.router = router or ExtractionRouter()
+            self.publish_on_submit = publish_on_submit
+            self.transcripts = Transcripts(self.engine)
+            self.sessions = Sessions(self)
+            self.context_cache = None
+            if redis_url:
+                from .cache import ContextCache, install_revision
+                install_revision(self.engine.db)
+                self.context_cache = ContextCache(redis_url)
+        except BaseException:
+            self.close()
+            raise
+
+    def context(self, **args):
+        if self.context_cache:
+            return self.context_cache.context(self.transcripts, **args)
+        db = self.engine.db
+        if isinstance(db, Postgres) and db.transaction is None:
+            with db:return self.transcripts.context(**args)
+        return self.transcripts.context(**args)
 
     def close(self):
-        self.queue.close()
+        if self.context_cache:self.context_cache.close()
+        if self.queue:self.queue.close()
         self.engine.close()
 
     def submit(self, transcript_id, branch, session, text, final=True, complex=False):
@@ -34,7 +55,8 @@ class Pipeline:
             raise ValueError('unknown branch')
         task_id = 'transcript:' + transcript_id
         accepted = self.transcripts.append(transcript_id,branch,session,text,complex)
-        self.transcripts.publish(self.queue)
+        if self.publish_on_submit:
+            self.transcripts.publish(self.queue)
         return {'accepted':accepted,'task_id':task_id}
 
     def work_once(self):
@@ -125,7 +147,7 @@ class Pipeline:
         if action=='correct': return self.correct(**args)
         if action=='history': return self.engine.history(**args)
         if action=='approve': return self.approve(**args)
-        if action=='context': return self.transcripts.context(**args)
+        if action=='context': return self.context(**args)
         if action=='recent': return self.transcripts.recent(**args)
         if action=='revoke': return {'revoked':self.transcripts.revoke(**args)}
         if action=='fork':
@@ -137,7 +159,9 @@ class Pipeline:
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument('--db',default='context.db')
+    p.add_argument('--db',default=os.environ.get('VOICE_DATABASE_URL', 'context.db'))
+    p.add_argument('--redis-url',default=os.environ.get('VOICE_REDIS_URL'))
+    p.add_argument('--async-dispatch',action='store_true',help='outbox only; run Kafka relay and worker separately')
     p.add_argument('--model',help='installed Ollama model; otherwise explicit rule mode')
     p.add_argument('--reasoning-model')
     p.add_argument('--standard-model')
@@ -150,6 +174,8 @@ def main():
         router=ExtractionRouter({'small':OllamaExtractor(args.model),
                                  'reasoning':OllamaExtractor(args.reasoning_model or args.model)})
     if args.cascade:
+        if str(args.db).startswith(('postgres://','postgresql://')):
+            p.error('cascade audit currently requires SQLite; use default or Ollama router with PostgreSQL')
         from .routing import CascadeRouter, Tier, AuditLog
         from .models import RuleExtractor
         tiers=[Tier('rules',RuleExtractor())]
@@ -158,7 +184,8 @@ def main():
                 tiers.append(Tier(label,OllamaExtractor(model,timeout=min(30,args.route_deadline)),cost))
         router=CascadeRouter(tiers,max_cost_units=args.route_cost_units,
                              deadline_seconds=args.route_deadline,audit=AuditLog(args.db))
-    pipeline=Pipeline(args.db,router)
+    handled_errors=(ValueError,KeyError,TypeError)+database_errors()
+    pipeline=Pipeline(args.db,router,publish_on_submit=not args.async_dispatch,redis_url=args.redis_url)
     if not pipeline.engine.db.execute("SELECT 1 FROM branches WHERE id='main'").fetchone():
         pipeline.engine.fork('main')
     try:
@@ -166,7 +193,7 @@ def main():
             try:
                 if len(line)>65536: raise ValueError('request too large')
                 response={'ok':True,'result':pipeline.dispatch(json.loads(line))}
-            except (ValueError,KeyError,TypeError,sqlite3.Error) as exc:
+            except handled_errors as exc:
                 response={'ok':False,'error':type(exc).__name__}
             print(json.dumps(response,ensure_ascii=False),flush=True)
     finally:

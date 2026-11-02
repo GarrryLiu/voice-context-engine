@@ -5,7 +5,7 @@ idempotency keys. Forks snapshot the parent's visible memory at fork time.
 """
 import json
 import re
-import sqlite3
+from .storage import connect, table_exists
 import uuid
 import math
 import hashlib
@@ -37,9 +37,7 @@ def route(task, *, complex=False):
 
 class Engine:
     def __init__(self, path=":memory:", check_same_thread=True):
-        self.db = sqlite3.connect(path, check_same_thread=check_same_thread)
-        self.db.row_factory = sqlite3.Row
-        self.db.execute("PRAGMA foreign_keys=ON")
+        self.db = connect(path, check_same_thread=check_same_thread)
         self.db.executescript('''
         CREATE TABLE IF NOT EXISTS branches (
           id TEXT PRIMARY KEY, parent TEXT REFERENCES branches(id));
@@ -67,7 +65,7 @@ class Engine:
                   (branch, parent))
                 self.db.execute("INSERT INTO fork_bases VALUES (?,?)",
                     (branch, json.dumps(self._current(parent), sort_keys=True)))
-                if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='transcript_visibility'").fetchone():
+                if table_exists(self.db, 'transcript_visibility'):
                     self.db.execute('INSERT INTO transcript_visibility SELECT ?,transcript_id FROM transcript_visibility WHERE branch=?',
                                     (branch,parent))
 

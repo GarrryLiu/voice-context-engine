@@ -1,4 +1,5 @@
 """Durable session generations, frozen reply context and session-wide stage budget."""
+from .storage import columns
 import hashlib
 import json
 import math
@@ -33,9 +34,9 @@ class Sessions:
         ''')
         with self.db:
             self.db.execute('BEGIN IMMEDIATE')
-            columns={r['name'] for r in self.db.execute('PRAGMA table_info(stage_calls)')}
+            existing_columns=columns(self.db, 'stage_calls')
             for name,kind in [('started_at','REAL'),('finished_at','REAL'),('elapsed','REAL'),('provider',"TEXT NOT NULL DEFAULT 'unspecified'")]:
-                if name not in columns:self.db.execute(f'ALTER TABLE stage_calls ADD COLUMN {name} {kind}')
+                if name not in existing_columns:self.db.execute(f'ALTER TABLE stage_calls ADD COLUMN {name} {kind}')
 
     def get(self,session):
         row=self.db.execute('SELECT * FROM interaction_sessions WHERE id=?',(session,)).fetchone()
@@ -81,7 +82,8 @@ class Sessions:
                 if state['epoch']!=epoch:raise StaleInteraction('stale STT final')
                 accepted=self.pipeline.transcripts.append_in_transaction(transcript_id,state['branch'],session,text,complex)
                 state=self._advance(session)
-        self.pipeline.transcripts.publish(self.pipeline.queue)
+        if self.pipeline.publish_on_submit:
+            self.pipeline.transcripts.publish(self.pipeline.queue)
         return {'accepted':accepted,'task_id':'transcript:'+transcript_id,'session':state}
 
     def begin(self,session,request_id=None,budget=4096,count=None):
@@ -93,7 +95,7 @@ class Sessions:
             if old:
                 if old['session']!=session:raise ValueError('request id reused across sessions')
                 return self._ticket(old)
-            context=self.pipeline.transcripts.context(state['branch'],budget=budget,count=count)
+            context=self.pipeline.context(branch=state['branch'],budget=budget,count=count)
             if context['latest_event_omitted']:raise ValueError('context budget cannot fit latest confirmed utterance')
             state=self._advance(session)
             self.db.execute('INSERT INTO replies VALUES (?,?,?,?,?,?)',

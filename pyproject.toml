@@ -9,5 +9,8 @@ description = "Branch-aware persistent context reference engine for voice agents
 requires-python = ">=3.11"
 dependencies = []
 
+[project.optional-dependencies]
+infra = ["psycopg[binary]>=3.2,<4", "confluent-kafka>=2.6,<3", "redis>=5,<7"]
+
 [tool.setuptools.packages.find]
 where = ["src"]

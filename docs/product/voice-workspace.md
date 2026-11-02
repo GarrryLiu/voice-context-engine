@@ -13,11 +13,12 @@ C++ 负责交互运行层；STT、文本推理、分段 TTS 和后台整理独�
 | C++ 实时层 | 异步收发、音频缓冲、分句、播放、有界队列与背压 | 线程安全 C++ 队列、UTF-8 增量分句、序号检查、代次失效、软件 render | 网络事件循环、设备回调、音频格式协商、时钟与实时调度 |
 | 上下文 | topic/thread 分支、关联、恢复、结构/语义检索、token 预算 | 分支、发言视图快照、词法检索、固定回复快照、可注入 tokenizer 计数 | 显式 topic 关系、embedding/语义检索、压缩质量评估 |
 | 记忆 | 增量保存想法、决定、产物，版本/来源/修订/合并 | 候选确认、历史、显式修正、版本检查、分支合并 | 撤回已确认记忆的 tombstone 语义、产物存储、复杂冲突 UX |
-| 持久化 | Kafka 后台任务、PostgreSQL 权威状态、Redis 活跃缓存 | SQLite 事件日志、同事务 outbox、可恢复任务队列 | 三个服务的真实适配器和集成/故障测试 |
+| 持久化 | Kafka 后台任务、PostgreSQL 权威状态、Redis 活跃缓存 | SQLite/PostgreSQL 事件与任务、Kafka relay/intake、版本化 Redis 缓存；真实服务恢复实验 | HA、多租户、细粒度锁、版本化 schema 迁移 |
 | 可复用接口 | 追加、分支、上下文、记忆、会话恢复 | Python API、JSONL gateway、C ABI、provider Protocol | 认证、HTTP/WebSocket、客户端 API 和多租户隔离 |
 | 评估 | 交互、上下文、可靠性和成本分别测量 | C++/绑定微基准、脚本化并发/故障实验、阶段元数据 | 真实语音 p95、语义标注集、在线费用与部署指标 |
 
-一份 SQLite 数据库目前代表一个本地 workspace。不是多租户部署。
+一份 SQLite 或 PostgreSQL 数据库目前代表一个 workspace。不是多租户部署。
+真实服务的启动方式与边界见 [基础设施](../infrastructure.md)。
 
 ## 核心不变量
 
@@ -29,8 +30,8 @@ C++ 负责交互运行层；STT、文本推理、分段 TTS 和后台整理独�
    request ID、epoch 和上下文 revision；入队与 render 前重新验证。
 4. 旧任务可以完成对原分支的候选提取，但必须经过版本检查和调用方确认；
    不能写入当前分支的音频队列。已结束的回复封口，额外迟到输出也被拒收。
-5. Redis 将来只是可重建缓存，不能成为权威事实。PostgreSQL + outbox 的
-   目标约定与当前 SQLite 参考实现一致；Kafka 投递不假设 exactly-once。
+5. Redis 是可重建缓存，不能成为权威事实。PostgreSQL + outbox 与
+   SQLite 参考实现保持一致；Kafka 投递不假设 exactly-once。
 
 ## 上下文与恢复
 
@@ -93,6 +94,6 @@ byte payload、软件队列延迟和声明单位，分别不等于语音、扬�
 
 1. 实际设备与网络适配器、音频格式与 buffer 时长定义、真实打断测试。
 2. 在相同 provider 下比较 C++ 运行路径，定位绑定/调度/数据库争用。
-3. PostgreSQL/outbox/Kafka/Redis 适配器及重复、乱序、重启、缓存丢失测试。
+3. PostgreSQL/outbox/Kafka/Redis 适配器和本地故障测试已加入；继续做并发、HA、部署与 schema 升级。
 4. 独立上下文质量集、真实分阶段模型费用/质量/延迟对照。
 5. 最后才考虑默认模型策略和简历三条表述。
