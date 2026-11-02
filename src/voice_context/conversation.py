@@ -58,12 +58,12 @@ class Conversation:
     def begin(self,request_id=None,budget=4096):
         with self.lock:
             retry=request_id and self.pipeline.engine.db.execute('SELECT 1 FROM replies WHERE id=?',(request_id,)).fetchone()
+            if not retry and len(self.running)>=8:raise Backpressure('too many outstanding provider calls')
+            ticket=self.pipeline.sessions.begin(self.session,request_id,budget,count=self.token_counter)
             if not retry:
-                if len(self.running)>=8:raise Backpressure('too many outstanding provider calls')
                 for key,event in list(self.cancelled.items()):
                     event.set()
                     if key not in self.running:self.cancelled.pop(key)
-            ticket=self.pipeline.sessions.begin(self.session,request_id,budget,count=self.token_counter)
             self.native.advance(self.pipeline.sessions.get(self.session)['epoch'])
             # Idempotent retry must not replace a cancellation signal held by a provider.
             self.cancelled.setdefault(ticket['request_id'],threading.Event())
@@ -124,8 +124,8 @@ class Conversation:
             if request in self.running:return False
             old=self.pipeline.engine.db.execute('SELECT 1 FROM stage_calls WHERE id=?',(call_id,)).fetchone()
             if old:
-                accepted=self.pipeline.sessions.reserve(ticket,call_id,stage,cost,provider)
-                self.cancelled.pop(request,None);return accepted
+                try:return self.pipeline.sessions.reserve(ticket,call_id,stage,cost,provider)
+                finally:self.cancelled.pop(request,None)
             try:accepted=self._reserve(ticket,call_id,stage,cost,provider)
             except Exception:
                 self.cancelled.pop(request,None);raise

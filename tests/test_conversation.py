@@ -133,3 +133,9 @@ class ConversationTests(unittest.TestCase):
         with patch.object(self.c.pipeline.sessions,'finish',side_effect=RuntimeError('audit unavailable')):
             with self.assertRaises(RuntimeError):self.c.respond('broken',Text(),BrokenTTS())
         self.assertEqual(self.c.render(256),(bytes(256),0))
+    def test_failed_new_context_does_not_cancel_existing_valid_reply(self):
+        ticket=self.c.begin('old');self.assertEqual(self.c.receive_audio(ticket,0,b'old'),1)
+        with self.assertRaises(ValueError):self.c.begin('invalid',budget=1)
+        self.assertTrue(self.c.pipeline.sessions.valid(ticket))
+        self.assertFalse(self.c.cancelled['old'].is_set())
+        data,n=self.c.render(256);self.assertEqual(data[:n],b'old')
