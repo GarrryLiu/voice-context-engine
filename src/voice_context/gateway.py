@@ -7,6 +7,7 @@ import sqlite3
 from .engine import Engine
 from .models import ExtractionRouter, OllamaExtractor
 from .tasks import TaskQueue
+from .transcripts import Transcripts
 
 
 class Pipeline:
@@ -14,6 +15,7 @@ class Pipeline:
         self.engine = Engine(path)
         self.queue = TaskQueue(path)
         self.router = router or ExtractionRouter()
+        self.transcripts = Transcripts(self.engine)
 
     def close(self):
         self.queue.close()
@@ -29,10 +31,12 @@ class Pipeline:
         if not self.engine.db.execute('SELECT 1 FROM branches WHERE id=?',(branch,)).fetchone():
             raise ValueError('unknown branch')
         task_id = 'transcript:' + transcript_id
-        accepted = self.queue.enqueue(task_id, 'extract', {'branch':branch,'session':session,'text':text,'complex':complex})
+        accepted = self.transcripts.append(transcript_id,branch,session,text,complex)
+        self.transcripts.publish(self.queue)
         return {'accepted':accepted,'task_id':task_id}
 
     def work_once(self):
+        self.transcripts.publish(self.queue)
         def handler(task):
             if task['kind'] != 'extract':
                 raise ValueError('unsupported task kind')
@@ -52,9 +56,14 @@ class Pipeline:
         records={r['key']:r for r in task['result']['records']}
         if not isinstance(keys,list) or any(not isinstance(k,str) for k in keys) or len(set(keys))!=len(keys) or set(keys)-records.keys():
             raise ValueError('select unique candidate keys')
+        expected=task['payload'].get('expected_versions')
+        if expected is None:raise ValueError('legacy task needs resubmission with version metadata')
         inserted=0
         with self.engine.db:
             self.engine.db.execute('BEGIN IMMEDIATE')
+            transcript=self.engine.db.execute('SELECT revoked FROM transcripts WHERE id=?',
+                (task['payload']['transcript_id'],)).fetchone()
+            if not transcript or transcript['revoked']:raise ValueError('transcript revoked or missing')
             for key in keys:
                 record=records[key]
                 eid='approved:'+hashlib.sha256(json.dumps([task_id,key]).encode()).hexdigest()
@@ -65,7 +74,12 @@ class Pipeline:
                     if (old['branch'],old['session'],old['payload'])!=(branch,session,payload):
                         raise ValueError('confirmation event collision')
                     continue
-                self.engine.db.execute('INSERT INTO events(id,branch,session,payload) VALUES (?,?,?,?)',(eid,branch,session,payload))
+                current=self.engine.db.execute('SELECT COALESCE(MAX(version),0) FROM memory WHERE branch=? AND key=?',(branch,key)).fetchone()[0]
+                pending=self.engine.db.execute('SELECT payload FROM events WHERE branch=? AND processed=0',(branch,)).fetchall()
+                if current!=expected.get(key,0) or any(json.loads(p[0])['key']==key for p in pending):
+                    raise ValueError('stale candidate; inspect current memory and submit a correction')
+                self.engine.db.execute('INSERT INTO events(id,branch,session,payload,processed) VALUES (?,?,?,?,1)',(eid,branch,session,payload))
+                self.engine.db.execute('INSERT INTO memory VALUES (?,?,?,?,?)',(branch,key,current+1,record['value'],eid))
                 inserted+=1
         self.engine.drain()
         return {'inserted':inserted}
@@ -80,7 +94,9 @@ class Pipeline:
             result.pop('lease_token',None)
             return result
         if action=='approve': return self.approve(**args)
-        if action=='context': return self.engine.assemble_context(**args)
+        if action=='context': return self.transcripts.context(**args)
+        if action=='recent': return self.transcripts.recent(**args)
+        if action=='revoke': return {'revoked':self.transcripts.revoke(**args)}
         if action=='fork':
             self.engine.fork(**args); return {'created':True}
         if action=='merge': return self.engine.merge(**args)

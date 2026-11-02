@@ -67,6 +67,9 @@ class Engine:
                   (branch, parent))
                 self.db.execute("INSERT INTO fork_bases VALUES (?,?)",
                     (branch, json.dumps(self._current(parent), sort_keys=True)))
+                if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='transcript_visibility'").fetchone():
+                    self.db.execute('INSERT INTO transcript_visibility SELECT ?,transcript_id FROM transcript_visibility WHERE branch=?',
+                                    (branch,parent))
 
     def ingest(self, event_id, branch, session, *, key, value):
         if not all(isinstance(x, str) and x.strip() for x in
