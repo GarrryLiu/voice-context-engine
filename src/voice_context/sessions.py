@@ -34,7 +34,7 @@ class Sessions:
         with self.db:
             self.db.execute('BEGIN IMMEDIATE')
             columns={r['name'] for r in self.db.execute('PRAGMA table_info(stage_calls)')}
-            for name,kind in [('started_at','REAL'),('finished_at','REAL'),('elapsed','REAL')]:
+            for name,kind in [('started_at','REAL'),('finished_at','REAL'),('elapsed','REAL'),('provider',"TEXT NOT NULL DEFAULT 'unspecified'")]:
                 if name not in columns:self.db.execute(f'ALTER TABLE stage_calls ADD COLUMN {name} {kind}')
 
     def get(self,session):
@@ -111,20 +111,23 @@ class Sessions:
         return bool(row and row['state']=='active' and row['session']==ticket['session'] and
                     row['branch']==ticket['branch']==state['branch'] and row['epoch']==ticket['epoch']==state['epoch'])
 
-    def reserve(self,ticket,call_id,stage,cost):
+    def reserve(self,ticket,call_id,stage,cost,provider='unspecified'):
+        if not isinstance(provider,str) or not provider.strip():raise ValueError('provider identity required')
         if not isinstance(call_id,str) or not call_id.strip() or stage not in self.STAGES or not math.isfinite(cost) or cost<0:
             raise ValueError('valid stage, call id and finite nonnegative declared cost required')
         with self.db:
             self.db.execute('BEGIN IMMEDIATE')
-            if not self.valid(ticket):raise StaleInteraction('obsolete response')
             old=self.db.execute('SELECT * FROM stage_calls WHERE id=?',(call_id,)).fetchone()
             if old:
-                if (old['reply'],old['stage'],old['reserved'])!=(ticket['request_id'],stage,cost):raise ValueError('call id reused')
+                if (old['reply'],old['stage'],old['reserved'],old['provider'])!=(ticket['request_id'],stage,cost,provider):raise ValueError('call id reused')
+                row=self.db.execute('SELECT * FROM replies WHERE id=?',(ticket['request_id'],)).fetchone()
+                if not row or (row['session'],row['branch'],row['epoch'])!=(ticket['session'],ticket['branch'],ticket['epoch']):raise ValueError('call owner mismatch')
                 return False # do not execute an external call twice, even after restart
+            if not self.valid(ticket):raise StaleInteraction('obsolete response')
             state=self.get(ticket['session'])
             if state['spent']+cost>state['budget']:raise ValueError('session declared-unit budget exhausted')
             self.db.execute('UPDATE interaction_sessions SET spent=spent+? WHERE id=?',(cost,ticket['session']))
-            self.db.execute('INSERT INTO stage_calls(id,reply,stage,reserved,state,started_at) VALUES (?,?,?,?,?,?)',(call_id,ticket['request_id'],stage,cost,'reserved',time.time()))
+            self.db.execute('INSERT INTO stage_calls(id,reply,stage,reserved,state,started_at,provider) VALUES (?,?,?,?,?,?,?)',(call_id,ticket['request_id'],stage,cost,'reserved',time.time(),provider))
         return True
 
     def finish(self,call_id,reported=None,failed=False,elapsed=None):
@@ -170,3 +173,10 @@ class Sessions:
         return [dict(r) for r in self.db.execute('''SELECT r.id request_id,r.branch,r.epoch,r.state,
           c.sequence,c.segment,c.bytes,c.rendered,c.acknowledged FROM replies r JOIN output_chunks c ON c.reply=r.id
           WHERE r.session=? ORDER BY r.rowid,c.sequence''',(session,))]
+
+    def seal(self,ticket):
+        with self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            if not self.valid(ticket):return False
+            self.db.execute("UPDATE replies SET state='sealed' WHERE id=?",(ticket['request_id'],))
+        return True

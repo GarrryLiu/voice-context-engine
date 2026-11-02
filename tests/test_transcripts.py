@@ -52,3 +52,11 @@ class TranscriptTests(unittest.TestCase):
         self.assertLessEqual(len(result['text'].encode()),64)
         self.assertTrue(result['latest_event_omitted'])
         with self.assertRaises(ValueError):self.p.transcripts.context('main',budget=1)
+    def test_manual_correction_is_versioned_and_blocks_old_candidate(self):
+        task=self.submit('old')['task_id'];self.p.work_once()
+        self.assertEqual(self.p.correct('fix','main','s','db','PostgreSQL',0)['version'],1)
+        with self.assertRaises(ValueError):self.p.approve(task,['db'])
+        self.assertEqual(self.p.correct('fix','main','s','db','PostgreSQL',0)['inserted'],0)
+        self.p.correct('fix2','main','s','db','SQLite',1)
+        self.assertEqual([r['value'] for r in self.p.engine.history('main','db')],['PostgreSQL','SQLite'])
+        with self.assertRaises(ValueError):self.p.correct('stale','main','s','db','Old',1)

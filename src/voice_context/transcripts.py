@@ -63,7 +63,7 @@ class Transcripts:
     def context(self, branch, query='', budget=4096, count=None):
         default_counter=count is None
         count=count or (lambda text:len(text.encode('utf-8')))
-        serialize=lambda memory,recent:json.dumps({'memory':memory,'recent':recent},sort_keys=True,ensure_ascii=False)
+        serialize=lambda memory,recent,responses=None:json.dumps({'memory':memory,'recent':recent,'responses':responses or []},sort_keys=True,ensure_ascii=False)
         if budget<0 or count(serialize([],[]))>budget:raise ValueError('budget cannot fit context envelope')
         all_recent=self.recent(branch);recent=[];memory=[]
         for row in all_recent:
@@ -71,9 +71,22 @@ class Transcripts:
             if count(serialize(memory,recent+[row]))<=budget:recent.append(row)
         for row in self.engine.recall(branch,query,limit=1000000):
             if count(serialize(memory+[row],recent))<=budget:memory.append(row)
-        text=serialize(memory,recent)
-        state=json.dumps({'memory':self.engine.recall(branch,limit=1000000),'recent':all_recent},sort_keys=True)
-        return {'text':text,'records':memory,'recent':recent,'budget':budget,'cost':count(text),
+        # Generated text is not memory. Only complete, explicitly acknowledged
+        # segments enter resumed dialogue, after recent input and confirmed memory.
+        delivered=[]
+        if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='response_segments'").fetchone():
+            delivered=[dict(r) for r in self.db.execute('''SELECT s.reply,s.sequence,s.text,r.branch,r.epoch FROM response_segments s
+              JOIN replies r ON r.id=s.reply WHERE r.branch=?
+              AND EXISTS (SELECT 1 FROM output_chunks c WHERE c.reply=s.reply AND c.segment=s.sequence)
+              AND NOT EXISTS (SELECT 1 FROM output_chunks c WHERE c.reply=s.reply AND c.segment=s.sequence AND c.acknowledged<c.bytes)
+              AND EXISTS (SELECT 1 FROM stage_calls t WHERE t.id=s.reply||':tts:'||s.sequence AND t.state='completed')
+              ORDER BY s.rowid DESC LIMIT 64''',(branch,))]
+        responses=[]
+        for row in delivered:
+            if count(serialize(memory,recent,responses+[row]))<=budget:responses.append(row)
+        text=serialize(memory,recent,responses)
+        state=json.dumps({'memory':self.engine.recall(branch,limit=1000000),'recent':all_recent,'responses':delivered},sort_keys=True)
+        return {'text':text,'records':memory,'recent':recent,'responses':responses,'budget':budget,'cost':count(text),
                 'omitted_recent':len(all_recent)-len(recent),
                 'latest_event_omitted':bool(all_recent and (not recent or recent[0]['id']!=all_recent[0]['id'])),
                 'revision':hashlib.sha256(state.encode()).hexdigest(),'counter':'utf8_bytes' if default_counter else 'caller_supplied'}

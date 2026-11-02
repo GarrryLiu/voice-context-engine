@@ -86,6 +86,23 @@ class Pipeline:
         self.engine.drain()
         return {'inserted':inserted}
 
+    def correct(self,event_id,branch,session,key,value,expected_version):
+        if not all(isinstance(x,str) and x.strip() for x in (event_id,branch,session,key,value)) or not isinstance(expected_version,int) or expected_version<0:
+            raise ValueError('correction identity, text and expected version required')
+        payload=json.dumps({'key':key,'value':value,'confirmed':True,'provider':'user','kind':'correction'},sort_keys=True)
+        with self.engine.db:
+            self.engine.db.execute('BEGIN IMMEDIATE')
+            old=self.engine.db.execute('SELECT * FROM events WHERE id=?',(event_id,)).fetchone()
+            if old:
+                if (old['branch'],old['session'],old['payload'])!=(branch,session,payload):raise ValueError('correction id reused')
+                return {'inserted':0}
+            current=self.engine.db.execute('SELECT COALESCE(MAX(version),0) FROM memory WHERE branch=? AND key=?',(branch,key)).fetchone()[0]
+            pending=self.engine.db.execute('SELECT payload FROM events WHERE branch=? AND processed=0',(branch,)).fetchall()
+            if current!=expected_version or any(json.loads(p[0])['key']==key for p in pending):raise ValueError('memory version changed')
+            self.engine.db.execute('INSERT INTO events(id,branch,session,payload,processed) VALUES (?,?,?,?,1)',(event_id,branch,session,payload))
+            self.engine.db.execute('INSERT INTO memory VALUES (?,?,?,?,?)',(branch,key,current+1,value,event_id))
+        return {'inserted':1,'version':current+1}
+
     def dispatch(self, request):
         action=request['action']
         args={k:v for k,v in request.items() if k!='action'}
@@ -94,6 +111,7 @@ class Pipeline:
         if action=='session_submit': return self.sessions.submit(**args)
         if action=='playback_ack': return {'advanced':self.sessions.acknowledge(**args)}
         if action=='session_delivery': return self.sessions.delivery(**args)
+        if action=='reply_seal': return {'sealed':self.sessions.seal(**args)}
         if action=='reply_begin': return self.sessions.begin(**args)
         if action=='reply_check': return {'valid':self.sessions.valid(**args)}
         if action=='stage_reserve': return {'reserved':self.sessions.reserve(**args)}
@@ -104,6 +122,8 @@ class Pipeline:
             result=self.queue.get(**args)
             result.pop('lease_token',None)
             return result
+        if action=='correct': return self.correct(**args)
+        if action=='history': return self.engine.history(**args)
         if action=='approve': return self.approve(**args)
         if action=='context': return self.transcripts.context(**args)
         if action=='recent': return self.transcripts.recent(**args)

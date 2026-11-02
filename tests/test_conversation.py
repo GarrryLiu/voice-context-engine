@@ -107,3 +107,22 @@ class ConversationTests(unittest.TestCase):
         worker.join(1);data,n=self.c.render(256);played+=data[:n]
         self.assertFalse(errors);self.assertFalse(worker.is_alive())
         self.assertEqual(played,b'a'*200+b'b'*200)
+    def test_only_explicitly_acknowledged_segments_enter_resumed_context(self):
+        self.c.respond('r',Text(),TTS());self.c.render(256)
+        self.assertEqual(self.c.pipeline.transcripts.context('main')['responses'],[])
+        first=self.c.pipeline.sessions.delivery('s')[0]
+        self.c.pipeline.sessions.acknowledge('s','r',0,first['bytes'])
+        context=self.c.pipeline.transcripts.context('main')
+        self.assertEqual(context['responses'][0]['text'],'你好。')
+        self.assertEqual(self.c.pipeline.engine.recall('main'),[])
+    def test_output_caps_fail_closed_and_failed_provider_cost_is_retained(self):
+        self.c.max_text_bytes=2
+        with self.assertRaises(ValueError):self.c.respond('capped',Text(),TTS(),reason_cost=3)
+        self.assertEqual(self.c.pipeline.sessions.get('s')['spent'],3)
+        self.assertEqual(self.c.render(256),(bytes(256),0))
+        self.assertEqual(len(self.c.running),0)
+    def test_completed_provider_cannot_append_more_but_queued_audio_can_play(self):
+        result=self.c.respond('finished',Text(),TTS());ticket=result['ticket']
+        self.assertEqual(self.c.receive_audio(ticket,2,b'late'),0)
+        self.assertEqual(self.c.receive_text(ticket,'late!'),0)
+        data,n=self.c.render(256);self.assertEqual(data[:n],'你好。Done!'.encode())

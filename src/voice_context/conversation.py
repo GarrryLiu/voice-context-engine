@@ -4,6 +4,7 @@ import threading
 from collections import deque
 import time
 import hashlib
+import math
 from .gateway import Pipeline
 from .native import NativeRuntime
 from .sessions import StaleInteraction
@@ -26,17 +27,24 @@ class Conversation:
     STT provider: stream(audio_chunks, cancelled, request_id) -> Transcript events.
     A callback always rechecks durable ownership before native enqueue/render.
     """
-    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=False,audio_wait_seconds=.25):
+    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=True,audio_wait_seconds=.25,deadline_seconds=30,max_text_bytes=32000,max_audio_bytes=16777216):
+        if not math.isfinite(deadline_seconds) or deadline_seconds<=0 or not math.isfinite(audio_wait_seconds) or audio_wait_seconds<0 or min(max_text_bytes,max_audio_bytes)<1:raise ValueError('positive operation limits required')
+        self.deadline_seconds=deadline_seconds;self.max_text_bytes=max_text_bytes;self.max_audio_bytes=max_audio_bytes
         self.lock=threading.RLock();self.pipeline=Pipeline(path,check_same_thread=False)
-        existing=self.pipeline.engine.db.execute('SELECT branch FROM interaction_sessions WHERE id=?',(session,)).fetchone()
-        branch=branch or (existing['branch'] if existing else 'main')
-        if not self.pipeline.engine.db.execute('SELECT 1 FROM branches WHERE id=?',(branch,)).fetchone():
-            if branch!='main':raise ValueError('create branch before opening conversation')
-            self.pipeline.engine.fork(branch)
-        self.session=session;self.native=NativeRuntime(library,capacity=capacity,incremental=incremental)
-        self.cancelled={};self.running=set();self.metrics=deque(maxlen=2048);self.closed=False
-        self.space=threading.Condition(self.lock);self.audio_wait_seconds=audio_wait_seconds
-        state=self.pipeline.sessions.open(session,branch,budget);self.native.advance(state['epoch'])
+        self.native=None
+        try:
+            existing=self.pipeline.engine.db.execute('SELECT branch FROM interaction_sessions WHERE id=?',(session,)).fetchone()
+            branch=branch or (existing['branch'] if existing else 'main')
+            if not self.pipeline.engine.db.execute('SELECT 1 FROM branches WHERE id=?',(branch,)).fetchone():
+                if branch!='main':raise ValueError('create branch before opening conversation')
+                self.pipeline.engine.fork(branch)
+            self.session=session;self.native=NativeRuntime(library,capacity=capacity,incremental=incremental)
+            self.cancelled={};self.running=set();self.metrics=deque(maxlen=2048);self.closed=False
+            self.space=threading.Condition(self.lock);self.audio_wait_seconds=audio_wait_seconds
+            state=self.pipeline.sessions.open(session,branch,budget);self.native.advance(state['epoch'])
+        except Exception:
+            if self.native is not None:self.native.close()
+            self.pipeline.close();raise
 
     def close(self):
         with self.lock:
@@ -110,16 +118,20 @@ class Conversation:
             self.space.notify_all()
             return result
 
-    def _reserve(self,ticket,call_id,stage,cost):
+    def _reserve(self,ticket,call_id,stage,cost,provider='unspecified'):
         with self.lock:
             if not self._check(ticket):raise StaleInteraction('response cancelled')
-            return self.pipeline.sessions.reserve(ticket,call_id,stage,cost)
+            return self.pipeline.sessions.reserve(ticket,call_id,stage,cost,provider)
 
-    def _admit(self,ticket,call_id,stage,cost):
+    def _admit(self,ticket,call_id,stage,cost,provider):
         with self.lock:
             request=ticket['request_id']
             if request in self.running:return False
-            try:accepted=self._reserve(ticket,call_id,stage,cost)
+            old=self.pipeline.engine.db.execute('SELECT 1 FROM stage_calls WHERE id=?',(call_id,)).fetchone()
+            if old:
+                accepted=self.pipeline.sessions.reserve(ticket,call_id,stage,cost,provider)
+                self.cancelled.pop(request,None);return accepted
+            try:accepted=self._reserve(ticket,call_id,stage,cost,provider)
             except Exception:
                 self.cancelled.pop(request,None);raise
             if accepted:self.running.add(request)
@@ -151,10 +163,11 @@ class Conversation:
 
     def respond(self,request_id,text_provider,tts_provider,reason_cost=1,tts_cost=1,context_budget=4096):
         ticket=self.begin(request_id,context_budget);cancel=self.cancelled[ticket['request_id']]
-        reason_id=request_id+':reason';tick=time.perf_counter();audio_seq=0;first_audio=None
-        if not self._admit(ticket,reason_id,'reason',reason_cost):return {'status':'duplicate','ticket':ticket}
+        reason_id=request_id+':reason';tick=time.perf_counter();audio_seq=0;first_audio=None;audio_bytes=0;text_bytes=0
+        deadline=time.monotonic()+self.deadline_seconds
+        if not self._admit(ticket,reason_id,'reason',reason_cost,getattr(text_provider,'name',type(text_provider).__name__)):return {'status':'duplicate','ticket':ticket}
         def synthesize_segments():
-            nonlocal audio_seq,first_audio
+            nonlocal audio_seq,first_audio,audio_bytes
             while True:
                 with self.lock,self.pipeline.engine.db:
                     self.pipeline.engine.db.execute('BEGIN IMMEDIATE')
@@ -163,9 +176,12 @@ class Conversation:
                 if segment is None:return
                 with self.lock:self.pipeline.sessions.segment(ticket,segment['sequence'],segment['data'].decode('utf-8'))
                 call_id=request_id+':tts:'+str(segment['sequence']);started=time.perf_counter()
-                if not self._reserve(ticket,call_id,'tts',tts_cost):raise ValueError('segment already admitted')
+                if not self._reserve(ticket,call_id,'tts',tts_cost,getattr(tts_provider,'name',type(tts_provider).__name__)):raise ValueError('segment already admitted')
                 try:
                     for pcm in tts_provider.stream(segment['data'].decode('utf-8'),cancel,call_id):
+                        if time.monotonic()>deadline:raise TimeoutError('response deadline exceeded')
+                        audio_bytes+=len(pcm)
+                        if audio_bytes>self.max_audio_bytes:raise ValueError('response audio byte cap exceeded')
                         self._audio(ticket,audio_seq,pcm,segment['sequence']);audio_seq+=1
                         if first_audio is None:first_audio=time.perf_counter()-tick
                 except Exception:
@@ -180,8 +196,13 @@ class Conversation:
                 try:text=next(stream)
                 except StopIteration:break
                 finally:reason_active+=time.perf_counter()-active
+                if time.monotonic()>deadline:raise TimeoutError('response deadline exceeded')
+                text_bytes+=len(text.encode('utf-8') if isinstance(text,str) else text)
+                if text_bytes>self.max_text_bytes:raise ValueError('response text byte cap exceeded')
                 self._accepted(self.receive_text(ticket,text));synthesize_segments()
             self._accepted(self.receive_text(ticket,b'',finish=True));synthesize_segments()
+            with self.lock:
+                if not self.pipeline.sessions.seal(ticket):raise StaleInteraction('response ended after cancellation')
         except Exception:
             self._finish(reason_id,tick,True,elapsed=reason_active)
             # Do not allow buffered partial output of a failed response to play later.
@@ -191,16 +212,22 @@ class Conversation:
         else:self._finish(reason_id,tick,elapsed=reason_active)
         finally:
             with self.lock:
-                self.cancelled.pop(ticket['request_id'],None);self.running.discard(ticket['request_id'])
+                event=self.cancelled.pop(ticket['request_id'],None)
+                if event:event.set()
+                self.running.discard(ticket['request_id'])
         return {'status':'queued','ticket':ticket,'audio_chunks':audio_seq,
                 'first_audio_queued_seconds':first_audio,'total_seconds':time.perf_counter()-tick}
 
     def transcribe(self,transcript_id,provider,audio,cost=1):
         ticket=self.begin('capture:'+transcript_id);cancel=self.cancelled[ticket['request_id']]
         call_id='capture:'+transcript_id+':stt';tick=time.perf_counter()
-        if not self._admit(ticket,call_id,'stt',cost):return {'status':'duplicate'}
+        if not self._admit(ticket,call_id,'stt',cost,getattr(provider,'name',type(provider).__name__)):return {'status':'duplicate'}
+        deadline=time.monotonic()+self.deadline_seconds
         def bounded_audio():
+            total=0
             for sequence,pcm in enumerate(audio):
+                total+=len(pcm)
+                if total>self.max_audio_bytes or time.monotonic()>deadline:raise ValueError('capture input or duration cap exceeded')
                 with self.lock,self.pipeline.engine.db:
                     self.pipeline.engine.db.execute('BEGIN IMMEDIATE')
                     if not self._check(ticket):raise StaleInteraction('capture cancelled')
@@ -209,6 +236,7 @@ class Conversation:
                 yield frame['data']
         try:
             for event in provider.stream(bounded_audio(),cancel,call_id):
+                if time.monotonic()>deadline:raise TimeoutError('STT deadline exceeded')
                 if not isinstance(event,Transcript):raise ValueError('STT must return Transcript events')
                 if event.final:
                     with self.lock:
@@ -223,4 +251,6 @@ class Conversation:
             raise
         finally:
             with self.lock:
-                self.cancelled.pop(ticket['request_id'],None);self.running.discard(ticket['request_id'])
+                event=self.cancelled.pop(ticket['request_id'],None)
+                if event:event.set()
+                self.running.discard(ticket['request_id'])
