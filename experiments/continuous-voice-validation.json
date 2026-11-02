@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-11-02T18:05:24.356344+00:00",
+  "recorded_utc": "2026-11-02T18:09:53.154440+00:00",
   "protocol": "unittest discover; native C++; local PostgreSQL/Kafka/Redis; headless Chrome with synthetic microphone; fake providers except separate opt-in live experiment",
   "iterations": [
     {
@@ -19,9 +19,17 @@
       "failures": 0,
       "skips": 0,
       "seconds": 54.719
+    },
+    {
+      "tests": 121,
+      "passed": true,
+      "failures": 0,
+      "skips": 0,
+      "seconds": 59.366,
+      "note": "Adds suspended audio-context browser regression; newer local speech and acknowledged starts fence old final callbacks."
     }
   ],
-  "final_log_sha256": "bc2dc378f0d01723c227beaed5b4d84535b16ad7db67daef1ca232896d7e0914",
+  "final_log_sha256": "29260df6b1c1a338d74f2b467c442be9261e11b6561634c04018648b9eba308b",
   "source_hashes": {
     "src/voice_context/sessions.py": "c43307204c622f4b8070f58255e289e7dd18d3192d0fb752b15c1d2068c80f38",
     "src/voice_context/gateway.py": "7c12dc4be88bab4fba1366d173e9940685fb343873107eed08ea874b1ede568e",
@@ -45,12 +53,12 @@
     "src/voice_context/web/index.html": "2311c9557b9933147d1fa63bac1223070c8f5ca1dff791882f5a0465465420ec",
     "src/voice_context/web/style.css": "42ec41b682c65538145a89d128c2df3c4e3b03b6486ebb24b47ae23d70cb45e1",
     "src/voice_context/web/capture.js": "b01b9c0fec78e51366ec2c96c9b92ffd14e777b0f74bba084ee9e562b98997da",
-    "src/voice_context/web/live.js": "f1b1db938f09bccdc34b7be1de0fc05081b87cac606589fd74ded580bdb954dd",
-    "src/voice_context/web/app.js": "0d6259000f2e6d7a9fe896a125599a0f39ce1baf04d64c483608b4e067d979bc",
+    "src/voice_context/web/live.js": "4a679f9b4bdf7deee0c0208e3842022cc612047f5e7de5e003f77b6869cc1aa3",
+    "src/voice_context/web/app.js": "f8cc5f7d370d2eabd028f2e92db98156be002f3a1152fe9817742313e5add3ac",
     "tests/test_voice_server.py": "811959ce6b0d1d1b38b68c8cbcbcd5006ce958ad43d208a788fb5e38ea9694ab",
     "tests/test_voice_browser.py": "689c267855c5f935b05bfeaa7580583b8c3c9e0a6a0b4950ece978ffcc6fd053",
     "tests/test_voice_faults.py": "c51a7a84a0daee1aafc7aeab262af2ca374b55dcf9e16dc001d51a7633e7b68b",
     "tests/test_capture_worklet.py": "a5940bb32f0f6037e7343b3230ea147b6ab9890e4cc12f634b209b34d985fe5b",
-    "tests/test_realtime_stt.py": "c55c06eb6745d0b42e6411f82eacfe81b1eb41af69d248b878d18fe2bff5018d"
+    "tests/test_realtime_stt.py": "7d0091cfa2e5acf5e286cffad4c86d53807b7354122d0e1a2866a4317f4ae100"
   }
 }

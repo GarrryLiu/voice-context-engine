@@ -47,13 +47,13 @@ VAD 和重采样目前在浏览器 AudioWorklet，实时 STT 桥接在 Python；
 
 ## 验证与已知限制
 
-最终完整回归 **120 / 120 通过，无跳过**，含本地 PostgreSQL/Kafka/Redis、C++ 和浏览器。
+最终完整回归 **121 / 121 通过，无跳过**，含本地 PostgreSQL/Kafka/Redis、C++ 和浏览器。
 [迭代记录](../experiments/continuous-voice-validation.json) 保留中途失败：曾在 epoch abort 后
 提前结束读取，漏发 terminal error；已增加部分音频输出后报错的回归并修复。
 
 自动测试涵盖：16/24/44.1/48 kHz 输入重采样、静音不触发、长语音切段、主线程不回应
 时采集队列停止增长、WebSocket 鉴权与尺寸、已确认 final 立即可恢复、过时 final 不
-跨分支、重复 reply 不重复调模型、旧模型忽略取消时新请求完成、旧退出清理不影响新采集。
+跨分支、重复 reply 不重复调模型、旧模型忽略取消时新请求完成、旧退出清理不影响新采集，以及音频上下文恢复时旧回调不能再次调模型。
 无头 Chrome 用两段合成麦克风语音验证自动分句、开口停止旧播放与最终播放确认。
 这些测试的供应商均为 fake，不产生 API 费用。
 
