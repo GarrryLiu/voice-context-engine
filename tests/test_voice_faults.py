@@ -28,7 +28,7 @@ class VoiceFaultTests(unittest.TestCase):
         self.expect=expect;self.tmp=tempfile.TemporaryDirectory();self.root=Path(self.tmp.name)
         self.fixture=self.root/'fixture.wav'
         with wave.open(str(self.fixture),'wb') as f:f.setnchannels(1);f.setsampwidth(2);f.setframerate(24000);f.writeframes(bytes(24000))
-        self.mode='normal';self.entered=threading.Event();self.release=threading.Event()
+        self.case_recorded=False;self.mode='normal';self.entered=threading.Event();self.release=threading.Event()
         owner=self
         class STT:
             name='fault-stt'
@@ -65,6 +65,7 @@ class VoiceFaultTests(unittest.TestCase):
         self.sid=self.page.evaluate("()=>localStorage.getItem('voice-session')")
         self.c=self.service.session(self.sid)
     def tearDown(self):
+        if not self.case_recorded:self.results.append({'name':self._testMethodName,'passed':False})
         self.release.set()
         self.browser.close();self.pw.stop();self.server.should_exit=True;self.thread.join(12);self.tmp.cleanup()
     def upload(self,mode):
@@ -76,6 +77,7 @@ class VoiceFaultTests(unittest.TestCase):
             self.page.wait_for_timeout(20)
     def record(self,name,**data):
         self.assertEqual(self.errors,[])
+        self.case_recorded=True
         self.results.append({'name':name,'passed':True,**data})
     def stopped_phase(self,mode):
         self.upload(mode)
@@ -125,6 +127,7 @@ class VoiceFaultTests(unittest.TestCase):
         self.record('refresh_inflight_then_resume')
     def test_offline_request_recovers(self):
         self.context.set_offline(True);self.upload('normal')
+        self.expect(self.page.locator('#status')).to_contain_text('Failed to fetch',timeout=5000)
         self.expect(self.page.locator('#record')).to_be_enabled(timeout=5000)
         self.context.set_offline(False)
         self.upload('normal');self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=10000)
@@ -151,3 +154,35 @@ class VoiceFaultTests(unittest.TestCase):
         self.page.unroute('**/api/ack')
         self.upload('normal');self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=10000)
         self.record('failed_ack_not_claimed_as_played')
+
+    def test_delayed_old_ack_cannot_block_new_turn(self):
+        entered=threading.Event();release=threading.Event();old_epoch=[None]
+        original=self.service.acknowledge
+        def delayed(session,data):
+            if old_epoch[0] is None:old_epoch[0]=data['epoch']
+            if data['epoch']==old_epoch[0]:entered.set();release.wait(8)
+            return original(session,data)
+        self.service.acknowledge=delayed
+        self.upload('normal')
+        deadline=time.monotonic()+5
+        while not entered.is_set() or self.page.evaluate('()=>sources.size'):
+            if time.monotonic()>deadline:self.fail('audio/ACK wait not reached')
+            self.page.wait_for_timeout(20)
+        self.expect(self.page.locator('#record')).to_be_disabled()
+        self.assertEqual(self.c.pipeline.context(branch='main')['responses'],[])
+        self.page.click('#interrupt');self.idle()
+        self.upload('normal')
+        try:self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=5000)
+        finally:release.set()
+        self.page.wait_for_timeout(100)
+        self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说')
+        self.record('old_pending_ack_does_not_block_next_turn')
+
+    def test_slow_network_completes_without_false_ack(self):
+        cdp=self.context.new_cdp_session(self.page)
+        cdp.send('Network.enable')
+        cdp.send('Network.emulateNetworkConditions',{'offline':False,'latency':80,'downloadThroughput':16000,'uploadThroughput':16000})
+        self.upload('normal')
+        self.expect(self.page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=20000)
+        self.assertEqual(self.c.pipeline.context(branch='main')['responses'][0]['text'],'Test reply.')
+        self.record('slow_transport_16KBps_80ms')

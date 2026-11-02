@@ -71,5 +71,11 @@
   },
   "limitations": [
     "initial offline case did not assert the failed-fetch state; strengthened in final suite"
-  ]
+  ],
+  "additional_regression": {
+    "run": 1,
+    "failed": 1,
+    "name": "old_ack_isolation",
+    "reason": "an old ACK failure polluted the next turn status"
+  }
 }
