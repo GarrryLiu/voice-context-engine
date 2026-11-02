@@ -31,7 +31,9 @@ async function play(event,turnGeneration,started){
 }
 async function send(blob,reply=null){
  if(busy)return;
- await audioContext();clearPlayback();const current=generation,started=performance.now();receivedDone=false;failed=false;ackFailed=false;setBusy(true);
+ const before=generation;await audioContext();
+ if(before!==generation||busy||(reply&&reply.epoch!==epoch))return;
+ clearPlayback();const current=generation,started=performance.now();receivedDone=false;failed=false;ackFailed=false;setBusy(true);
  $('transcript').textContent='';$('answer').textContent='';for(const id of ['stt','first','total'])$(id).textContent='—';status(reply?'正在思考…':'正在上传录音…');
  if(reply)$('transcript').textContent='已确认发言，正在生成回复…';
  controller=new AbortController();

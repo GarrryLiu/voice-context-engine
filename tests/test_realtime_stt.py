@@ -86,6 +86,13 @@ class LiveTests(unittest.TestCase):
 
     @unittest.skipUnless(os.environ.get('VOICE_BROWSER_TEST'),'opt-in fake microphone browser')
     def test_continuous_fake_microphone_and_automatic_barge_in(self):
+        self.run_browser_capture(False)
+
+    @unittest.skipUnless(os.environ.get('VOICE_BROWSER_TEST'),'opt-in fake microphone browser')
+    def test_suspended_audio_context_does_not_dispatch_old_final_after_new_speech(self):
+        self.run_browser_capture(True)
+
+    def run_browser_capture(self,delay_resume):
         import math,socket,struct,threading,time,wave
         import uvicorn
         from playwright.sync_api import sync_playwright,expect
@@ -93,7 +100,7 @@ class LiveTests(unittest.TestCase):
         with wave.open(str(fixture),'wb') as f:
             f.setnchannels(1);f.setsampwidth(2);f.setframerate(48000)
             data=[]
-            for i in range(48000*6):
+            for i in range(48000*12):
                 seconds=i/48000
                 voiced=.2<=seconds<.9 or 1.9<=seconds<2.6
                 data.append(struct.pack('<h',int(10000*math.sin(2*math.pi*220*seconds)) if voiced else 0))
@@ -116,12 +123,22 @@ class LiveTests(unittest.TestCase):
                     page.add_init_script("""window.playbackStops=0;const originalStop=AudioBufferSourceNode.prototype.stop;
                         AudioBufferSourceNode.prototype.stop=function(...args){window.playbackStops++;return originalStop.apply(this,args);};""")
                     page.goto('http://127.0.0.1:'+str(port));expect(page.locator('#record')).to_be_enabled()
+                    requests=[];page.on('request',lambda request:requests.append(request.url) if request.url.endswith('/api/reply') else None)
+                    if delay_resume:
+                        page.evaluate('''()=>{const original=audioContext;let delayed=false;audioContext=async()=>{const ctx=await original();if(liveReady&&!delayed){delayed=true;await new Promise(resolve=>window.releaseContext=resolve);}return ctx;};}''')
                     page.click('#live');expect(page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=15000)
-                    self.assertGreaterEqual(page.evaluate('()=>window.playbackStops'),1)
+                    if delay_resume:
+                        self.assertEqual(len(requests),1)
+                        page.evaluate('()=>window.releaseContext()');page.wait_for_timeout(200)
+                        self.assertEqual(len(requests),1)
+                    else:self.assertGreaterEqual(page.evaluate('()=>window.playbackStops'),1)
                     sid=page.evaluate("()=>localStorage.getItem('voice-session')")
                     state=self.service.state(sid)
                     self.assertGreaterEqual(len(state['recent']),2);self.assertTrue(state['responses'])
                     expect(page.locator('#record')).to_be_disabled()
+                    requests=[];page.on('request',lambda request:requests.append(request.url) if request.url.endswith('/api/reply') else None)
+                    if delay_resume:
+                        page.evaluate('''()=>{const original=audioContext;let delayed=false;audioContext=async()=>{const ctx=await original();if(liveReady&&!delayed){delayed=true;await new Promise(resolve=>window.releaseContext=resolve);}return ctx;};}''')
                     page.click('#live');expect(page.locator('#status')).to_have_text('连续对话已结束')
                     expect(page.locator('#record')).to_be_enabled();self.assertEqual(errors,[])
                 finally:browser.close()

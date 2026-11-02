@@ -16,6 +16,7 @@ $('live').onclick=async()=>{
  liveStarting=true;liveClosed=false;liveButtons();status('正在连接实时转写…');
  try{
   const ctx=await audioContext();await ctx.audioWorklet.addModule('/capture.js');
+  let startsSent=0,startsAcknowledged=0,speechEpoch=null;
   const socket=new WebSocket(location.origin.replace(/^http/,'ws')+'/api/live');liveSocket=socket;
   const timeout=setTimeout(()=>{if(!liveReady&&liveSocket===socket)endLive('实时转写连接超时，请重试');},15000);
   socket.onopen=()=>socket.send(JSON.stringify({token,session}));
@@ -37,6 +38,7 @@ $('live').onclick=async()=>{
       const frame=event.data;
       if(frame.type==='overflow'){endLive('采集积压，已停止麦克风，请重试');return;}
       if(frame.type==='start'){
+       startsSent++;
        // Stop local playback before any server/network acknowledgement.
        clearPlayback();if(controller)controller.abort();controller=null;setBusy(false);
        $('transcript').textContent='';$('answer').textContent='';status('正在听…');
@@ -46,9 +48,9 @@ $('live').onclick=async()=>{
      };
      liveSource.connect(liveNode);liveNode.connect(ctx.destination);status('连续对话中，可以开始说话');liveButtons();
     }
-    if(e.type==='speech_started')epoch=e.epoch;
-    if(e.type==='partial'&&e.epoch===epoch)$('transcript').textContent+=e.text;
-    if(e.type==='transcript'){
+    if(e.type==='speech_started'){startsAcknowledged++;speechEpoch=e.epoch;epoch=e.epoch;}
+    if(e.type==='partial'&&startsAcknowledged===startsSent&&e.epoch===speechEpoch)$('transcript').textContent+=e.text;
+    if(e.type==='transcript'&&startsAcknowledged===startsSent&&e.epoch===speechEpoch+1){
      epoch=e.epoch;$('transcript').textContent=e.text;
      await send(null,{transcript_id:e.transcript_id,epoch:e.epoch});liveButtons();
     }
