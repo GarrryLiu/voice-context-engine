@@ -82,7 +82,8 @@ class Sessions:
                 if state['epoch']!=epoch:raise StaleInteraction('stale STT final')
                 accepted=self.pipeline.transcripts.append_in_transaction(transcript_id,state['branch'],session,text,complex)
                 state=self._advance(session)
-        self.pipeline.transcripts.publish(self.pipeline.queue)
+        if self.pipeline.publish_on_submit:
+            self.pipeline.transcripts.publish(self.pipeline.queue)
         return {'accepted':accepted,'task_id':'transcript:'+transcript_id,'session':state}
 
     def begin(self,session,request_id=None,budget=4096,count=None):

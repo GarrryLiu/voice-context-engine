@@ -12,10 +12,11 @@ from .sessions import Sessions
 
 
 class Pipeline:
-    def __init__(self, path, router=None, check_same_thread=True):
+    def __init__(self, path, router=None, check_same_thread=True, publish_on_submit=True):
         self.engine = Engine(path,check_same_thread=check_same_thread)
         self.queue = TaskQueue(path,check_same_thread=check_same_thread)
         self.router = router or ExtractionRouter()
+        self.publish_on_submit = publish_on_submit
         self.transcripts = Transcripts(self.engine)
         self.sessions = Sessions(self)
 
@@ -34,7 +35,8 @@ class Pipeline:
             raise ValueError('unknown branch')
         task_id = 'transcript:' + transcript_id
         accepted = self.transcripts.append(transcript_id,branch,session,text,complex)
-        self.transcripts.publish(self.queue)
+        if self.publish_on_submit:
+            self.transcripts.publish(self.queue)
         return {'accepted':accepted,'task_id':task_id}
 
     def work_once(self):
