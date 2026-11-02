@@ -1,0 +1,215 @@
+{
+  "protocol": "fixed macOS-synthesized recording -> real STT/LLM/TTS -> C++ queues -> HTTP PCM; no hardware playback or ACK",
+  "fixture_sha256": "860016388607b61ebdea256cf18577331f4afcff246c71da7f9958bb5e51f61b",
+  "fixture_bytes": 284986,
+  "checks": {
+    "final_transcript": true,
+    "codename_transcribed": true,
+    "codename_answered": true,
+    "nonempty_pcm": true,
+    "terminal_done": true,
+    "no_error": true
+  },
+  "passed": true,
+  "transcript": "The project codename is Cedar. What is the project codename? Please reply in one short sentence.",
+  "answer": "The project codename is Cedar.",
+  "audio_pcm_bytes": 170400,
+  "audio_seconds": 3.55,
+  "first_http_audio_seconds": 4.231075125047937,
+  "total_seconds": 4.661856875056401,
+  "events": [
+    {
+      "type": "status",
+      "text": "正在转写"
+    },
+    {
+      "type": "partial",
+      "text": "The"
+    },
+    {
+      "type": "partial",
+      "text": " project"
+    },
+    {
+      "type": "partial",
+      "text": " cod"
+    },
+    {
+      "type": "partial",
+      "text": "ename"
+    },
+    {
+      "type": "partial",
+      "text": " is"
+    },
+    {
+      "type": "partial",
+      "text": " Cedar"
+    },
+    {
+      "type": "partial",
+      "text": "."
+    },
+    {
+      "type": "partial",
+      "text": " What"
+    },
+    {
+      "type": "partial",
+      "text": " is"
+    },
+    {
+      "type": "partial",
+      "text": " the"
+    },
+    {
+      "type": "partial",
+      "text": " project"
+    },
+    {
+      "type": "partial",
+      "text": " cod"
+    },
+    {
+      "type": "partial",
+      "text": "ename"
+    },
+    {
+      "type": "partial",
+      "text": "?"
+    },
+    {
+      "type": "partial",
+      "text": " Please"
+    },
+    {
+      "type": "partial",
+      "text": " reply"
+    },
+    {
+      "type": "partial",
+      "text": " in"
+    },
+    {
+      "type": "partial",
+      "text": " one"
+    },
+    {
+      "type": "partial",
+      "text": " short"
+    },
+    {
+      "type": "partial",
+      "text": " sentence"
+    },
+    {
+      "type": "partial",
+      "text": "."
+    },
+    {
+      "type": "transcript",
+      "text": "The project codename is Cedar. What is the project codename? Please reply in one short sentence.",
+      "stt_seconds": 1.024782083928585
+    },
+    {
+      "type": "reply",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "text",
+      "text": "The",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "text",
+      "text": " project",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "text",
+      "text": " cod",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "text",
+      "text": "ename",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "text",
+      "text": " is",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "text",
+      "text": " Cedar",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "text",
+      "text": ".",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "generated",
+      "total_seconds": 4.593163458164781,
+      "metrics": {
+        "call_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074:reason",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_04605361af4eab80016ae81e76525c87d198a394afac073bb1",
+        "usage": {
+          "input_tokens": 225,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 11,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 236
+        },
+        "first_delta_seconds": 1.4648293340578675,
+        "elapsed_seconds": 3.2569508340675384,
+        "error_code": null
+      },
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4
+    },
+    {
+      "type": "done",
+      "request_id": "voice-8bc5b4ed27de48b4a5e8a930bf3a0074",
+      "epoch": 4,
+      "server_seconds": 4.596809250069782
+    }
+  ],
+  "source_hashes": {
+    "src/voice_context/sessions.py": "c43307204c622f4b8070f58255e289e7dd18d3192d0fb752b15c1d2068c80f38",
+    "src/voice_context/gateway.py": "7c12dc4be88bab4fba1366d173e9940685fb343873107eed08ea874b1ede568e",
+    "src/voice_context/tasks.py": "a0e93e96c90495482684ec52046cadd365b2ffc5e255dad3a7097ad7480928e9",
+    "src/voice_context/models.py": "9c6b9211127944c6f059b554fddea81063e4ec2f23330d0c051179641000fbb8",
+    "src/voice_context/transcripts.py": "ad4d98b03346280be5623e68ba50c5ca30f239a774d7feda55630cee615798ca",
+    "src/voice_context/conversation.py": "93a5d4d09599f9ccdcbf5617fc94a0a0dc5173fb883b18fb889ba1533db69005",
+    "src/voice_context/cache.py": "9287cf5118a0858e10c27aaf35b2095ae5477bdfd0c72d9ddcfffec994c10b93",
+    "src/voice_context/__init__.py": "5732eeaaaa9d425ba06f97712b2e24576dce36ae8662fc08d5fa9acd13655158",
+    "src/voice_context/native.py": "725488f63cd5e9473f6f85004590b2232ad78d6723ec16823cb999690bea21fa",
+    "src/voice_context/openai_provider.py": "393d7f8389695871cf702efa8dee96ab21bec0e14bbefeb0e43a7b4fde1c95ca",
+    "src/voice_context/providers.py": "c01dd147134174374884841b7e343ccf1be9fa3d67b2ecfafa1569886e4003bb",
+    "src/voice_context/engine.py": "f5289a867a991abc863d1d91f12ce82b4f5ab95675f05c3cab93f7abfb16b7d7",
+    "src/voice_context/voice_server.py": "d4b4e9ed056da9ac40b162532b80503639aa92729903a81097307e57943ed812",
+    "src/voice_context/audio_providers.py": "9cf99e26b13828f2cb8ad0eff51bb657cf6d666fe5caf47259522fc81c661aa7",
+    "src/voice_context/routing.py": "78b411031e8d00fb44e9928215cd8575bd6a1fe8dba220340344561a112461ae",
+    "src/voice_context/storage.py": "d5199193ff23d0bd89a33b2aa5e2d59d4d5da607dceb5254be1f8163642df85e",
+    "src/voice_context/broker.py": "21e59f502d8373e48e056621428cd39114c8c9b016b16fd1ba8490bef5afba7b",
+    "src/voice_context/__main__.py": "b39e560eafdf161b1c4a737a765ea903c74e733ef000a7beb708493145e4dca7"
+  }
+}

@@ -39,7 +39,8 @@ class VoiceService:
             state=c.pipeline.sessions.get(session)
             branches=[dict(r) for r in c.pipeline.engine.db.execute('SELECT id,parent FROM branches ORDER BY id').fetchall()]
             return {'session':session,'branch':state['branch'],'epoch':state['epoch'],'branches':branches,
-                    'recent':c.pipeline.transcripts.recent(state['branch'],limit=10)}
+                    'recent':c.pipeline.transcripts.recent(state['branch'],limit=10),
+                    'responses':c.pipeline.context(branch=state['branch'],budget=12000)['responses']}
     def controls(self,session,action,branch=None):
         c=self.session(session)
         if action=='fork':
