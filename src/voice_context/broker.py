@@ -6,6 +6,7 @@ canonical immutable task payloads; duplicate records cannot cause duplicate task
 import argparse
 import json
 import os
+import sys
 import time
 from .gateway import Pipeline
 
@@ -80,23 +81,30 @@ def main():
                 if error.args[0].code() != KafkaError.TOPIC_ALREADY_EXISTS:raise
         return
     if not args.db:parser.error('--db or VOICE_DATABASE_URL required')
-    pipeline = Pipeline(args.db, publish_on_submit=False)
-    relay = KafkaRelay(args.bootstrap, args.topic) if args.role == 'relay' else None
-    intake = KafkaIntake(args.bootstrap, args.group, args.topic) if args.role == 'worker' else None
-    try:
-        while True:
-            if relay:relay.publish(pipeline)
-            else:
-                intake.once(pipeline)
-                # Do not call Pipeline.work_once(): it publishes directly to local
-                # tasks and would bypass Kafka. Durable lease retries run independently.
-                pipeline.queue.run_once(lambda task: pipeline.router.extract(
-                    task['payload']['text'], complex=task['payload']['complex']))
-            if args.once:break
-            if relay:time.sleep(.1)
-    finally:
-        if intake:intake.close()
-        pipeline.close()
+    while True:
+        pipeline = intake = None
+        try:
+            pipeline = Pipeline(args.db, publish_on_submit=False)
+            relay = KafkaRelay(args.bootstrap, args.topic) if args.role == 'relay' else None
+            intake = KafkaIntake(args.bootstrap, args.group, args.topic) if args.role == 'worker' else None
+            while True:
+                if relay:relay.publish(pipeline)
+                else:
+                    intake.once(pipeline)
+                    # Leased database tasks survive offset commits and process restarts.
+                    # Do not use work_once(), which bypasses Kafka with local publication.
+                    pipeline.queue.run_once(lambda task: pipeline.router.extract(
+                        task['payload']['text'], complex=task['payload']['complex']))
+                if args.once:return
+                if relay:time.sleep(.1)
+        except Exception as error:
+            if args.once:raise
+            # No DSNs, transcript text or provider errors in process logs.
+            print(json.dumps({'role':args.role,'state':'retrying','error':type(error).__name__}), file=sys.stderr, flush=True)
+        finally:
+            if intake:intake.close()
+            if pipeline:pipeline.close()
+        time.sleep(1)
 
 
 if __name__ == '__main__':main()

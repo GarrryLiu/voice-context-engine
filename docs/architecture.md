@@ -24,7 +24,13 @@ then ranks by keyword overlap. It is not semantic retrieval. Chinese matching us
 whole records and provenance but may omit important records; it is not a learned
 summary. The word budget does not equal a model token budget.
 
-## Production adapters to implement
+## Real service adapters and remaining production work
+
+PostgreSQL storage, Kafka outbox relay/durable intake and revision-keyed Redis
+cache are now implemented and exercised against real local services. See
+[infrastructure](infrastructure.md) for setup, fault semantics and measured limits.
+The following list describes the production target, including unfinished HA,
+tenancy, schema migration and dead-letter handling.
 
 1. Realtime gateway: audio transport, cancellation, barge-in, backpressure and
    transcript finalization. Partial transcripts must not overwrite durable facts.

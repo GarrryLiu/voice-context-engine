@@ -1,19 +1,21 @@
 # Voice Context Engine
 
 A runnable local foundation for preserving decisions, topic branches and context
-across conversations. SQLite stores event history, versioned memory and leased
+across conversations. SQLite or PostgreSQL stores event history, versioned memory and leased
 background tasks. A JSON-lines gateway accepts finalized transcript text.
 
 **Status:** runnable local reference with versioned SQLite memory, branch-aware
 final transcript context, a recoverable outbox, durable session epochs, staged
 provider interfaces and an opt-in C++ audio/text queue core. The scripted demo
 uses synthetic byte payloads, not real speech. No microphone/speaker transport,
-Kafka/PostgreSQL/Redis adapters, embeddings, web UI or deployed server yet.
+embeddings, web UI or deployed server yet. Optional PostgreSQL, Kafka relay/worker
+and revision-fenced Redis context cache now run against real local services.
 Live model quality, actual speech latency and billed-cost savings are unmeasured.
 
 ## Quick start
 
-Requires Python 3.11+; runtime has no third-party dependencies.
+Requires Python 3.11+; SQLite reference mode has no third-party dependencies.
+For the real service stack, see [infrastructure setup and failure semantics](docs/infrastructure.md).
 
 ```sh
 PYTHONPATH=src python3 -m unittest discover -s tests -v

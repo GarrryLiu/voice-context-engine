@@ -6,6 +6,7 @@ baseline, not a horizontally scalable locking strategy.
 """
 import re
 import sqlite3
+import sys
 
 
 class Record(dict):
@@ -26,13 +27,20 @@ class Postgres:
         self.raw = psycopg.connect(dsn, autocommit=True, row_factory=record_factory,
                                    connect_timeout=5)
         self.transaction = None
+        self.raw.execute("SET lock_timeout = '5s'")
+        self.raw.execute("SET statement_timeout = '10s'")
 
     def __enter__(self):
         if self.transaction is not None:
             raise RuntimeError('nested database contexts are not supported')
         self.transaction = self.raw.transaction()
         self.transaction.__enter__()
-        self.raw.execute('SELECT pg_advisory_xact_lock(782347112)')
+        try:
+            self.raw.execute('SELECT pg_advisory_xact_lock(782347112)')
+        except BaseException:
+            tx, self.transaction = self.transaction, None
+            tx.__exit__(*sys.exc_info())
+            raise
         return self
 
     def __exit__(self, *args):
@@ -90,3 +98,12 @@ def columns(db, table):
     if table != 'stage_calls':
         raise ValueError('unsupported schema inspection')
     return {r['name'] for r in db.execute('PRAGMA table_info(stage_calls)')}
+
+
+def database_errors():
+    errors = (sqlite3.Error,)
+    try:
+        import psycopg
+    except ImportError:
+        return errors
+    return errors + (psycopg.Error,)

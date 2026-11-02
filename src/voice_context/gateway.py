@@ -4,7 +4,7 @@ import hashlib
 import json
 import sys
 import os
-import sqlite3
+from .storage import database_errors, Postgres
 from .engine import Engine
 from .models import ExtractionRouter, OllamaExtractor
 from .tasks import TaskQueue
@@ -15,25 +15,33 @@ from .sessions import Sessions
 class Pipeline:
     def __init__(self, path, router=None, check_same_thread=True, publish_on_submit=True, redis_url=None):
         self.engine = Engine(path,check_same_thread=check_same_thread)
-        self.queue = TaskQueue(path,check_same_thread=check_same_thread)
-        self.router = router or ExtractionRouter()
-        self.publish_on_submit = publish_on_submit
-        self.transcripts = Transcripts(self.engine)
-        self.sessions = Sessions(self)
-        self.context_cache = None
-        if redis_url:
-            from .cache import ContextCache, install_revision
-            install_revision(self.engine.db)
-            self.context_cache = ContextCache(redis_url)
+        self.queue = self.context_cache = None
+        try:
+            self.queue = TaskQueue(path,check_same_thread=check_same_thread)
+            self.router = router or ExtractionRouter()
+            self.publish_on_submit = publish_on_submit
+            self.transcripts = Transcripts(self.engine)
+            self.sessions = Sessions(self)
+            self.context_cache = None
+            if redis_url:
+                from .cache import ContextCache, install_revision
+                install_revision(self.engine.db)
+                self.context_cache = ContextCache(redis_url)
+        except BaseException:
+            self.close()
+            raise
 
     def context(self, **args):
         if self.context_cache:
             return self.context_cache.context(self.transcripts, **args)
+        db = self.engine.db
+        if isinstance(db, Postgres) and db.transaction is None:
+            with db:return self.transcripts.context(**args)
         return self.transcripts.context(**args)
 
     def close(self):
         if self.context_cache:self.context_cache.close()
-        self.queue.close()
+        if self.queue:self.queue.close()
         self.engine.close()
 
     def submit(self, transcript_id, branch, session, text, final=True, complex=False):
@@ -176,6 +184,7 @@ def main():
                 tiers.append(Tier(label,OllamaExtractor(model,timeout=min(30,args.route_deadline)),cost))
         router=CascadeRouter(tiers,max_cost_units=args.route_cost_units,
                              deadline_seconds=args.route_deadline,audit=AuditLog(args.db))
+    handled_errors=(ValueError,KeyError,TypeError)+database_errors()
     pipeline=Pipeline(args.db,router,publish_on_submit=not args.async_dispatch,redis_url=args.redis_url)
     if not pipeline.engine.db.execute("SELECT 1 FROM branches WHERE id='main'").fetchone():
         pipeline.engine.fork('main')
@@ -184,7 +193,7 @@ def main():
             try:
                 if len(line)>65536: raise ValueError('request too large')
                 response={'ok':True,'result':pipeline.dispatch(json.loads(line))}
-            except (ValueError,KeyError,TypeError,sqlite3.Error) as exc:
+            except handled_errors as exc:
                 response={'ok':False,'error':type(exc).__name__}
             print(json.dumps(response,ensure_ascii=False),flush=True)
     finally:
