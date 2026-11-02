@@ -48,6 +48,7 @@ jobs:
       VOICE_TEST_REDIS: redis://127.0.0.1:56379/0
       VOICE_BROWSER_TEST: "1"
       VOICE_SCREENSHOT: /tmp/voice-browser.png
+      VOICE_FAULT_RESULTS: /tmp/voice-fault-results.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -75,6 +76,7 @@ jobs:
           path: |
             /tmp/infrastructure-results.json
             /tmp/voice-browser.png
+            /tmp/voice-fault-results.json
       - run: docker compose logs --tail=80
         if: failure()
       - run: docker compose down

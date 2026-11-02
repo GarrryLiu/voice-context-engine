@@ -4,13 +4,13 @@ const token=document.querySelector('meta[name=voice-token]').content;
 let session=localStorage.getItem('voice-session');
 if(!session){session=crypto.randomUUID();localStorage.setItem('voice-session',session);}
 const headers={'X-Voice-Token':token,'X-Voice-Session':session};
-let recorder=null,tracks=null,timer=null,controller=null,context=null,sources=new Set(),cursor=0,generation=0,epoch=0,busy=false,receivedDone=false,failed=false,acks=0,ackFailed=false,starting=false;
-async function api(path,data){const r=await fetch(path,{headers:{...headers,'Content-Type':'application/json'},method:data?'POST':'GET',body:data?JSON.stringify(data):undefined});if(!r.ok)throw Error('服务请求失败 ('+r.status+')');return r.json();}
+let recorder=null,tracks=null,timer=null,controller=null,context=null,sources=new Set(),cursor=0,generation=0,epoch=0,busy=false,receivedDone=false,failed=false,acks=0,ackFailed=false,starting=false,switching=false,ackController=new AbortController();
+async function api(path,data,options={}){const r=await fetch(path,{headers:{...headers,'Content-Type':'application/json'},method:data?'POST':'GET',body:data?JSON.stringify(data):undefined,signal:options.signal});if(!r.ok)throw Error('服务请求失败 ('+r.status+')');return r.json();}
 function status(s){$('status').textContent=s;}
-function buttons(){const recording=recorder&&recorder.state==='recording';$('record').disabled=busy||starting||!!recording;$('stop').disabled=!recording;$('file').disabled=busy||!!recording;$('fork').disabled=busy||!!recording;$('branch').disabled=busy||!!recording;$('interrupt').disabled=!busy&&!sources.size;}
+function buttons(){const recording=recorder&&recorder.state==='recording';$('record').disabled=busy||starting||switching||!!recording;$('stop').disabled=!recording;$('file').disabled=busy||switching||!!recording;$('fork').disabled=busy||switching||!!recording;$('branch').disabled=switching||starting||!!recording;$('interrupt').disabled=!busy&&!sources.size;}
 function setBusy(value){busy=value;buttons();}
 async function audioContext(){if(!context)context=new AudioContext({sampleRate:24000});await context.resume();return context;}
-function clearPlayback(){generation++;for(const source of sources){source.onended=null;try{source.stop();}catch{}}sources.clear();cursor=context?context.currentTime:0;}
+function clearPlayback(){generation++;acks=0;ackController.abort();ackController=new AbortController();for(const source of sources){source.onended=null;try{source.stop();}catch{}}sources.clear();cursor=context?context.currentTime:0;}
 async function stopAll(){clearPlayback();if(controller)controller.abort();controller=null;try{const state=await api('/api/control',{action:'interrupt'});epoch=state.epoch;}catch{}setBusy(false);status('已停止');}
 function finishIfReady(){if(receivedDone&&!sources.size&&!acks){setBusy(false);status(failed?'本轮未完成，可重新录音':ackFailed?'播放确认失败，恢复上下文可能缺少回复':'回复结束，可以继续说');}}
 async function play(event,turnGeneration,started){
@@ -24,7 +24,7 @@ async function play(event,turnGeneration,started){
  const buffer=ctx.createBuffer(1,binary.length/2,event.sample_rate),samples=buffer.getChannelData(0);
  for(let i=0;i<samples.length;i++)samples[i]=view.getInt16(i*2,true)/32768;
  const node=ctx.createBufferSource();node.buffer=buffer;node.connect(ctx.destination);sources.add(node);
- node.onended=()=>{sources.delete(node);node.disconnect();if(turnGeneration===generation&&event.epoch===epoch){acks++;api('/api/ack',{epoch,request_id:event.request_id,sequence:event.sequence,offset:event.offset}).catch(()=>{ackFailed=true;}).finally(()=>{acks--;if(turnGeneration===generation)finishIfReady();});}};
+ node.onended=()=>{sources.delete(node);node.disconnect();if(turnGeneration===generation&&event.epoch===epoch){acks++;api('/api/ack',{epoch,request_id:event.request_id,sequence:event.sequence,offset:event.offset},{signal:ackController.signal}).catch(()=>{if(turnGeneration===generation)ackFailed=true;}).finally(()=>{if(turnGeneration===generation){acks--;finishIfReady();}});}};
  const when=Math.max(ctx.currentTime+.03,cursor);node.start(when);cursor=when+buffer.duration;
  if($('first').textContent==='—')$('first').textContent=((performance.now()-started)/1000).toFixed(2)+'s';
  status('正在播放');buttons();
@@ -59,7 +59,7 @@ $('record').onclick=async()=>{if(busy||starting)return;starting=true;buttons();t
 $('stop').onclick=()=>{if(recorder&&recorder.state==='recording')recorder.stop();};
 $('interrupt').onclick=stopAll;
 $('file').onchange=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;if(file.size>2*1024*1024){status('录音需小于 2MB');return;}try{await send(file);}catch(error){status(error.message);}};
-$('branch').onchange=async()=>{try{clearPlayback();const s=await api('/api/control',{action:'switch',branch:$('branch').value});epoch=s.epoch;$('answer').textContent='';await refresh();}catch(e){status(e.message);}};
+$('branch').onchange=async()=>{if(switching)return;const branch=$('branch').value;switching=true;buttons();try{await stopAll();const s=await api('/api/control',{action:'switch',branch});epoch=s.epoch;$('answer').textContent='';await refresh();status('已切换到 '+branch);}catch(e){status(e.message);}finally{switching=false;buttons();}};
 $('fork').onclick=async()=>{const branch=prompt('新分支名称（字母、数字、短横线）');if(!branch)return;try{await api('/api/control',{action:'fork',branch});await api('/api/control',{action:'switch',branch});await refresh();}catch(e){status(e.message);}};
 window.addEventListener('pagehide',()=>{if(tracks)tracks.getTracks().forEach(t=>t.stop());clearPlayback();if(controller)controller.abort();});
 refresh().catch(e=>{status(e.message);$('connection').textContent='连接失败';});

@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright,expect
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('fixture');p.add_argument('--url',default='http://127.0.0.1:8765')
-    p.add_argument('--output',default='experiments/voice-browser-results.json');p.add_argument('--screenshot',default='/tmp/voice-browser.png')
+    p.add_argument('--expected',default='cedar');p.add_argument('--output',default='experiments/voice-browser-results.json');p.add_argument('--screenshot',default='/tmp/voice-browser.png')
     args=p.parse_args();errors=[]
     with sync_playwright() as pw:
         options={'headless':True,'args':['--autoplay-policy=no-user-gesture-required']}
@@ -31,7 +31,7 @@ def main():
           const r=await fetch('/api/state',{headers});return r.json();
         }''')
         result={'protocol':'fixed recording upload in headless Chrome; real STT/LLM/TTS; WebAudio ended ACK, not physical speaker measurement',
-                'passed':'cedar' in transcript.lower() and 'cedar' in answer.lower() and any('cedar' in x['text'].lower() for x in acknowledged.get('responses',[])) and not errors,
+                'passed':args.expected.lower() in transcript.lower() and args.expected.lower() in answer.lower() and any(args.expected.lower() in x['text'].lower() for x in acknowledged.get('responses',[])) and not errors,
                 'acknowledged_response_segments':len(acknowledged.get('responses',[])),
                 'transcript':transcript,'answer':answer,'ui_metrics':metrics,'total_through_browser_ended_seconds':elapsed,
                 'browser_errors':errors,'state_epoch':acknowledged['epoch'],
