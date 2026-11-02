@@ -22,19 +22,23 @@ class Transcripts:
     def append(self, transcript_id, branch, session, text, complex=False):
         with self.db:
             self.db.execute('BEGIN IMMEDIATE')
-            old = self.db.execute('SELECT * FROM transcripts WHERE id=?', (transcript_id,)).fetchone()
-            if old:
-                if (old['branch'],old['session'],old['text'],old['complex']) != (branch,session,text,complex):
-                    raise ValueError('transcript id reused with different content')
-                return False
-            versions = {r['key']:r['version'] for r in self.engine.recall(branch,limit=1000000)}
-            payload = {'transcript_id':transcript_id,'branch':branch,'session':session,
-                       'text':text,'complex':complex,'expected_versions':versions}
-            self.db.execute('INSERT INTO transcripts(id,branch,session,text,complex) VALUES (?,?,?,?,?)',
-                            (transcript_id,branch,session,text,complex))
-            self.db.execute('INSERT INTO transcript_visibility VALUES (?,?)',(branch,transcript_id))
-            self.db.execute('INSERT INTO transcript_outbox VALUES (?,?,0)',
-                            ('transcript:'+transcript_id,json.dumps(payload,sort_keys=True)))
+            return self.append_in_transaction(transcript_id,branch,session,text,complex)
+
+    def append_in_transaction(self, transcript_id, branch, session, text, complex=False):
+        """Caller owns an IMMEDIATE transaction; used by atomic session submission."""
+        old = self.db.execute('SELECT * FROM transcripts WHERE id=?', (transcript_id,)).fetchone()
+        if old:
+            if (old['branch'],old['session'],old['text'],old['complex']) != (branch,session,text,complex):
+                raise ValueError('transcript id reused with different content')
+            return False
+        versions = {r['key']:r['version'] for r in self.engine.recall(branch,limit=1000000)}
+        payload = {'transcript_id':transcript_id,'branch':branch,'session':session,
+                   'text':text,'complex':complex,'expected_versions':versions}
+        self.db.execute('INSERT INTO transcripts(id,branch,session,text,complex) VALUES (?,?,?,?,?)',
+                        (transcript_id,branch,session,text,complex))
+        self.db.execute('INSERT INTO transcript_visibility VALUES (?,?)',(branch,transcript_id))
+        self.db.execute('INSERT INTO transcript_outbox VALUES (?,?,0)',
+                        ('transcript:'+transcript_id,json.dumps(payload,sort_keys=True)))
         return True
 
     def publish(self, queue):

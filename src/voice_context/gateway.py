@@ -8,6 +8,7 @@ from .engine import Engine
 from .models import ExtractionRouter, OllamaExtractor
 from .tasks import TaskQueue
 from .transcripts import Transcripts
+from .sessions import Sessions
 
 
 class Pipeline:
@@ -16,6 +17,7 @@ class Pipeline:
         self.queue = TaskQueue(path)
         self.router = router or ExtractionRouter()
         self.transcripts = Transcripts(self.engine)
+        self.sessions = Sessions(self)
 
     def close(self):
         self.queue.close()
@@ -87,6 +89,13 @@ class Pipeline:
     def dispatch(self, request):
         action=request['action']
         args={k:v for k,v in request.items() if k!='action'}
+        if action=='session_open': return self.sessions.open(**args)
+        if action=='session_interrupt' or action=='session_switch': return self.sessions.interrupt(**args)
+        if action=='session_submit': return self.sessions.submit(**args)
+        if action=='reply_begin': return self.sessions.begin(**args)
+        if action=='reply_check': return {'valid':self.sessions.valid(**args)}
+        if action=='stage_reserve': return {'reserved':self.sessions.reserve(**args)}
+        if action=='stage_finish': return {'finished':self.sessions.finish(**args)}
         if action=='submit': return self.submit(**args)
         if action=='work': return {'worked':self.work_once()}
         if action=='status':
