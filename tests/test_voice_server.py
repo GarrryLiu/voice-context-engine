@@ -127,6 +127,31 @@ class VoiceServerTests(unittest.TestCase):
             self.assertEqual(self.service.state('test-session')['epoch'],epoch)
             self.assertFalse(any(e['type']=='audio' for e in old_events))
         finally:release.set();worker.join(5)
+    def test_old_stream_cleanup_cannot_interrupt_new_live_capture(self):
+        import threading
+        from voice_context.realtime_stt import LiveTranscription
+        entered=Event();release=Event();original=self.service.factory
+        class Blocked:
+            name='blocked'
+            def stream(self,*args):entered.set();release.wait(5);yield 'Late.'
+        def factory(*args):
+            stt,_,tts,client,journal=original(*args)
+            return stt,Blocked(),tts,client,journal
+        self.service.factory=factory;lease=self.service.acquire('test-session')
+        thread=threading.Thread(target=lambda:list(self.service.stream(lease,b'x','test.wav')));thread.start()
+        try:
+            self.assertTrue(entered.wait(2))
+            live=LiveTranscription(lease.conversation);new_epoch=live.onset()['epoch']
+            lease.stop.set();thread.join(1)
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(self.service.state('test-session')['epoch'],new_epoch)
+            live.items['new']=new_epoch
+            self.assertIsNotNone(live.accept('new','Confirmed live input.'))
+        finally:
+            release.set();thread.join(5)
+            import time
+            deadline=time.monotonic()+2
+            while 'test-session' in self.service.active and time.monotonic()<deadline:time.sleep(.01)
     def test_provider_failure_emits_safe_terminal_and_releases_slot(self):
         class Broken:
             name='broken'

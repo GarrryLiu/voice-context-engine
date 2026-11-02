@@ -230,8 +230,9 @@ class Conversation:
         return {'status':'queued','ticket':ticket,'audio_chunks':audio_seq,
                 'first_audio_queued_seconds':first_audio,'total_seconds':time.perf_counter()-tick}
 
-    def transcribe(self,transcript_id,provider:STTProvider,audio,cost=1,expected_epoch=None):
+    def transcribe(self,transcript_id,provider:STTProvider,audio,cost=1,expected_epoch=None,on_begin=None):
         ticket=self.begin('capture:'+transcript_id,expected_epoch=expected_epoch);cancel=self.cancelled[ticket['request_id']]
+        if on_begin:on_begin(ticket)
         call_id='capture:'+transcript_id+':stt';tick=time.perf_counter()
         if not self._admit(ticket,call_id,'stt',cost,getattr(provider,'name',type(provider).__name__)):return {'status':'duplicate'}
         deadline=time.monotonic()+self.deadline_seconds
