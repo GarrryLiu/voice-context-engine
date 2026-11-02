@@ -4,11 +4,12 @@ A runnable local foundation for preserving decisions, topic branches and context
 across conversations. SQLite stores event history, versioned memory and leased
 background tasks. A JSON-lines gateway accepts finalized transcript text.
 
-**Status:** five core blocks implemented and tested. No audio streaming,
+**Status:** runnable local reference with versioned SQLite memory, branch-aware
+final transcript context, a recoverable outbox, durable session epochs, staged
+provider interfaces and an opt-in C++ audio/text queue core. The scripted demo
+uses synthetic byte payloads, not real speech. No microphone/speaker transport,
 Kafka/PostgreSQL/Redis adapters, embeddings, web UI or deployed server yet.
-Default extraction uses explicit `remember key: value` syntax, not an LLM.
-An optional Ollama adapter is implemented and mock-tested; no live model
-or natural-language quality benchmark has run.
+Live model quality, actual speech latency and billed-cost savings are unmeasured.
 
 ## Quick start
 
@@ -110,3 +111,36 @@ flowchart LR
 This remains the target service architecture. The current backend uses SQLite
 and finalized text input. See [architecture](docs/architecture.md) for future
 adapter contracts, production acceptance gates and known limitations.
+
+
+## C++ runtime and staged conversation slice
+
+Read the [full product requirements and implementation boundaries](docs/product/voice-workspace.md)
+and [experiment report](docs/runtime-iteration.md).
+
+```sh
+python3 scripts/build_runtime.py
+export VOICE_RUNTIME_LIBRARY="$PWD/build/libvoice_runtime.so"
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+PYTHONPATH=src python3 experiments/voice_demo.py
+PYTHONPATH=src python3 experiments/realtime.py --output /tmp/realtime.json
+PYTHONPATH=src python3 experiments/runtime_benchmark.py --output /tmp/runtime.json
+```
+
+A C++17 compiler is required. The library is built explicitly; Python imports do
+not compile native code. `Conversation` connects injectable STT/text/TTS ports,
+uses persisted reply snapshots and generation fencing, waits for bounded playback
+capacity and records stage admissions/durations/provider identity. The included
+demo is fully scripted and does not make model calls or generate audio waveforms.
+
+Additional JSONL actions: `session_open`, `session_submit`, `session_interrupt`,
+`session_switch`, `reply_begin`, `reply_check`, `reply_seal`, `stage_reserve`,
+`stage_finish`, `session_delivery`, `playback_ack`, `recent`, `history`, `correct`
+and `revoke`. `context` now includes recent final transcripts before extraction;
+its default budget is UTF-8 bytes, with an optional caller tokenizer counter via
+Python. Manual `correct` requires `expected_version` and retains prior history.
+Stale or revoked extraction candidates cannot overwrite changed confirmed memory.
+
+Queue capacities and software-render cancellation do not establish real audio
+latency. Live SDKs, asynchronous network/device adapters and distributed backends
+remain separate implementation milestones.

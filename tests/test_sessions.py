@@ -44,3 +44,9 @@ class SessionTests(unittest.TestCase):
         state=self.p.sessions.get('s');self.p.sessions.submit('s','big','word '*1000,state['epoch'])
         with self.assertRaises(ValueError):self.p.sessions.begin('s','a',budget=128)
         self.assertIsNone(self.p.engine.db.execute("SELECT 1 FROM replies WHERE id='a'").fetchone())
+    def test_context_can_use_model_token_counter_without_byte_budget_claim(self):
+        state=self.p.sessions.get('s');self.p.sessions.submit('s','a','hello world',state['epoch'])
+        ticket=self.p.sessions.begin('s','counted',budget=100,count=lambda text:len(text.split()))
+        self.assertEqual(ticket['context']['counter'],'caller_supplied')
+        self.assertLessEqual(ticket['context']['cost'],100)
+        with self.assertRaises(ValueError):self.p.transcripts.context('main',budget=100,count=lambda text:-1)

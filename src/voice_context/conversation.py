@@ -1,5 +1,4 @@
 """Single-owner staged adapter coordinator; no vendor SDK or physical audio I/O."""
-from dataclasses import dataclass
 import threading
 from collections import deque
 import time
@@ -8,15 +7,10 @@ import math
 from .gateway import Pipeline
 from .native import NativeRuntime
 from .sessions import StaleInteraction
+from .providers import Transcript,STTProvider,TextProvider,TTSProvider
 
 
 class Backpressure(RuntimeError):pass
-
-
-@dataclass(frozen=True)
-class Transcript:
-    text:str
-    final:bool
 
 
 class Conversation:
@@ -27,8 +21,9 @@ class Conversation:
     STT provider: stream(audio_chunks, cancelled, request_id) -> Transcript events.
     A callback always rechecks durable ownership before native enqueue/render.
     """
-    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=True,audio_wait_seconds=.25,deadline_seconds=30,max_text_bytes=32000,max_audio_bytes=16777216):
+    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=True,audio_wait_seconds=.25,deadline_seconds=30,max_text_bytes=32000,max_audio_bytes=16777216,token_counter=None):
         if not math.isfinite(deadline_seconds) or deadline_seconds<=0 or not math.isfinite(audio_wait_seconds) or audio_wait_seconds<0 or min(max_text_bytes,max_audio_bytes)<1:raise ValueError('positive operation limits required')
+        self.token_counter=token_counter
         self.deadline_seconds=deadline_seconds;self.max_text_bytes=max_text_bytes;self.max_audio_bytes=max_audio_bytes
         self.lock=threading.RLock();self.pipeline=Pipeline(path,check_same_thread=False)
         self.native=None
@@ -68,7 +63,7 @@ class Conversation:
                 for key,event in list(self.cancelled.items()):
                     event.set()
                     if key not in self.running:self.cancelled.pop(key)
-            ticket=self.pipeline.sessions.begin(self.session,request_id,budget)
+            ticket=self.pipeline.sessions.begin(self.session,request_id,budget,count=self.token_counter)
             self.native.advance(self.pipeline.sessions.get(self.session)['epoch'])
             # Idempotent retry must not replace a cancellation signal held by a provider.
             self.cancelled.setdefault(ticket['request_id'],threading.Event())
@@ -155,13 +150,26 @@ class Conversation:
                 if time.monotonic()>=deadline:raise Backpressure('playback queue drain deadline exceeded')
                 self.space.wait(min(.01,max(0,deadline-time.monotonic())))
 
+    def _abort(self,ticket):
+        # Clear local output before attempting audit/state writes: a failed DB
+        # write must not leave partial provider audio available for later playback.
+        with self.lock:
+            if self.closed:return
+            self.cancelled.get(ticket['request_id'],threading.Event()).set()
+            if self.native.stats()['epoch']==ticket['epoch']:self.native.advance(ticket['epoch']+1)
+            try:
+                if self.pipeline.sessions.valid(ticket):self.pipeline.sessions.interrupt(self.session)
+            except Exception as error:
+                self.metrics.append({'stage':'abort_state_write','error_class':type(error).__name__})
+            self.space.notify_all()
+
     @staticmethod
     def _accepted(status):
         if status==0:raise StaleInteraction('late provider output discarded')
         if status==2:raise Backpressure('bounded queue full; caller must drain or pause generation')
         if status!=1:raise ValueError('invalid or out-of-order provider output')
 
-    def respond(self,request_id,text_provider,tts_provider,reason_cost=1,tts_cost=1,context_budget=4096):
+    def respond(self,request_id,text_provider:TextProvider,tts_provider:TTSProvider,reason_cost=1,tts_cost=1,context_budget=4096):
         ticket=self.begin(request_id,context_budget);cancel=self.cancelled[ticket['request_id']]
         reason_id=request_id+':reason';tick=time.perf_counter();audio_seq=0;first_audio=None;audio_bytes=0;text_bytes=0
         deadline=time.monotonic()+self.deadline_seconds
@@ -204,10 +212,8 @@ class Conversation:
             with self.lock:
                 if not self.pipeline.sessions.seal(ticket):raise StaleInteraction('response ended after cancellation')
         except Exception:
+            self._abort(ticket)
             self._finish(reason_id,tick,True,elapsed=reason_active)
-            # Do not allow buffered partial output of a failed response to play later.
-            with self.lock:
-                if not self.closed and self._check(ticket):self.interrupt()
             raise
         else:self._finish(reason_id,tick,elapsed=reason_active)
         finally:
@@ -218,7 +224,7 @@ class Conversation:
         return {'status':'queued','ticket':ticket,'audio_chunks':audio_seq,
                 'first_audio_queued_seconds':first_audio,'total_seconds':time.perf_counter()-tick}
 
-    def transcribe(self,transcript_id,provider,audio,cost=1):
+    def transcribe(self,transcript_id,provider:STTProvider,audio,cost=1):
         ticket=self.begin('capture:'+transcript_id);cancel=self.cancelled[ticket['request_id']]
         call_id='capture:'+transcript_id+':stt';tick=time.perf_counter()
         if not self._admit(ticket,call_id,'stt',cost,getattr(provider,'name',type(provider).__name__)):return {'status':'duplicate'}
@@ -245,9 +251,8 @@ class Conversation:
                     self._finish(call_id,tick);return result
             raise ValueError('STT stream ended without final transcript')
         except Exception:
+            self._abort(ticket)
             self._finish(call_id,tick,True)
-            with self.lock:
-                if not self.closed and self._check(ticket):self.interrupt()
             raise
         finally:
             with self.lock:

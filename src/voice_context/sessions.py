@@ -84,7 +84,7 @@ class Sessions:
         self.pipeline.transcripts.publish(self.pipeline.queue)
         return {'accepted':accepted,'task_id':'transcript:'+transcript_id,'session':state}
 
-    def begin(self,session,request_id=None,budget=4096):
+    def begin(self,session,request_id=None,budget=4096,count=None):
         request_id=request_id or uuid.uuid4().hex
         if not isinstance(request_id,str) or not request_id.strip():raise ValueError('request id required')
         with self.db:
@@ -93,7 +93,7 @@ class Sessions:
             if old:
                 if old['session']!=session:raise ValueError('request id reused across sessions')
                 return self._ticket(old)
-            context=self.pipeline.transcripts.context(state['branch'],budget=budget)
+            context=self.pipeline.transcripts.context(state['branch'],budget=budget,count=count)
             if context['latest_event_omitted']:raise ValueError('context budget cannot fit latest confirmed utterance')
             state=self._advance(session)
             self.db.execute('INSERT INTO replies VALUES (?,?,?,?,?,?)',

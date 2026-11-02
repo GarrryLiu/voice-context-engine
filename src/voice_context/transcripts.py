@@ -61,8 +61,13 @@ class Transcripts:
             return self.db.execute('UPDATE transcripts SET revoked=1 WHERE id=? AND revoked=0',(transcript_id,)).rowcount==1
 
     def context(self, branch, query='', budget=4096, count=None):
+        if not isinstance(budget,int) or isinstance(budget,bool) or budget<0:raise ValueError('nonnegative integer budget required')
         default_counter=count is None
-        count=count or (lambda text:len(text.encode('utf-8')))
+        counter=count or (lambda text:len(text.encode('utf-8')))
+        def count(text):
+            cost=counter(text)
+            if not isinstance(cost,int) or isinstance(cost,bool) or cost<0:raise ValueError('counter must return nonnegative integer')
+            return cost
         serialize=lambda memory,recent,responses=None:json.dumps({'memory':memory,'recent':recent,'responses':responses or []},sort_keys=True,ensure_ascii=False)
         if budget<0 or count(serialize([],[]))>budget:raise ValueError('budget cannot fit context envelope')
         all_recent=self.recent(branch);recent=[];memory=[]

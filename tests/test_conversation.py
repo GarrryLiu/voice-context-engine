@@ -126,3 +126,10 @@ class ConversationTests(unittest.TestCase):
         self.assertEqual(self.c.receive_audio(ticket,2,b'late'),0)
         self.assertEqual(self.c.receive_text(ticket,'late!'),0)
         data,n=self.c.render(256);self.assertEqual(data[:n],'你好。Done!'.encode())
+    def test_provider_failure_clears_audio_even_when_audit_completion_fails(self):
+        from unittest.mock import patch
+        class BrokenTTS:
+            def stream(self,text,cancelled,request_id):yield b'partial';raise RuntimeError('provider failed')
+        with patch.object(self.c.pipeline.sessions,'finish',side_effect=RuntimeError('audit unavailable')):
+            with self.assertRaises(RuntimeError):self.c.respond('broken',Text(),BrokenTTS())
+        self.assertEqual(self.c.render(256),(bytes(256),0))

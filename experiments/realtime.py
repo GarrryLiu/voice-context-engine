@@ -77,6 +77,8 @@ def main():
     report={'kind':'synthetic_staged_control_validation','platform':platform.platform(),'trials':20,'correctness_counts':checks,
             'queue_clear_with_sqlite_ms':stats(cancel),'reopen_with_context_ms':stats(recovery),
             'four_session_first_synthetic_chunk_queued_ms':stats(latencies),'concurrent_requests':40,
+            'observations_seconds':{'queue_clear':cancel,'reopen':recovery,'four_session_first_chunk':latencies},
+            'experiment_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'declared_stage_units_total':sum(x['reserved'] for x in ledger),
             'declared_stage_units_by_phase':{stage:sum(x['reserved'] for x in ledger if x['stage']==stage) for stage in ('stt','reason','tts')},
             'source_sha256':{name:hashlib.sha256(Path(name).read_bytes()).hexdigest() for name in ['native/runtime.hpp','src/voice_context/conversation.py','src/voice_context/sessions.py']},
