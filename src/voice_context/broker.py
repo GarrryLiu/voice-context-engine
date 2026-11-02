@@ -66,6 +66,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('role', choices=['relay', 'worker', 'init-topic'])
     parser.add_argument('--once', action='store_true')
+    parser.add_argument('--openai', action='store_true', help='real LLM extraction; incurs API usage')
+    parser.add_argument('--env-file', default='.env')
     parser.add_argument('--topic', default='voice.extract.v1')
     parser.add_argument('--group', default='voice-extract-v1')
     parser.add_argument('--db', default=os.environ.get('VOICE_DATABASE_URL'))
@@ -82,9 +84,17 @@ def main():
         return
     if not args.db:parser.error('--db or VOICE_DATABASE_URL required')
     while True:
-        pipeline = intake = None
+        pipeline = intake = llm_client = journal = None
         try:
-            pipeline = Pipeline(args.db, publish_on_submit=False)
+            router=None
+            if args.openai:
+                from .openai_provider import settings, make_client, OpenAIExtractor, ModelJournal
+                from .models import ExtractionRouter
+                config=settings(args.env_file)
+                llm_client=make_client(config);journal=ModelJournal(args.db)
+                extractor=OpenAIExtractor(config['LLM_MODEL'],llm_client,journal)
+                router=ExtractionRouter({'small':extractor,'reasoning':extractor})
+            pipeline = Pipeline(args.db, router=router, publish_on_submit=False)
             relay = KafkaRelay(args.bootstrap, args.topic) if args.role == 'relay' else None
             intake = KafkaIntake(args.bootstrap, args.group, args.topic) if args.role == 'worker' else None
             while True:
@@ -104,6 +114,8 @@ def main():
         finally:
             if intake:intake.close()
             if pipeline:pipeline.close()
+            if llm_client:llm_client.close()
+            if journal:journal.close()
         time.sleep(1)
 
 

@@ -84,5 +84,8 @@ class ExtractionRouter:
             provider = self.fallback
             candidates = validate_candidates(text, provider.extract(text))
             fallback_used = True
-        return {'records': candidates, 'provider': provider.name, 'route': selected.model,
+        result = {'records': candidates, 'provider': provider.name, 'route': selected.model,
                 'fallback_used': fallback_used, 'status': 'candidates'}
+        if getattr(provider,'last_usage',None) is not None:
+            result['usage']=provider.last_usage
+        return result

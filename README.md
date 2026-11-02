@@ -10,7 +10,9 @@ provider interfaces and an opt-in C++ audio/text queue core. The scripted demo
 uses synthetic byte payloads, not real speech. No microphone/speaker transport,
 embeddings, web UI or deployed server yet. Optional PostgreSQL, Kafka relay/worker
 and revision-fenced Redis context cache now run against real local services.
-Live model quality, actual speech latency and billed-cost savings are unmeasured.
+Opt-in OpenAI streaming text and structured extraction are available; eight synthetic
+live-model scenarios have been exercised. See [model setup and limits](docs/live-model.md).
+General model quality, actual speech latency and billed-cost savings remain unmeasured.
 
 ## Quick start
 

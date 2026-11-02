@@ -1,0 +1,256 @@
+{
+  "model": "gpt-6-luna",
+  "backend": "postgresql",
+  "redis": true,
+  "protocol": "one trial per synthetic case; real Responses API; no actual STT/TTS or audio device",
+  "sdk": "2.54.0",
+  "cases": [
+    {
+      "name": "immediate_before_extraction",
+      "answer": "RAVEN",
+      "expected": "RAVEN",
+      "passed": true,
+      "metrics": {
+        "call_id": "immediate_before_extraction-5f82ce1d77404081bab1dce928ea22dc",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_05a8becbb83402ce016ae81904df7c87d18f6226817ac3bdb7",
+        "usage": {
+          "input_tokens": 258,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 7,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 265
+        },
+        "first_delta_seconds": 1.0563485000748187,
+        "elapsed_seconds": 1.1750862922053784,
+        "error_code": null
+      }
+    },
+    {
+      "name": "child_branch",
+      "answer": "CEDAR",
+      "expected": "CEDAR",
+      "passed": true,
+      "metrics": {
+        "call_id": "child_branch-0208a73ef889451790daf349222cdf12",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_0319e24e798e23f0016ae81905f3b087d1b9ded6e7fadc5a0c",
+        "usage": {
+          "input_tokens": 399,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 6,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 405
+        },
+        "first_delta_seconds": 1.1359259998425841,
+        "elapsed_seconds": 1.2530239999759942,
+        "error_code": null
+      }
+    },
+    {
+      "name": "parent_not_polluted",
+      "answer": "RAVEN",
+      "expected": "RAVEN",
+      "passed": true,
+      "metrics": {
+        "call_id": "parent_not_polluted-0685d842a56d4145a340eef360457968",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_0a10f3ae5a6629ac016ae8190729e487d181e45da3cbe83727",
+        "usage": {
+          "input_tokens": 334,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 7,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 341
+        },
+        "first_delta_seconds": 1.4857495420146734,
+        "elapsed_seconds": 1.6262874999083579,
+        "error_code": null
+      }
+    },
+    {
+      "name": "restart_resume",
+      "answer": "RAVEN",
+      "expected": "RAVEN",
+      "passed": true,
+      "metrics": {
+        "call_id": "restart_resume-9eb6cf09f769494aa103976770cd759f",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_0e2612dd86e06e2e016ae81908d50487d189f12d44194b1f7e",
+        "usage": {
+          "input_tokens": 408,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 7,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 415
+        },
+        "first_delta_seconds": 0.7034432080108672,
+        "elapsed_seconds": 0.830210791900754,
+        "error_code": null
+      }
+    },
+    {
+      "name": "confirmed_revision_overrides_history",
+      "answer": "MAPLE",
+      "expected": "MAPLE",
+      "passed": true,
+      "metrics": {
+        "call_id": "confirmed_revision_overrides_history-17292cdd924747b7b069c0adce47c49b",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_0d0cd094f69dbcec016ae81909bc5087d1980f9439454263ca",
+        "usage": {
+          "input_tokens": 526,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 6,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 532
+        },
+        "first_delta_seconds": 1.0734561670105904,
+        "elapsed_seconds": 1.440179375000298,
+        "error_code": null
+      }
+    },
+    {
+      "name": "explicit_vs_tentative",
+      "input": "We have decided to use PostgreSQL as the primary database. Redis might be useful later.",
+      "records": [
+        {
+          "key": "primary_database",
+          "value": "PostgreSQL as the primary database",
+          "evidence": "We have decided to use PostgreSQL as the primary database."
+        }
+      ],
+      "passed": true,
+      "metrics": {
+        "call_id": "extract:7ba52d935a3445efb41e3707433e8221",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_0fc9b5f712c2c082016ae8190b231c87d1aac877cc5f6dc59b",
+        "usage": {
+          "input_tokens": 140,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 44,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 184
+        },
+        "first_delta_seconds": null,
+        "elapsed_seconds": 1.502044916851446,
+        "error_code": null
+      }
+    },
+    {
+      "name": "no_decision",
+      "input": "Should we maybe use Kafka? No decision has been made.",
+      "records": [],
+      "passed": true,
+      "metrics": {
+        "call_id": "extract:611c9d15a93943a4a90a211f30500763",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_07949e37950769fe016ae8190c964c87d18c2963341ea3bed3",
+        "usage": {
+          "input_tokens": 134,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 12,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 146
+        },
+        "first_delta_seconds": null,
+        "elapsed_seconds": 1.028016583994031,
+        "error_code": null
+      }
+    },
+    {
+      "name": "real_llm_native_queue",
+      "answer": "MAPLE",
+      "passed": true,
+      "metrics": {
+        "call_id": "native-74fe0d96c7414184b82d9afe36435c21:reason",
+        "model": "gpt-6-luna",
+        "state": "completed",
+        "response_id": "resp_0c28ddaa5bff7556016ae8190dbfb487d1b828a7786da1ab4b",
+        "usage": {
+          "input_tokens": 585,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 6,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 591
+        },
+        "first_delta_seconds": 0.6447397079318762,
+        "elapsed_seconds": 0.7530003748834133,
+        "error_code": null
+      },
+      "first_synthetic_chunk_seconds": 0.8109280418138951
+    }
+  ],
+  "source_hashes": {
+    "src/voice_context/sessions.py": "c43307204c622f4b8070f58255e289e7dd18d3192d0fb752b15c1d2068c80f38",
+    "src/voice_context/gateway.py": "7c12dc4be88bab4fba1366d173e9940685fb343873107eed08ea874b1ede568e",
+    "src/voice_context/tasks.py": "a0e93e96c90495482684ec52046cadd365b2ffc5e255dad3a7097ad7480928e9",
+    "src/voice_context/models.py": "9c6b9211127944c6f059b554fddea81063e4ec2f23330d0c051179641000fbb8",
+    "src/voice_context/transcripts.py": "ad4d98b03346280be5623e68ba50c5ca30f239a774d7feda55630cee615798ca",
+    "src/voice_context/conversation.py": "93a5d4d09599f9ccdcbf5617fc94a0a0dc5173fb883b18fb889ba1533db69005",
+    "src/voice_context/cache.py": "9287cf5118a0858e10c27aaf35b2095ae5477bdfd0c72d9ddcfffec994c10b93",
+    "src/voice_context/__init__.py": "5732eeaaaa9d425ba06f97712b2e24576dce36ae8662fc08d5fa9acd13655158",
+    "src/voice_context/native.py": "725488f63cd5e9473f6f85004590b2232ad78d6723ec16823cb999690bea21fa",
+    "src/voice_context/openai_provider.py": "b839f0def248542ead7cf793199a6a8bdc297cff155f8d633e37e5f7d63fabda",
+    "src/voice_context/providers.py": "c01dd147134174374884841b7e343ccf1be9fa3d67b2ecfafa1569886e4003bb",
+    "src/voice_context/engine.py": "f5289a867a991abc863d1d91f12ce82b4f5ab95675f05c3cab93f7abfb16b7d7",
+    "src/voice_context/routing.py": "78b411031e8d00fb44e9928215cd8575bd6a1fe8dba220340344561a112461ae",
+    "src/voice_context/storage.py": "d5199193ff23d0bd89a33b2aa5e2d59d4d5da607dceb5254be1f8163642df85e",
+    "src/voice_context/broker.py": "21e59f502d8373e48e056621428cd39114c8c9b016b16fd1ba8490bef5afba7b",
+    "src/voice_context/__main__.py": "b39e560eafdf161b1c4a737a765ea903c74e733ef000a7beb708493145e4dca7"
+  },
+  "passed": true,
+  "usage": {
+    "input_tokens": 2784,
+    "output_tokens": 95,
+    "calls": 8,
+    "calls_without_final_usage": 0
+  }
+}

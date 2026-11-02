@@ -51,7 +51,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install -e '.[infra]'
+      - run: pip install -e '.[infra,llm]'
       - run: docker compose up -d
       - run: python scripts/wait_infra.py
       - run: python scripts/build_runtime.py
