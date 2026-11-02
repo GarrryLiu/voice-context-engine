@@ -1,6 +1,4 @@
-"""Opt-in OpenAI Responses adapters. No credentials or requests at import time
-import uuid
-from threading import RLock."""
+"""Opt-in OpenAI Responses adapters. No credentials or requests at import time."""
 import hashlib
 import json
 import math
