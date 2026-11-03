@@ -195,6 +195,13 @@ class VoiceService:
             if action=='change':return store.update(data['id'],data['version'],data['changes'])
             if action=='restore':return store.restore(data['id'],data['version'],data['restore_version'])
             raise ValueError('unknown document action')
+    def workspace(self,session,data=None):
+        from .product_workspace import ProductWorkspace
+        c=self.session(session)
+        with c.lock:
+            store=ProductWorkspace(c.pipeline.engine.db)
+            if data is None:return store.get()
+            return store.save(data['version'],data['data'])
     def close(self):
         with self.lock:
             for session,c in self.sessions.items():
@@ -232,6 +239,10 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     def brand_svg():return Response((WEB/'brand.svg').read_text(),media_type='image/svg+xml')
     @app.get('/product.css')
     def product_css():return Response((WEB/'product.css').read_text(),media_type='text/css')
+    @app.get('/workspace.js')
+    def workspace_js():return Response((WEB/'workspace.js').read_text(),media_type='text/javascript')
+    @app.get('/workspace.css')
+    def workspace_css():return Response((WEB/'workspace.css').read_text(),media_type='text/css')
     @app.get('/strings.js')
     def strings_js():return Response((WEB/'strings.js').read_text(),media_type='text/javascript')
     @app.get('/documents.js')
@@ -256,6 +267,21 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     def state(request:Request):
         try:return service.state(request.headers.get('x-voice-session',''))
         except ValueError:return JSONResponse({'error':'invalid_or_full_session'},status_code=400)
+    @app.get('/api/workspace')
+    async def workspace_read(request:Request):
+        try:return await asyncio.to_thread(service.workspace,request.headers.get('x-voice-session',''))
+        except ValueError:return JSONResponse({'error':'invalid_session'},status_code=400)
+    @app.post('/api/workspace')
+    async def workspace_write(request:Request):
+        from .product_workspace import WorkspaceConflict
+        raw=await limited_body(request,2100000)
+        if raw is None:return Response(status_code=413)
+        try:
+            data=json.loads(raw)
+            if not isinstance(data,dict):raise ValueError('object required')
+            return await asyncio.to_thread(service.workspace,request.headers.get('x-voice-session',''),data)
+        except WorkspaceConflict:return JSONResponse({'error':'workspace_conflict'},status_code=409)
+        except (ValueError,TypeError,KeyError):return JSONResponse({'error':'invalid_workspace'},status_code=400)
     @app.get('/api/documents')
     async def documents_list(request:Request):
         try:

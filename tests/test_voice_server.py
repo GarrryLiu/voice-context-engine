@@ -65,6 +65,18 @@ class VoiceServerTests(unittest.TestCase):
         self.client=TestClient(self.app);self.client.__enter__()
         self.headers={'x-voice-token':self.app.state.local_token,'x-voice-session':'test-session'}
     def tearDown(self):self.client.__exit__(None,None,None);self.tmp.cleanup()
+    def test_product_workspace_auth_persistence_and_conflict(self):
+        self.assertEqual(self.client.get('/api/workspace').status_code,403)
+        initial=self.client.get('/api/workspace',headers=self.headers).json()
+        self.assertEqual(initial['version'],0)
+        initial['data']['categories'].append('Product')
+        saved=self.client.post('/api/workspace',headers=self.headers,json=initial)
+        self.assertEqual(saved.status_code,200)
+        self.assertEqual(saved.json()['version'],1)
+        self.assertEqual(self.client.post('/api/workspace',headers=self.headers,json=initial).status_code,409)
+        self.assertEqual(self.client.post('/api/workspace',headers=self.headers,json={'version':1,'data':{}}).status_code,400)
+        self.assertEqual(self.client.get('/api/workspace',headers=self.headers).json(),saved.json())
+
     def test_stream_native_pcm_and_explicit_ack_context(self):
         r=self.client.post('/api/turn',headers={**self.headers,'content-type':'audio/wav'},content=b'fixture')
         self.assertEqual(r.status_code,200)
