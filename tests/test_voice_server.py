@@ -94,7 +94,7 @@ class VoiceServerTests(unittest.TestCase):
             self.assertIn(self.app.state.local_token,page.text)
             self.assertNotIn('LLM_API_KEY',page.text)
         self.assertIn('切换到产品体验版',self.client.get('/lab').text)
-        for path in ('/product.js','/product.css'):
+        for path in ('/product.js','/product.css','/strings.js'):
             self.assertEqual(self.client.get(path).status_code,200)
     def test_branch_selection_and_busy_limit(self):
         self.assertEqual(self.client.get('/api/state',headers=self.headers).status_code,200)

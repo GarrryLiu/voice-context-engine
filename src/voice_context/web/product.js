@@ -2,7 +2,7 @@
 let topicNames={};
 try{topicNames=JSON.parse(localStorage.getItem('voice-topic-names')||'{}')||{};}catch{}
 if(typeof topicNames!=='object'||Array.isArray(topicNames))topicNames={};
-function topicName(id){return typeof topicNames[id]==='string'?topicNames[id]:id==='main'?'我的工作区':id;}
+function topicName(id){return typeof topicNames[id]==='string'?topicNames[id]:id==='main'?'My workspace':id;}
 let connectedAt=null,renderQueued=false,topicSignature='';
 function renderProduct(){
  renderQueued=false;
@@ -20,11 +20,11 @@ function renderProduct(){
   button.onclick=()=>{if(branch.disabled||branch.value===option.value)return;branch.value=option.value;branch.dispatchEvent(new Event('change'));};return button;
  }));}
  const text=$('transcript').textContent.trim(),answer=$('answer').textContent.trim();
- document.body.classList.toggle('has-conversation',!!(text&&text!=='等待录音…')||!!(answer&&answer!=='开始一次对话。'));
+ document.body.classList.toggle('has-conversation',!!(text&&text!==ui('等待录音…'))||!!(answer&&answer!==ui('开始一次对话。')));
  const listening=!!liveTracks&&liveReady;
  document.body.classList.toggle('is-live',active);$('live-indicator').hidden=!listening;
  if(listening&&connectedAt===null)connectedAt=Date.now();if(!listening)connectedAt=null;
- $('live-caption').textContent=sources.size?'正在回复 · 开口即可打断':busy?'正在整理你的想法':'正在倾听 · 想到什么就说什么';
+ $('live-caption').textContent=sources.size?'Speaking · interrupt anytime':busy?'Thinking it through':'Listening · say what’s on your mind';
 }
 function scheduleProduct(){if(!renderQueued){renderQueued=true;requestAnimationFrame(renderProduct);}}
 const productObserver=new MutationObserver(scheduleProduct);
@@ -33,13 +33,13 @@ $('new-topic').onclick=()=>{if($('new-topic').disabled)return;$('topic-name').va
 $('cancel-topic').onclick=()=>$('topic-dialog').close();
 $('topic-form').onsubmit=async event=>{
  event.preventDefault();const name=$('topic-name').value.trim();if(!name)return;
- if(liveActive()||busy||switching){$('topic-error').textContent='请先结束当前对话，再创建思路。';return;}
+ if(liveActive()||busy||switching){$('topic-error').textContent='End the current conversation before creating a thought.';return;}
  const id='thought-'+crypto.randomUUID().slice(0,12);switching=true;$('create-topic').disabled=true;buttons();scheduleProduct();
  try{
   await api('/api/control',{action:'fork',branch:id});await api('/api/control',{action:'switch',branch:id});
   topicNames[id]=name;try{localStorage.setItem('voice-topic-names',JSON.stringify(topicNames));}catch{}
-  await refresh();$('topic-dialog').close();status('新的思路，准备好了');
- }catch{$('topic-error').textContent='创建未完成，请检查连接后重试。';}
+  await refresh();$('topic-dialog').close();status('Your new thought is ready');
+ }catch{$('topic-error').textContent='Could not create the thought. Check your connection and try again.';}
  finally{switching=false;$('create-topic').disabled=false;buttons();scheduleProduct();}
 };
 $('help').onclick=()=>$('help-dialog').showModal();$('close-help').onclick=()=>$('help-dialog').close();

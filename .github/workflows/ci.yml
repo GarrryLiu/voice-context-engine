@@ -66,6 +66,7 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: node --check src/voice_context/web/app.js
       - run: node --check src/voice_context/web/product.js
+      - run: node --check src/voice_context/web/strings.js
       - run: node --check src/voice_context/web/live.js
       - run: node --check src/voice_context/web/capture.js
       - run: python scripts/wait_infra.py

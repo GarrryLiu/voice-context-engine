@@ -1,7 +1,7 @@
 'use strict';
 let liveSocket=null,liveTracks=null,liveNode=null,liveSource=null,liveReady=false,liveStarting=false,liveClosed=false;
 const liveActive=()=>!!liveSocket||liveStarting;
-function liveButtons(){const active=liveActive();$('live').disabled=liveStarting;$('live').textContent=active?'结束连续对话':'开始连续对话';$('record').disabled=active||busy||starting||switching;$('file').disabled=active||busy;$('branch').disabled=active||switching;$('fork').disabled=active||busy;}
+function liveButtons(){const active=liveActive();$('live').disabled=liveStarting;$('live').textContent=ui(active?'结束连续对话':'开始连续对话');$('record').disabled=active||busy||starting||switching;$('file').disabled=active||busy;$('branch').disabled=active||switching;$('fork').disabled=active||busy;}
 async function endLive(message='连续对话已结束'){
  liveClosed=true;liveReady=false;liveStarting=false;
  if(liveNode){liveNode.port.onmessage=null;liveNode.disconnect();liveNode=null;}

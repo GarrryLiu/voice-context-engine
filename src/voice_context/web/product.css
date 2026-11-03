@@ -4,3 +4,6 @@
 .welcome p{color:#78826b}.eyebrow{color:#818c73}.capabilities span{color:#768367}.composer-hint{color:#7e8972}.composer-hint>span{color:#87917c}.saved{color:#7f8c70}.section-label{color:#768369}
 
 .mobile-lab{display:none}.icon-button:focus-within{outline:2px solid var(--accent);outline-offset:3px;border-radius:5px}@media(max-width:700px){.saved{display:none}.mobile-lab{display:block;white-space:nowrap;font-size:10px;color:#778366}}
+
+.brand{font-size:20px;letter-spacing:-.5px;gap:8px}.beta{font-size:7px;letter-spacing:.5px;margin-left:0}.new-topic kbd{font-size:9px}.composer #stop:disabled,.composer #interrupt:disabled{display:none}.mini-avatar{font-size:8px}.avatar{font-size:9px}@media(max-width:700px){.composer-actions{align-items:center}.secondary-actions button{font-size:11px}.composer #record:disabled{display:none}.talk-button{font-size:11px}.capabilities span{font-size:9px;padding:6px}.welcome p{font-size:12px}.brand{font-size:20px}}
+.brand{padding-left:0;padding-right:0;white-space:nowrap;font-size:19px}.brand-mark,.beta{flex-shrink:0}.beta{font-size:6px;padding:3px}
