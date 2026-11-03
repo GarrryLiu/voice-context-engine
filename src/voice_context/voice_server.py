@@ -206,8 +206,15 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
         response.headers['X-Content-Type-Options']='nosniff'
         response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; media-src 'self' blob:; frame-ancestors 'none'"
         return response
+    @app.get('/lab')
     @app.get('/')
     def index():return HTMLResponse((WEB/'index.html').read_text().replace('__LOCAL_TOKEN__',token))
+    @app.get('/product')
+    def product():return HTMLResponse((WEB/'product.html').read_text().replace('__LOCAL_TOKEN__',token))
+    @app.get('/product.css')
+    def product_css():return Response((WEB/'product.css').read_text(),media_type='text/css')
+    @app.get('/product.js')
+    def product_js():return Response((WEB/'product.js').read_text(),media_type='text/javascript')
     @app.get('/app.js')
     def js():return Response((WEB/'app.js').read_text(),media_type='text/javascript')
     @app.get('/live.js')

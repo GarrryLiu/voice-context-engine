@@ -87,6 +87,15 @@ class VoiceServerTests(unittest.TestCase):
         self.assertEqual(self.client.get('/',headers={'host':'attacker.example'}).status_code,403)
         self.assertEqual(self.client.post('/api/turn',headers={**self.headers,'content-type':'text/plain'},content=b'x').status_code,415)
         self.assertEqual(self.client.post('/api/turn',headers={**self.headers,'content-type':'audio/wav'},content=b'x'*(2*1024*1024+1)).status_code,413)
+    def test_product_and_lab_share_authenticated_backend(self):
+        for path in ('/','/lab','/product'):
+            page=self.client.get(path)
+            self.assertEqual(page.status_code,200)
+            self.assertIn(self.app.state.local_token,page.text)
+            self.assertNotIn('LLM_API_KEY',page.text)
+        self.assertIn('切换到产品体验版',self.client.get('/lab').text)
+        for path in ('/product.js','/product.css'):
+            self.assertEqual(self.client.get(path).status_code,200)
     def test_branch_selection_and_busy_limit(self):
         self.assertEqual(self.client.get('/api/state',headers=self.headers).status_code,200)
         self.assertEqual(self.client.post('/api/control',headers=self.headers,json={'action':'fork','branch':'idea'}).status_code,200)

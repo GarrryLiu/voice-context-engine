@@ -92,7 +92,11 @@ class LiveTests(unittest.TestCase):
     def test_suspended_audio_context_does_not_dispatch_old_final_after_new_speech(self):
         self.run_browser_capture(True)
 
-    def run_browser_capture(self,delay_resume):
+    @unittest.skipUnless(os.environ.get('VOICE_BROWSER_TEST'),'opt-in synthetic microphone browser')
+    def test_product_continuous_microphone_and_barge_in(self):
+        self.run_browser_capture(False,'/product')
+
+    def run_browser_capture(self,delay_resume,route='/'):
         import socket,threading,time
         import uvicorn
         from playwright.sync_api import sync_playwright,expect
@@ -118,7 +122,7 @@ class LiveTests(unittest.TestCase):
                             gain.gain.value=0;oscillator.frequency.value=220;oscillator.connect(gain);gain.connect(destination);oscillator.start();
                             window.testMic={ctx,gain};return destination.stream;
                         };""")
-                    page.goto('http://127.0.0.1:'+str(port));expect(page.locator('#record')).to_be_enabled()
+                    page.goto('http://127.0.0.1:'+str(port)+route);expect(page.locator('#record')).to_be_enabled()
                     requests=[];page.on('request',lambda request:requests.append(request.url) if request.url.endswith('/api/reply') else None)
                     if delay_resume:
                         page.evaluate('''()=>{const original=audioContext;let delayed=false;audioContext=async()=>{const ctx=await original();if(liveReady&&!delayed){delayed=true;await new Promise(resolve=>window.releaseContext=resolve);}return ctx;};}''')
