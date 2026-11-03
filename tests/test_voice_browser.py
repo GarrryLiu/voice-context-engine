@@ -91,10 +91,11 @@ class VoiceBrowserTests(unittest.TestCase):
                         page.get_by_role('button',name='⑂ 我的新产品').click()
                         expect(page.locator('#topic-title')).to_have_text('我的新产品')
                         expect(page.locator('#answer')).to_have_text('Browser reply.')
-                        expect(page.locator('a[href="/lab"]')).to_be_visible()
+                        expect(page.locator('a[href="/lab"]').first).to_be_visible()
                     page.set_viewport_size({'width':390,'height':844})
                     self.assertTrue(page.evaluate('()=>document.documentElement.scrollWidth <= innerWidth'))
                     if os.environ.get('VOICE_SCREENSHOT'):page.screenshot(path=os.environ['VOICE_SCREENSHOT'],full_page=True)
+                    if route=='/product':expect(page.locator('.mobile-lab')).to_be_visible()
                     if route=='/product' and os.environ.get('VOICE_PRODUCT_SCREENSHOT'):
                         page.screenshot(path=os.environ['VOICE_PRODUCT_SCREENSHOT'].replace('.png','-mobile.png'),full_page=True)
                     self.assertEqual(errors,[])

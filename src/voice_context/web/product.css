@@ -2,3 +2,5 @@
 
 /* Keep secondary copy readable on the warm surface. */
 .welcome p{color:#78826b}.eyebrow{color:#818c73}.capabilities span{color:#768367}.composer-hint{color:#7e8972}.composer-hint>span{color:#87917c}.saved{color:#7f8c70}.section-label{color:#768369}
+
+.mobile-lab{display:none}.icon-button:focus-within{outline:2px solid var(--accent);outline-offset:3px;border-radius:5px}@media(max-width:700px){.saved{display:none}.mobile-lab{display:block;white-space:nowrap;font-size:10px;color:#778366}}
