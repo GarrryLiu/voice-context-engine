@@ -17,7 +17,7 @@ class VoiceFaultTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if os.environ.get('VOICE_FAULT_RESULTS'):
-            files=list(Path('src/voice_context').glob('*.py'))+list(Path('src/voice_context/web').glob('*'))
+            files=sorted(p for p in Path('src/voice_context').rglob('*') if p.is_file() and '__pycache__' not in p.parts)
             Path(os.environ['VOICE_FAULT_RESULTS']).write_text(json.dumps({'protocol':'headless Chromium, fake providers and fake recording; software timings only',
                 'checks':cls.results,'source_hashes':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in files}},indent=2)+'\n')
     def setUp(self):
