@@ -15,6 +15,7 @@ import uuid
 from dataclasses import dataclass,field
 from .conversation import Conversation
 from .documents import DocumentConflict
+from .contracts import CONTRACT_VERSION,capabilities
 from .openai_provider import settings,make_client,OpenAITextProvider,ModelJournal
 from .audio_providers import OpenAIRecordingSTT,OpenAIPcmTTS
 
@@ -227,6 +228,7 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
         if request.url.path.startswith('/api/') and not secrets.compare_digest(request.headers.get('x-voice-token',''),token):return Response(status_code=403)
         response=await call_next(request)
         response.headers['Cache-Control']='no-store'
+        if request.url.path.startswith('/api/'):response.headers['X-Voice-Contract']=CONTRACT_VERSION
         response.headers['X-Content-Type-Options']='nosniff'
         response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; media-src 'self' blob:; frame-ancestors 'none'"
         return response
@@ -263,6 +265,8 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
         await serve(ws,service,token)
     @app.get('/style.css')
     def css():return Response((WEB/'style.css').read_text(),media_type='text/css')
+    @app.get('/api/capabilities')
+    def api_capabilities():return capabilities()
     @app.get('/api/state')
     def state(request:Request):
         try:return service.state(request.headers.get('x-voice-session',''))
