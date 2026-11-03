@@ -1,0 +1,57 @@
+{
+  "protocol": "Separate local profiles, fixture models only; no real model calls or performance claims",
+  "profiles": {
+    "contracts": {
+      "tests": 4,
+      "passed": 4,
+      "log": "/tmp/refactor-contract-shapes-final.log",
+      "note": "Final dependency-boundary checks also executed through scripts/check.py."
+    },
+    "product": {
+      "tests": 13,
+      "passed": 13,
+      "seconds": 3.852,
+      "log": "/tmp/refactor-product-profile-browser.log",
+      "native": false,
+      "external_services": false
+    },
+    "infra": {
+      "tests": 86,
+      "passed": 86,
+      "seconds": 3.737,
+      "log": "/tmp/refactor-infra-profile-final.log"
+    },
+    "integration": {
+      "tests": 48,
+      "passed": 48,
+      "seconds": 80.074,
+      "log": "/tmp/refactor-integration-profile.log",
+      "services": [
+        "PostgreSQL",
+        "Kafka",
+        "Redis"
+      ]
+    }
+  },
+  "total_selected_tests": 151,
+  "skipped_in_strict_profiles": 0,
+  "packaging": "Built wheel and verified nested assets through an isolated extracted-wheel demo app",
+  "retained_failures": [
+    {
+      "ci_run": 41719822170,
+      "failure": "Fault report hashing attempted to read the new web/client directory as a file. Fixed by recursive file-only source enumeration."
+    },
+    {
+      "local_log": "/tmp/refactor-infra-profile.log",
+      "failure": "CLI subprocess did not inherit src import path; runner now exports PYTHONPATH."
+    },
+    {
+      "local_log": "/tmp/refactor-demo-api.log",
+      "failure": "Demo recovery needed the same completed TTS-stage record as connected replies; added zero-cost labeled fixture stage."
+    },
+    {
+      "local_log": "/tmp/refactor-demo-debug.log",
+      "failure": "Demo caller did not adopt the confirmed input epoch; submission now remains inside the runtime-owned generation fence."
+    }
+  ]
+}

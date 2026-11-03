@@ -164,3 +164,6 @@ latency. Live SDKs, asynchronous network/device adapters and distributed backend
 remain separate implementation milestones.
 
 Product session maps: [workflow, persistence, and demonstration scope](docs/product-session-maps.md).
+
+Independent development: [product/infra boundaries, profiles and worktree workflow](docs/product-infra-development.md).
+Start the credential-free product preview with `python scripts/dev.py product`; use `python scripts/check.py product --browser --strict` for its isolated checks.
