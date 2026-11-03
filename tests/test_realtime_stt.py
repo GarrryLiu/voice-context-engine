@@ -128,8 +128,14 @@ class LiveTests(unittest.TestCase):
                         page.evaluate('''()=>{const original=audioContext;let delayed=false;audioContext=async()=>{const ctx=await original();if(liveReady&&!delayed){delayed=true;await new Promise(resolve=>window.releaseContext=resolve);}return ctx;};}''')
                     page.click('#live');expect(page.locator('#status')).to_have_text('Listening. Go ahead.' if route=='/product' else '连续对话中，可以开始说话',timeout=10000)
                     def utterance():
-                        page.evaluate('()=>testMic.gain.gain.value=.3');page.wait_for_timeout(700)
-                        page.evaluate('()=>testMic.gain.gain.value=0')
+                        before=page.evaluate('()=>generation')
+                        page.evaluate('()=>testMic.gain.gain.value=.3')
+                        deadline=time.monotonic()+5
+                        while page.evaluate('()=>generation')==before:
+                            if time.monotonic()>deadline:
+                                self.fail('synthetic microphone did not reach VAD onset: '+str(page.evaluate('()=>({microphone:testMic.ctx.state,playback:context.state,live:liveReady,status:document.getElementById("status").textContent})')))
+                            page.wait_for_timeout(20)
+                        page.wait_for_timeout(350);page.evaluate('()=>testMic.gain.gain.value=0')
                     utterance()
                     if delay_resume:
                         deadline=time.monotonic()+5

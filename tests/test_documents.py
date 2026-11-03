@@ -42,6 +42,8 @@ class DocumentTests(unittest.TestCase):
         self.assertEqual(len(self.store.listing(query='research',branch='child',status='archived')['documents']),1)
         self.assertEqual(changed['source_branch'],'main')
         changed=self.store.update(doc['id'],2,{'status':'trash'})
+        self.store.backfill()
+        self.assertEqual(self.store.get(doc['id'])['status'],'trash')
         self.assertEqual(len(self.store.listing(status='trash')['documents']),1)
         self.assertEqual(self.store.update(doc['id'],3,{'status':'active'})['version'],4)
     def test_reference_and_plain_text_validation(self):

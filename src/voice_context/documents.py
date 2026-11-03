@@ -138,7 +138,7 @@ class Documents:
           WHERE document=? ORDER BY version DESC LIMIT 1000''',(identifier,)).fetchall()]
     def revision(self,identifier,version):
         self.get(identifier)
-        if not isinstance(version,int) or isinstance(version,bool) or version<1:raise ValueError('invalid version')
+        if not isinstance(version,int) or isinstance(version,bool) or not 1<=version<=1000:raise ValueError('invalid version')
         row=self.db.execute('SELECT * FROM document_versions WHERE document=? AND version=?',(identifier,version)).fetchone()
         if not row:raise KeyError(version)
         return dict(row)

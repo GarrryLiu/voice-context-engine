@@ -19,7 +19,10 @@ class VoiceBrowserTests(unittest.TestCase):
     def test_product_topics_playback_restore_and_mobile(self):
         self.run_voice_page('/product')
 
-    def run_voice_page(self,route):
+    def test_product_voice_documents_edit_versions_trash_and_import(self):
+        self.run_voice_page('/product',documents=True)
+
+    def run_voice_page(self,route,documents=False):
         import socket
         import uvicorn
         from playwright.sync_api import sync_playwright,expect
@@ -59,7 +62,7 @@ class VoiceBrowserTests(unittest.TestCase):
                     page.goto(f'http://127.0.0.1:{port}'+route)
                     expect(page.locator('#record')).to_be_enabled()
                     if route=='/product':
-                        expect(page.locator('h1')).to_contain_text('find their voice')
+                        expect(page.locator('#welcome h1')).to_contain_text('find their voice')
                         if os.environ.get('VOICE_PRODUCT_SCREENSHOT'):page.screenshot(path=os.environ['VOICE_PRODUCT_SCREENSHOT'],full_page=True)
                         page.click('#help');expect(page.locator('#help-dialog')).to_be_visible();page.click('#close-help')
                         expect(page.locator('#new-topic')).to_be_enabled();page.click('#new-topic')
@@ -92,10 +95,59 @@ class VoiceBrowserTests(unittest.TestCase):
                         expect(page.locator('#topic-title')).to_have_text('我的新产品')
                         expect(page.locator('#answer')).to_have_text('Browser reply.')
                         expect(page.locator('a[href="/lab"]').first).to_be_visible()
+                    if documents:
+                        page.click('#save-reply')
+                        expect(page.locator('#documents-workspace')).to_be_visible()
+                        expect(page.locator('#document-content')).to_have_value('Browser reply.')
+                        self.assertEqual(page.locator('.document-row').count(),3)
+                        page.fill('#document-title','Launch memo');page.fill('#document-content','An edited plan from my spoken idea.')
+                        page.fill('#document-collection','Product');page.click('#save-document')
+                        expect(page.locator('#document-save-state')).to_have_text('v2 · Saved')
+                        page.locator('#document-source summary').click()
+                        expect(page.locator('#document-source-text')).to_have_text('Browser fixture.')
+                        if os.environ.get('VOICE_DOCUMENT_SCREENSHOT'):
+                            page.evaluate('()=>window.scrollTo(0,0)');page.wait_for_timeout(200)
+                            page.screenshot(path=os.environ['VOICE_DOCUMENT_SCREENSHOT'],full_page=True)
+                        page.click('#document-history');expect(page.locator('#document-versions-dialog')).to_be_visible()
+                        page.select_option('#document-version-select','1')
+                        expect(page.locator('#document-version-preview')).to_contain_text('Browser reply.')
+                        page.click('#restore-document-version')
+                        expect(page.locator('#document-save-state')).to_have_text('v3 · Saved')
+                        expect(page.locator('#document-content')).to_have_value('Browser reply.')
+                        with page.expect_download() as download_info:page.click('#export-document')
+                        download=download_info.value
+                        self.assertTrue(download.suggested_filename.endswith('.md'))
+                        self.assertIn('Browser reply.',Path(download.path()).read_text())
+                        page.fill('#document-content','Unsaved words')
+                        page.click('#nav-thoughts');expect(page.locator('#document-unsaved-dialog')).to_be_visible()
+                        page.click('#cancel-document-leave');expect(page.locator('#document-content')).to_have_value('Unsaved words')
+                        page.click('#reload-document');page.click('#discard-document-changes')
+                        expect(page.locator('#document-content')).to_have_value('Browser reply.')
+                        page.click('#archive-document');expect(page.locator('#document-kind-label')).to_have_text('Draft · archived')
+                        page.select_option('#document-status-filter','archived');expect(page.locator('.document-row')).to_have_count(1)
+                        page.click('#trash-document');expect(page.locator('#document-kind-label')).to_have_text('Draft · trash')
+                        page.select_option('#document-status-filter','trash');expect(page.locator('.document-row')).to_have_count(1)
+                        page.click('#trash-document');expect(page.locator('#document-kind-label')).to_have_text('Draft · active')
+                        page.select_option('#document-status-filter','active')
+                        reference=root/'Research.md';reference.write_text('Reference <script>window.docXss=true</script> text.')
+                        page.set_input_files('#import-document',str(reference))
+                        expect(page.locator('#document-title')).to_have_value('Research')
+                        self.assertIsNone(page.evaluate('()=>window.docXss'))
+                        expect(page.locator('#document-source-text')).to_have_text(reference.read_text())
+                        page.fill('#document-search','Reference');expect(page.locator('.document-row')).to_have_count(1)
+                        page.fill('#document-search','');expect(page.locator('.document-row')).to_have_count(4)
+                        page.reload();expect(page.locator('#document-title')).to_have_value('Research')
+                        expect(page.locator('#document-content')).to_have_value(reference.read_text())
                     page.set_viewport_size({'width':390,'height':844})
                     self.assertTrue(page.evaluate('()=>document.documentElement.scrollWidth <= innerWidth'))
                     if os.environ.get('VOICE_SCREENSHOT'):page.screenshot(path=os.environ['VOICE_SCREENSHOT'],full_page=True)
                     if route=='/product':expect(page.locator('.mobile-lab')).to_be_visible()
+                    if documents:
+                        self.assertEqual(page.locator('aside.sidebar').count(),1)
+                        self.assertEqual(page.locator('.documents-heading').count(),1)
+                    if documents and os.environ.get('VOICE_DOCUMENT_SCREENSHOT'):
+                        page.evaluate('()=>window.scrollTo(0,0)');page.wait_for_timeout(250)
+                        page.screenshot(path=os.environ['VOICE_DOCUMENT_SCREENSHOT'].replace('.png','-mobile.png'),full_page=True)
                     if route=='/product' and os.environ.get('VOICE_PRODUCT_SCREENSHOT'):
                         page.screenshot(path=os.environ['VOICE_PRODUCT_SCREENSHOT'].replace('.png','-mobile.png'),full_page=True)
                     self.assertEqual(errors,[])
