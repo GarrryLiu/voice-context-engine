@@ -92,7 +92,11 @@ class LiveTests(unittest.TestCase):
     def test_suspended_audio_context_does_not_dispatch_old_final_after_new_speech(self):
         self.run_browser_capture(True)
 
-    def run_browser_capture(self,delay_resume):
+    @unittest.skipUnless(os.environ.get('VOICE_BROWSER_TEST'),'opt-in synthetic microphone browser')
+    def test_product_continuous_microphone_and_barge_in(self):
+        self.run_browser_capture(False,'/product')
+
+    def run_browser_capture(self,delay_resume,route='/'):
         import socket,threading,time
         import uvicorn
         from playwright.sync_api import sync_playwright,expect
@@ -118,11 +122,11 @@ class LiveTests(unittest.TestCase):
                             gain.gain.value=0;oscillator.frequency.value=220;oscillator.connect(gain);gain.connect(destination);oscillator.start();
                             window.testMic={ctx,gain};return destination.stream;
                         };""")
-                    page.goto('http://127.0.0.1:'+str(port));expect(page.locator('#record')).to_be_enabled()
+                    page.goto('http://127.0.0.1:'+str(port)+route);expect(page.locator('#record')).to_be_enabled()
                     requests=[];page.on('request',lambda request:requests.append(request.url) if request.url.endswith('/api/reply') else None)
                     if delay_resume:
                         page.evaluate('''()=>{const original=audioContext;let delayed=false;audioContext=async()=>{const ctx=await original();if(liveReady&&!delayed){delayed=true;await new Promise(resolve=>window.releaseContext=resolve);}return ctx;};}''')
-                    page.click('#live');expect(page.locator('#status')).to_have_text('连续对话中，可以开始说话',timeout=10000)
+                    page.click('#live');expect(page.locator('#status')).to_have_text('Listening. Go ahead.' if route=='/product' else '连续对话中，可以开始说话',timeout=10000)
                     def utterance():
                         page.evaluate('()=>testMic.gain.gain.value=.3');page.wait_for_timeout(700)
                         page.evaluate('()=>testMic.gain.gain.value=0')
@@ -133,11 +137,11 @@ class LiveTests(unittest.TestCase):
                             if time.monotonic()>deadline:self.fail('context suspension not reached')
                             page.wait_for_timeout(20)
                     else:
-                        expect(page.locator('#status')).to_have_text('正在播放',timeout=10000)
+                        expect(page.locator('#status')).to_have_text('Speaking…' if route=='/product' else '正在播放',timeout=10000)
                         self.assertGreater(page.evaluate('()=>sources.size'),0)
                     # Supply the second microphone utterance only after the tested phase.
                     utterance()
-                    expect(page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=15000)
+                    expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.' if route=='/product' else '回复结束，可以继续说',timeout=15000)
                     if delay_resume:
                         self.assertEqual(len(requests),1)
                         page.evaluate('()=>window.releaseContext()');page.wait_for_timeout(200)
@@ -147,7 +151,7 @@ class LiveTests(unittest.TestCase):
                     state=self.service.state(sid)
                     self.assertEqual(len(state['recent']),2);self.assertTrue(state['responses'])
                     expect(page.locator('#record')).to_be_disabled()
-                    page.click('#live');expect(page.locator('#status')).to_have_text('连续对话已结束')
+                    page.click('#live');expect(page.locator('#status')).to_have_text('Conversation ended' if route=='/product' else '连续对话已结束')
                     expect(page.locator('#record')).to_be_enabled();self.assertEqual(errors,[])
                     page.evaluate('()=>testMic.ctx.close()')
                 finally:browser.close()

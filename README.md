@@ -18,6 +18,12 @@ automatic playback barge-in and bounded overlapping provider calls. The
 streaming LLM, C++ segmentation/queues and real PCM TTS with browser playback ACK.
 Physical microphone/speaker latency and billed-cost savings remain unmeasured.
 
+## Two local views
+
+The [product preview](docs/product-views.md) at `/product` offers a voice-first workspace
+with named thought branches and a focused conversation view. The original functional
+lab remains at `/` and `/lab`; both use the same local service and persisted state.
+
 ## Quick start
 
 Requires Python 3.11+; SQLite reference mode has no third-party dependencies.

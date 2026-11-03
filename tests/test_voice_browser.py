@@ -14,6 +14,12 @@ import wave
 @unittest.skipUnless(os.environ.get('VOICE_BROWSER_TEST') and os.environ.get('VOICE_RUNTIME_LIBRARY'),'opt-in browser and native build required')
 class VoiceBrowserTests(unittest.TestCase):
     def test_upload_record_playback_ack_and_responsive_page(self):
+        self.run_voice_page('/')
+
+    def test_product_topics_playback_restore_and_mobile(self):
+        self.run_voice_page('/product')
+
+    def run_voice_page(self,route):
         import socket
         import uvicorn
         from playwright.sync_api import sync_playwright,expect
@@ -50,24 +56,48 @@ class VoiceBrowserTests(unittest.TestCase):
                     browser=pw.chromium.launch(**launch)
                     context=browser.new_context(permissions=['microphone'],viewport={'width':1100,'height':850})
                     page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-                    page.goto(f'http://127.0.0.1:{port}')
+                    page.goto(f'http://127.0.0.1:{port}'+route)
                     expect(page.locator('#record')).to_be_enabled()
+                    if route=='/product':
+                        expect(page.locator('h1')).to_contain_text('find their voice')
+                        if os.environ.get('VOICE_PRODUCT_SCREENSHOT'):page.screenshot(path=os.environ['VOICE_PRODUCT_SCREENSHOT'],full_page=True)
+                        page.click('#help');expect(page.locator('#help-dialog')).to_be_visible();page.click('#close-help')
+                        expect(page.locator('#new-topic')).to_be_enabled();page.click('#new-topic')
+                        page.fill('#topic-name','我的新产品');page.click('#create-topic')
+                        expect(page.locator('#topic-dialog')).not_to_be_visible()
+                        expect(page.locator('#topic-title')).to_have_text('我的新产品')
+                        branch=page.locator('#branch').input_value()
+                        self.assertNotEqual(branch,'main')
+                    else:branch='main'
                     page.set_input_files('#file',str(fixture))
-                    expect(page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=15000)
+                    expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.' if route=='/product' else '回复结束，可以继续说',timeout=15000)
                     self.assertEqual(page.locator('#answer').inner_text(),'Browser reply.')
                     session=page.evaluate("()=>localStorage.getItem('voice-session')")
                     c=service.session(session)
-                    self.assertEqual(c.pipeline.context(branch='main')['responses'][0]['text'],'Browser reply.')
+                    self.assertEqual(c.pipeline.context(branch=branch)['responses'][0]['text'],'Browser reply.')
                     page.click('#record')
                     expect(page.locator('#stop')).to_be_enabled()
                     page.wait_for_timeout(600);page.click('#stop')
-                    expect(page.locator('#status')).to_have_text('回复结束，可以继续说',timeout=15000)
-                    self.assertEqual(len(c.pipeline.transcripts.recent('main')),2)
+                    expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.' if route=='/product' else '回复结束，可以继续说',timeout=15000)
+                    self.assertEqual(len(c.pipeline.transcripts.recent(branch)),2)
                     page.reload();expect(page.locator('#record')).to_be_enabled()
                     expect(page.locator('#answer')).to_have_text('Browser reply.')
+                    if route=='/product':
+                        expect(page.locator('#topic-title')).to_have_text('我的新产品')
+                        self.assertEqual(page.locator('#topics .topic').count(),2)
+                        page.get_by_role('button',name='◈ My workspace').click()
+                        expect(page.locator('#topic-title')).to_have_text('My workspace')
+                        expect(page.locator('#welcome')).to_be_visible()
+                        page.get_by_role('button',name='⑂ 我的新产品').click()
+                        expect(page.locator('#topic-title')).to_have_text('我的新产品')
+                        expect(page.locator('#answer')).to_have_text('Browser reply.')
+                        expect(page.locator('a[href="/lab"]').first).to_be_visible()
                     page.set_viewport_size({'width':390,'height':844})
                     self.assertTrue(page.evaluate('()=>document.documentElement.scrollWidth <= innerWidth'))
                     if os.environ.get('VOICE_SCREENSHOT'):page.screenshot(path=os.environ['VOICE_SCREENSHOT'],full_page=True)
+                    if route=='/product':expect(page.locator('.mobile-lab')).to_be_visible()
+                    if route=='/product' and os.environ.get('VOICE_PRODUCT_SCREENSHOT'):
+                        page.screenshot(path=os.environ['VOICE_PRODUCT_SCREENSHOT'].replace('.png','-mobile.png'),full_page=True)
                     self.assertEqual(errors,[])
                     browser.close()
             finally:

@@ -19,4 +19,4 @@ infra = ["psycopg[binary]>=3.2,<4", "confluent-kafka>=2.6,<3", "redis>=5,<7"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-voice_context = ["web/*.html", "web/*.js", "web/*.css"]
+voice_context = ["web/*.html", "web/*.js", "web/*.css", "web/*.svg"]
