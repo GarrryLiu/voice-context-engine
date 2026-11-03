@@ -96,6 +96,35 @@ class VoiceServerTests(unittest.TestCase):
         self.assertIn('切换到产品体验版',self.client.get('/lab').text)
         for path in ('/product.js','/product.css','/strings.js'):
             self.assertEqual(self.client.get(path).status_code,200)
+    def test_documents_capture_edit_conflict_and_restore(self):
+        response=self.client.post('/api/turn',headers={**self.headers,'content-type':'audio/wav'},content=b'fixture')
+        events=[json.loads(line) for line in response.text.splitlines()]
+        listing=self.client.get('/api/documents',headers=self.headers).json()['documents']
+        self.assertEqual(len(listing),1);identifier=listing[0]['id']
+        doc=self.client.get('/api/documents/item',headers=self.headers,params={'id':identifier}).json()
+        self.assertEqual(doc['source_text'],'Say hello.')
+        payload={'id':identifier,'version':1,'changes':{'title':'A useful note','content':'Edited note.'}}
+        self.assertEqual(self.client.post('/api/documents/change',headers=self.headers,json=payload).json()['version'],2)
+        self.assertEqual(self.client.post('/api/documents/change',headers=self.headers,json=payload).status_code,409)
+        restored=self.client.post('/api/documents/restore',headers=self.headers,json={'id':identifier,'version':2,'restore_version':1}).json()
+        self.assertEqual(restored['version'],3);self.assertEqual(restored['content'],'Say hello.')
+        revision=self.client.get('/api/documents/revision',headers=self.headers,params={'id':identifier,'version':2}).json()
+        self.assertEqual(revision['content'],'Edited note.')
+        self.assertEqual(len(self.client.get('/api/documents/history',headers=self.headers,params={'id':identifier}).json()['versions']),3)
+    def test_document_draft_requires_ack_and_retries_deduplicate(self):
+        response=self.client.post('/api/turn',headers={**self.headers,'content-type':'audio/wav'},content=b'fixture')
+        events=[json.loads(line) for line in response.text.splitlines()];audio=[e for e in events if e['type']=='audio']
+        payload={'reply_id':audio[0]['request_id']}
+        self.assertEqual(self.client.post('/api/documents/draft',headers=self.headers,json=payload).status_code,400)
+        for e in audio:self.client.post('/api/ack',headers=self.headers,json={k:e[k] for k in ('epoch','request_id','sequence','offset')})
+        first=self.client.post('/api/documents/draft',headers=self.headers,json=payload).json()
+        second=self.client.post('/api/documents/draft',headers=self.headers,json=payload).json()
+        self.assertEqual(first['id'],second['id']);self.assertEqual(first['content'],'Hello.')
+        self.assertEqual(first['source_text'],'Say hello.')
+        self.assertEqual(self.client.get('/api/documents').status_code,403)
+        self.assertEqual(self.client.post('/api/documents/create',headers=self.headers,content=b'x'*262145).status_code,413)
+        bad={'title':'x','content':'x','branch':'missing'}
+        self.assertEqual(self.client.post('/api/documents/create',headers=self.headers,json=bad).status_code,400)
     def test_branch_selection_and_busy_limit(self):
         self.assertEqual(self.client.get('/api/state',headers=self.headers).status_code,200)
         self.assertEqual(self.client.post('/api/control',headers=self.headers,json={'action':'fork','branch':'idea'}).status_code,200)

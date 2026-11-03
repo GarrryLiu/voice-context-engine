@@ -61,6 +61,23 @@ class PostgresTests(unittest.TestCase):
         self.assertFalse(self.p.sessions.valid(ticket))
         self.assertEqual(self.p.sessions.get('s')['spent'], 2)
 
+    def test_documents_share_atomic_source_and_conflict_versions(self):
+        from voice_context.documents import DocumentConflict
+        self.p.submit('voice','main','s','A PostgreSQL voice note.')
+        store=self.p.transcripts.documents;doc=store.get('voice:voice')
+        self.assertEqual(doc['source_text'],'A PostgreSQL voice note.')
+        self.assertEqual(store.update(doc['id'],1,{'collection':'Research','content':'Edited document.'})['version'],2)
+        other=Pipeline(self.scoped)
+        try:
+            with self.assertRaises(DocumentConflict):other.transcripts.documents.update(doc['id'],1,{'content':'Lost edit.'})
+            self.assertEqual(len(other.transcripts.documents.listing(query='research')['documents']),1)
+        finally:other.close()
+        self.assertEqual(store.restore(doc['id'],2,1)['version'],3)
+        with self.assertRaises(RuntimeError):
+            with self.p.engine.db:
+                self.p.transcripts.append_in_transaction('abort-doc','main','s','Must roll back.')
+                raise RuntimeError('rollback')
+        with self.assertRaises(KeyError):store.get('voice:abort-doc')
     def test_two_workers_cannot_claim_same_task(self):
         self.p.submit('a', 'main', 's', 'remember db: pg')
         barrier = threading.Barrier(2); claimed = []; errors = []

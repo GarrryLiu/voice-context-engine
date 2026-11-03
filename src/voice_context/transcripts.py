@@ -2,6 +2,7 @@
 from .storage import table_exists
 import hashlib
 import json
+from .documents import Documents
 
 
 class Transcripts:
@@ -19,6 +20,9 @@ class Transcripts:
         CREATE TABLE IF NOT EXISTS transcript_outbox (
           task_id TEXT PRIMARY KEY, payload TEXT NOT NULL, published INTEGER NOT NULL DEFAULT 0);
         ''')
+
+        self.documents=Documents(self.db)
+        self.documents.backfill()
 
     def append(self, transcript_id, branch, session, text, complex=False):
         with self.db:
@@ -40,6 +44,7 @@ class Transcripts:
         self.db.execute('INSERT INTO transcript_visibility VALUES (?,?)',(branch,transcript_id))
         self.db.execute('INSERT INTO transcript_outbox VALUES (?,?,0)',
                         ('transcript:'+transcript_id,json.dumps(payload,sort_keys=True)))
+        self.documents.capture(transcript_id,branch,text)
         return True
 
     def publish(self, queue):
