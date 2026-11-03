@@ -1,7 +1,7 @@
 'use strict';
 let workspaceData={categories:['Inbox'],sessions:[],links:[]},workspaceVersion=0,workspaceLoaded=false,workspaceLoading=null,workspaceSaving=false,workspacePending=false,workspaceBlocked=false,workspaceSavePromise=null;
 let graphSession=null,graphSelected=null,graphCategory='',graphListMode=false,graphScale=1,graphPan={x:0,y:0},graphDrag=null,graphFormDirty=false,graphNameAction='session';
-let activeProductSession=null;
+let activeProductSession=null,graphFinishing=false;
 try{activeProductSession=localStorage.getItem('voiceline-active-product-session');}catch{}
 const graphTypes={idea:'Idea',question:'Open question',decision:'Decision',document:'Document',voice:'Voice note'};
 function graphEl(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
@@ -90,7 +90,7 @@ function renderGraph(){
  $('graph-counts').textContent=items.length+(current?' thoughts':' sessions')+' · '+graphLinks().filter(e=>e.every(id=>items.some(n=>n.id===id))).length+' connections';
  renderGraphInspector();
 }
-function selectGraphItem(id){if(graphSelected!==id&&!graphCanLeave())return;graphFormDirty=false;graphSelected=id;renderGraph();}
+function selectGraphItem(id){if(graphSelected===id||!graphCanLeave())return;graphFormDirty=false;graphSelected=id;for(const node of document.querySelectorAll('.graph-node'))node.classList.toggle('selected',node.dataset.id===id);renderGraphInspector();}
 function renderGraphInspector(){
  const item=selectedGraphItem(),current=selectedGraphSession();$('graph-inspector-empty').hidden=!!item;$('graph-editor').hidden=!item;if(!item)return;
  $('graph-selection-kind').textContent=current?(graphTypes[item.kind]||'Thought').toUpperCase():'SESSION';$('graph-edit-title').value=item.title;
@@ -104,6 +104,7 @@ function renderGraphInspector(){
 }
 function graphHash(){history.replaceState(null,'','#workspace'+(graphSession?'/'+encodeURIComponent(graphSession):''));}
 async function showGraph(id=null){
+ if(starting||switching||recorder?.state==='recording'){status('Send your recording before opening the workspace.');return;}
  if(!await canLeaveDocument()||!graphCanLeave())return;
  if(liveActive())await endLive('Conversation paused.');else if(busy)await stopAll();
  try{await loadWorkspace();graphFormDirty=false;document.body.dataset.view='workspace';$('documents-workspace').hidden=true;$('graph-workspace').hidden=false;for(const id of ['nav-thoughts','nav-documents'])$(id).classList.remove('selected');$('nav-workspace').classList.add('selected');graphSession=workspaceData.sessions.some(s=>s.id===id)?id:null;graphSelected=null;$('topic-title').textContent='Workspace';$('graph-search').value='';graphReset();renderGraph();graphHash();}
@@ -120,7 +121,7 @@ $('graph-name-form').onsubmit=async event=>{
  $('graph-name-dialog').close();await persistWorkspace();renderGraph();graphReset();graphHash();}
  catch(error){graphNotice(error.message,true);}
 };
-$('graph-editor').oninput=()=>{graphFormDirty=true;};
+$('graph-editor').oninput=()=>{graphFormDirty=true;graphNotice('Unsaved node edits · save changes to keep them.');};
 $('graph-editor').onsubmit=event=>{event.preventDefault();const item=selectedGraphItem();if(!item)return;item.title=$('graph-edit-title').value.trim()||item.title;if(graphSession){item.content=$('graph-edit-content').value;if(item.kind!=='voice')item.kind=$('graph-edit-kind').value;}else item.category=$('graph-edit-category').value;graphFormDirty=false;persistWorkspace();renderGraph();};
 $('graph-connect').onclick=()=>{const target=$('graph-connect-target').value;if(!target||!graphSelected||!graphCanLeave())return;const links=graphLinks();if(!links.some(e=>e.includes(target)&&e.includes(graphSelected)))links.push([graphSelected,target]);graphFormDirty=false;persistWorkspace();renderGraph();};
 $('graph-close-selection').onclick=()=>{if(!graphCanLeave())return;graphFormDirty=false;graphSelected=null;renderGraph();};
@@ -150,6 +151,9 @@ async function resumeProductSession(){
 }
 $('graph-continue').onclick=resumeProductSession;
 async function finishProductSession(){
+ if(graphFinishing)return;
+ if(starting||switching||recorder?.state==='recording'){status('Send your recording before organizing the session.');return;}
+ graphFinishing=true;$('finish-session').disabled=true;
  try{if(liveActive())await endLive('Session ended.');else if(busy)await stopAll();await loadWorkspace();await refresh();
  const branch=$('branch').value;let item=workspaceData.sessions.find(s=>s.id===activeProductSession&&s.branch===branch)||workspaceData.sessions.find(s=>s.branch===branch);
  if(!item){item={id:crypto.randomUUID(),title:topicName(branch)==='My workspace'?'An untitled thought':topicName(branch),category:'Inbox',branch,demo:false,...graphPlace(workspaceData.sessions),nodes:[],edges:[]};workspaceData.sessions.push(item);}
@@ -157,6 +161,7 @@ async function finishProductSession(){
  do{const result=await documentAPI('?'+new URLSearchParams({branch,status:'active',offset:String(offset)}));for(const doc of result.documents){if(item.nodes.some(n=>n.source===doc.id))continue;const full=await documentAPI('/item?id='+encodeURIComponent(doc.id));const id=crypto.randomUUID(),n=item.nodes.length;item.nodes.push({id,title:doc.title,content:full.content,kind:doc.kind==='voice'?'voice':'document',...graphPlace(item.nodes),source:doc.id});/* No inferred links: the user decides how ideas connect. */}offset=result.next_offset;}while(offset!==null);
  if(!await persistWorkspace())throw Error('workspace unsaved');activeProductSession=item.id;try{localStorage.setItem('voiceline-active-product-session',item.id);}catch{}await showGraph(item.id);graphNotice('Session saved. Voice notes are kept with their original sources. Add connections to organize your thinking.');}
  catch{status('Could not organize the session. Your original voice notes are still saved in Documents.');}
+ finally{graphFinishing=false;$('finish-session').disabled=false;}
 }
 $('finish-session').onclick=finishProductSession;
 $('graph-demo').onclick=async()=>{

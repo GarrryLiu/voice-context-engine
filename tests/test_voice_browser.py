@@ -84,6 +84,11 @@ class VoiceBrowserTests(unittest.TestCase):
                     self.assertEqual(c.pipeline.context(branch=branch)['responses'][0]['text'],'Browser reply.')
                     page.click('#record')
                     expect(page.locator('#stop')).to_be_enabled()
+                    if graph:
+                        page.click('#finish-session')
+                        expect(page.locator('#status')).to_have_text('Send your recording before organizing the session.')
+                        expect(page.locator('#graph-workspace')).not_to_be_visible()
+
                     page.wait_for_timeout(600);page.click('#stop')
                     expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.' if route=='/product' else '回复结束，可以继续说',timeout=15000)
                     self.assertEqual(len(c.pipeline.transcripts.recent(branch)),2)
@@ -108,6 +113,7 @@ class VoiceBrowserTests(unittest.TestCase):
                         expect(page.locator('#graph-edit-content')).to_have_value('Browser fixture.')
                         page.fill('#graph-edit-title','A saved voice idea');page.locator('#graph-editor button[type=submit]').click()
                         expect(page.locator('.graph-node').first).to_contain_text('A saved voice idea')
+                        page.click('#graph-back');page.locator('.graph-node').first.dblclick();expect(page.locator('.graph-node')).to_have_count(2)
                         page.click('#graph-back');page.click('#graph-demo')
                         expect(page.locator('.graph-node')).to_have_count(5)
                         expect(page.locator('#graph-notice')).to_contain_text('Example workspace')
@@ -116,7 +122,9 @@ class VoiceBrowserTests(unittest.TestCase):
                         page.get_by_role('button',name='Select session: A voice-first thinking space',exact=True).click()
                         page.click('#graph-open-session');expect(page.locator('.graph-node')).to_have_count(4)
                         page.get_by_role('button',name='Select thought: Thinking out loud',exact=True).click()
-                        page.fill('#graph-edit-content','My edited thinking map.');page.locator('#graph-editor button[type=submit]').click()
+                        page.fill('#graph-edit-content','My edited thinking map.');page.get_by_role('button',name='Select thought: Thinking out loud',exact=True).click()
+                        expect(page.locator('#graph-edit-content')).to_have_value('My edited thinking map.')
+                        page.locator('#graph-editor button[type=submit]').click()
                         expect(page.locator('#graph-notice')).to_contain_text('Saved locally')
                         before=page.locator('.graph-node').first.bounding_box()
                         page.mouse.move(before['x']+60,before['y']+35);page.mouse.down();page.mouse.move(before['x']+120,before['y']+65,steps=5);page.mouse.up()
@@ -194,6 +202,10 @@ class VoiceBrowserTests(unittest.TestCase):
                     if documents:
                         self.assertEqual(page.locator('aside.sidebar').count(),1)
                         self.assertEqual(page.locator('.documents-heading').count(),1)
+                    if graph:
+                        expect(page.locator('#graph-continue')).to_be_visible()
+                        self.assertTrue(page.locator('#graph-continue').evaluate('(el)=>el.getBoundingClientRect().right<=innerWidth'))
+                        self.assertTrue(page.locator('.graph-zoom').evaluate('(el)=>el.getBoundingClientRect().right<=innerWidth'))
                     if graph and os.environ.get('VOICE_GRAPH_SCREENSHOT'):
                         page.screenshot(path=os.environ['VOICE_GRAPH_SCREENSHOT'].replace('.png','-mobile.png'),full_page=True)
                     if documents and os.environ.get('VOICE_DOCUMENT_SCREENSHOT'):

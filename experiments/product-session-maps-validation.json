@@ -1,0 +1,43 @@
+{
+  "scope": "Local product session map presentation build; synthetic audio and fixture models; no paid model calls",
+  "full_regression": {
+    "tests": 142,
+    "passed": 142,
+    "seconds": 80.539,
+    "log": "/tmp/graph-full-tests.log",
+    "note": "Before final selection, recording-navigation guard and mobile layout refinements."
+  },
+  "followup_browser_suite": {
+    "tests": 4,
+    "passed": 4,
+    "seconds": 21.107,
+    "log": "/tmp/graph-browser-guard.log"
+  },
+  "final_graph_flow": {
+    "tests": 1,
+    "passed": 1,
+    "seconds": 7.403,
+    "log": "/tmp/graph-mobile-final.log",
+    "includes": [
+      "voice capture to session map",
+      "example labeling",
+      "double click session navigation",
+      "same-node dirty edits preserved",
+      "edit and drag persistence",
+      "resume independent voice branch",
+      "append new source once",
+      "mobile controls inside viewport"
+    ]
+  },
+  "visual_review": [
+    "desktop workspace",
+    "desktop session map",
+    "mobile session map"
+  ],
+  "source_sha256": {
+    "src/voice_context/web/workspace.js": "e16b3c19478e4ea82fba0c511c3e93378899fb0e67f48945da9d8191be8bd4d9",
+    "src/voice_context/web/workspace.css": "cf4afb56418bdd6b75f6a1feac952272cb9d72de48f973c2ed3ac3b0d7678290",
+    "src/voice_context/product_workspace.py": "22118c11b2b86a7545a287baef3c49b4d14ca08072fea0286107b497e86203ca",
+    "tests/test_voice_browser.py": "9064f2388bf154417b9f026b62438ef9fbfb054dcb026b9964c68aac8a22a291"
+  }
+}
