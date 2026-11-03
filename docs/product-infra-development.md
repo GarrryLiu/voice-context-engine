@@ -16,3 +16,7 @@ Authenticated `GET /api/capabilities` describes routes, mode and limits. API res
 - Cancellation/branch changes fence old response generations.
 - Editing a map is separate from editing a source document or approving model memory.
 - Additive changes can ship independently. Breaking changes require a new supported contract version and a consumer transition before removing v1.
+
+## Backend composition
+
+`server/app.py` owns security and lifecycle; `server/routes/` separates voice, product data and static resources. `infra/runtime/service.py` owns execution. `product/services.py` depends on a store-access port; `server/adapters.py` binds it to the existing serialized connection without changing transaction semantics. Product models live in `product/`; old Python import paths and `VoiceService` methods remain compatibility facades. The transcript-capture bridge still shares a transaction intentionally; removing that bridge is a separate migration, not an automatic queue conversion.
