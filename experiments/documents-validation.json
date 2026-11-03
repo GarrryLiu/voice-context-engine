@@ -57,5 +57,23 @@
     "tests/test_voice_server.py": "d8b84ca134d6afc417cf6b3de80ed7d622bc5b2ff3c05b6ab15c8fe46b063d4c",
     "tests/test_postgres.py": "92764a0ab1d6e2f688f58a03b65c1f8f95e9c3041eeccefd44ea4a7ef5ab2973",
     "tests/test_realtime_stt.py": "660b2307038b3d9ce3504d0bbb7c3044c897b90f97237b5a8bbf7033ea51f988"
+  },
+  "followup_ci_failure": {
+    "run_id": 41684063238,
+    "failed_test": "test_product_voice_documents_edit_versions_trash_and_import",
+    "observation": "After a committed restore, import could be ignored while the editor still awaited a library refresh.",
+    "fix": "Release write controls on mutation acknowledgement; refresh the list asynchronously. Disable creation/import only during the mutation itself."
+  },
+  "followup_browser_validation": {
+    "tests": 3,
+    "passed": true,
+    "seconds": 13.094,
+    "slow_list_scenario": "Hold an automatic list request while restoring, then import a reference before releasing it.",
+    "audio_sink": "Test-only AudioContext silent sink preserves software render clock/ended ACK without depending on the host speaker.",
+    "source_hashes": {
+      "src/voice_context/web/documents.js": "4b6c5e11cee51ea33843d51b6032f524b63a373e32c093f7bb452c3b47901c98",
+      "src/voice_context/web/documents.css": "dbbda9f01c5479fa156bfcb66745b81a621990a2d722bb0c4fa7aaec74dde24d",
+      "tests/test_voice_browser.py": "a50e392a3579e7b1919f885d79150cb48604d8e5d2fa4df48be1a2dc317c3b03"
+    }
   }
 }

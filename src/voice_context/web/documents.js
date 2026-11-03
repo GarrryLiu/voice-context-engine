@@ -10,6 +10,7 @@ async function documentAPI(path,data){
 }
 function documentFields(){return {title:$('document-title').value.trim()||'Untitled document',content:$('document-content').value,branch:$('document-branch').value,collection:$('document-collection').value.trim()};}
 function documentEditorState(){
+ $('new-document').disabled=documentWriting;$('import-document').disabled=documentWriting;
  if(!currentDocument)return;
  const fields=documentFields();documentDirty=Object.entries(fields).some(([key,value])=>value!==currentDocument[key]);
  const trashed=currentDocument.status==='trash';
@@ -42,7 +43,7 @@ async function saveDocument(extra={}){
  documentWriting=true;documentEditorState();
  try{
   const doc=await documentAPI('/change',{id:currentDocument.id,version:currentDocument.version,changes:{...documentFields(),...extra}});
-  displayDocument(doc);documentNotice('Saved · version '+doc.version);await loadDocuments();return true;
+  displayDocument(doc);documentNotice('Saved · version '+doc.version);loadDocuments();return true;
  }catch(error){documentNotice(error.message,true);return false;}
  finally{documentWriting=false;documentEditorState();}
 }

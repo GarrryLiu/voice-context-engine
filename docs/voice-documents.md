@@ -49,3 +49,7 @@ Full local regression: **136 tests passed, zero failures or skips**. The run inc
 Tests cover atomic capture/rollback, duplicate ingestion, migration without resurrection, edits preserving source, concurrent-version conflicts, history restoration, archive/trash recovery, literal search and pagination. PostgreSQL uses isolated schemas. API tests check acknowledgement-gated drafts, retry deduplication, auth and payload limits.
 
 The browser flow uses fake STT/LLM/TTS: speak/upload, save a reply draft, edit, inspect original text, restore a version, export, guard unsaved changes, archive, trash/restore, import untrusted plain text, search and reload the selected document on mobile. No paid model calls or real microphone data are used by these tests.
+
+A follow-up browser experiment holds a list refresh while a saved document is restored, then imports another file before releasing the refresh. Mutation controls now unlock when the save is committed; list refresh is asynchronous. This fixes a CI-observed ignored import. Creation/import controls are disabled only during a mutation.
+
+Browser tests use Chrome's [silent AudioContext sink](https://developer.chrome.com/blog/audiocontext-setsinkid), which retains the render clock and ended events without a host-speaker dependency. This setting is injected only in isolated tests; product audio playback is unchanged.
