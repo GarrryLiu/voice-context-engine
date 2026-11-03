@@ -211,6 +211,8 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     def index():return HTMLResponse((WEB/'index.html').read_text().replace('__LOCAL_TOKEN__',token))
     @app.get('/product')
     def product():return HTMLResponse((WEB/'product.html').read_text().replace('__LOCAL_TOKEN__',token))
+    @app.get('/brand.svg')
+    def brand_svg():return Response((WEB/'brand.svg').read_text(),media_type='image/svg+xml')
     @app.get('/product.css')
     def product_css():return Response((WEB/'product.css').read_text(),media_type='text/css')
     @app.get('/strings.js')

@@ -27,3 +27,11 @@ h1,.message p,.breadcrumb strong,dialog{color:var(--text)}
 body.is-live .status-dot{background:var(--accent)}body.is-live .talk-button{background:var(--accent-soft);color:#5745bf}
 dialog{background:#fafafa;border-color:var(--line)}dialog::backdrop{background:#17171738}dialog input{color:var(--text)}
 #topic-error{color:#b54848}.dialog-actions .solid{color:#ffffff}
+
+/* Threadline: one thought, multiple paths. */
+.brand-symbol{width:29px;height:29px;flex-shrink:0;color:var(--text)}
+.branch-accent{stroke:var(--accent)}
+.assistant-symbol{width:25px;height:25px;color:var(--text);flex-shrink:0}
+.hero-symbol{width:58px;height:58px;color:var(--text)}
+.brand{letter-spacing:-.65px;gap:9px}.brand .beta{margin-left:auto}
+.voice-core{transform:rotate(-6deg)}
