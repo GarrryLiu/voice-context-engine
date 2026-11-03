@@ -162,3 +162,5 @@ Stale or revoked extraction candidates cannot overwrite changed confirmed memory
 Queue capacities and software-render cancellation do not establish real audio
 latency. Live SDKs, asynchronous network/device adapters and distributed backends
 remain separate implementation milestones.
+
+Product session maps: [workflow, persistence, and demonstration scope](docs/product-session-maps.md).

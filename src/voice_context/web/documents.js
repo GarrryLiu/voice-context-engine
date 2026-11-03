@@ -102,7 +102,7 @@ async function showThoughts(){
 }
 $('nav-documents').onclick=()=>showDocuments();$('nav-thoughts').onclick=showThoughts;
 for(const id of ['new-topic','topics'])$(id).addEventListener('click',async event=>{
- if(document.body.dataset.view!=='documents')return;
+ if(!['documents','workspace'].includes(document.body.dataset.view))return;
  const target=id==='topics'?event.target.closest('button'):$(id);if(!target||target.disabled)return;
  event.preventDefault();event.stopImmediatePropagation();if(await showThoughts())target.click();
 },true);
