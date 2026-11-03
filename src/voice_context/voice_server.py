@@ -55,9 +55,9 @@ class VoiceService:
                     'responses':c.pipeline.context(branch=state['branch'],budget=12000)['responses']}
     def controls(self,session,action,branch=None):
         c=self.session(session)
-        if action=='fork':
+        if action in {'fork','new_branch'}:
             if not isinstance(branch,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}',branch):raise ValueError('invalid branch')
-            with c.lock:c.pipeline.engine.fork(branch,c.pipeline.sessions.get(session)['branch'])
+            with c.lock:c.pipeline.engine.fork(branch,c.pipeline.sessions.get(session)['branch'] if action=='fork' else None)
         elif action=='switch':c.interrupt(branch)
         elif action=='interrupt':c.interrupt()
         else:raise ValueError('unknown action')

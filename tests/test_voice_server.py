@@ -65,6 +65,14 @@ class VoiceServerTests(unittest.TestCase):
         self.client=TestClient(self.app);self.client.__enter__()
         self.headers={'x-voice-token':self.app.state.local_token,'x-voice-session':'test-session'}
     def tearDown(self):self.client.__exit__(None,None,None);self.tmp.cleanup()
+    def test_new_product_session_branch_does_not_inherit_other_thoughts(self):
+        c=self.service.session('test-session')
+        c.pipeline.submit('old-product-input','main','test-session','A private thought in another session.')
+        self.assertEqual(self.client.post('/api/control',headers=self.headers,json={'action':'new_branch','branch':'product-independent'}).status_code,200)
+        state=self.client.post('/api/control',headers=self.headers,json={'action':'switch','branch':'product-independent'}).json()
+        self.assertEqual(state['recent'],[])
+        self.assertEqual(c.pipeline.context(branch='product-independent')['recent'],[])
+
     def test_product_workspace_auth_persistence_and_conflict(self):
         self.assertEqual(self.client.get('/api/workspace').status_code,403)
         initial=self.client.get('/api/workspace',headers=self.headers).json()

@@ -22,7 +22,10 @@ class VoiceBrowserTests(unittest.TestCase):
     def test_product_voice_documents_edit_versions_trash_and_import(self):
         self.run_voice_page('/product',documents=True)
 
-    def run_voice_page(self,route,documents=False):
+    def test_product_session_maps_edit_drag_resume_and_persistence(self):
+        self.run_voice_page('/product',graph=True)
+
+    def run_voice_page(self,route,documents=False,graph=False):
         import socket
         import uvicorn
         from playwright.sync_api import sync_playwright,expect
@@ -96,6 +99,43 @@ class VoiceBrowserTests(unittest.TestCase):
                         expect(page.locator('#topic-title')).to_have_text('我的新产品')
                         expect(page.locator('#answer')).to_have_text('Browser reply.')
                         expect(page.locator('a[href="/lab"]').first).to_be_visible()
+                    if graph:
+                        page.set_viewport_size({'width':1500,'height':960})
+                        page.click('#finish-session');expect(page.locator('#graph-workspace')).to_be_visible()
+                        expect(page.locator('.graph-node')).to_have_count(2)
+                        expect(page.locator('#graph-title')).to_have_text('我的新产品')
+                        page.locator('.graph-node').first.click()
+                        expect(page.locator('#graph-edit-content')).to_have_value('Browser fixture.')
+                        page.fill('#graph-edit-title','A saved voice idea');page.locator('#graph-editor button[type=submit]').click()
+                        expect(page.locator('.graph-node').first).to_contain_text('A saved voice idea')
+                        page.click('#graph-back');page.click('#graph-demo')
+                        expect(page.locator('.graph-node')).to_have_count(5)
+                        expect(page.locator('#graph-notice')).to_contain_text('Example workspace')
+                        if os.environ.get('VOICE_GRAPH_SCREENSHOT'):
+                            page.screenshot(path=os.environ['VOICE_GRAPH_SCREENSHOT'],full_page=True)
+                        page.get_by_role('button',name='Select session: A voice-first thinking space',exact=True).click()
+                        page.click('#graph-open-session');expect(page.locator('.graph-node')).to_have_count(4)
+                        page.get_by_role('button',name='Select thought: Thinking out loud',exact=True).click()
+                        page.fill('#graph-edit-content','My edited thinking map.');page.locator('#graph-editor button[type=submit]').click()
+                        expect(page.locator('#graph-notice')).to_contain_text('Saved locally')
+                        before=page.locator('.graph-node').first.bounding_box()
+                        page.mouse.move(before['x']+60,before['y']+35);page.mouse.down();page.mouse.move(before['x']+120,before['y']+65,steps=5);page.mouse.up()
+                        page.wait_for_function('()=>!workspaceSaving && !workspacePending')
+                        self.assertGreater(page.evaluate('selectedGraphSession().nodes[0].x'),35)
+                        page.reload();expect(page.locator('#graph-title')).to_have_text('A voice-first thinking space')
+                        page.get_by_role('button',name='Select thought: Thinking out loud',exact=True).click()
+                        expect(page.locator('#graph-edit-content')).to_have_value('My edited thinking map.')
+                        page.click('#graph-add-node');page.fill('#graph-name','A new research direction');page.locator('#graph-name-form button[type=submit]').click()
+                        expect(page.locator('.graph-node')).to_have_count(5)
+                        page.wait_for_function('()=>!workspaceSaving && !workspacePending')
+                        if os.environ.get('VOICE_GRAPH_SCREENSHOT'):
+                            page.screenshot(path=os.environ['VOICE_GRAPH_SCREENSHOT'].replace('.png','-session.png'),full_page=True)
+                        page.click('#graph-continue');expect(page.locator('#graph-workspace')).not_to_be_visible()
+                        expect(page.locator('#active-session-name')).to_have_text('A voice-first thinking space')
+                        page.set_input_files('#file',str(fixture))
+                        expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.',timeout=15000)
+                        page.click('#finish-session');expect(page.locator('.graph-node')).to_have_count(6)
+                        page.wait_for_function('()=>!workspaceSaving && !workspacePending')
                     if documents:
                         page.click('#save-reply')
                         expect(page.locator('#documents-workspace')).to_be_visible()
@@ -154,6 +194,8 @@ class VoiceBrowserTests(unittest.TestCase):
                     if documents:
                         self.assertEqual(page.locator('aside.sidebar').count(),1)
                         self.assertEqual(page.locator('.documents-heading').count(),1)
+                    if graph and os.environ.get('VOICE_GRAPH_SCREENSHOT'):
+                        page.screenshot(path=os.environ['VOICE_GRAPH_SCREENSHOT'].replace('.png','-mobile.png'),full_page=True)
                     if documents and os.environ.get('VOICE_DOCUMENT_SCREENSHOT'):
                         page.evaluate('()=>window.scrollTo(0,0)');page.wait_for_timeout(250)
                         page.screenshot(path=os.environ['VOICE_DOCUMENT_SCREENSHOT'].replace('.png','-mobile.png'),full_page=True)
