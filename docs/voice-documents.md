@@ -44,6 +44,8 @@ The next product iteration can add **Continue this document by voice**: choose t
 
 ## Validation
 
+Full local regression: **136 tests passed, zero failures or skips**. The run includes native C++, local PostgreSQL/Kafka/Redis and isolated browser workflows. [Validation evidence](../experiments/documents-validation.json) retains the initial synthetic microphone timing failure and the final source hashes.
+
 Tests cover atomic capture/rollback, duplicate ingestion, migration without resurrection, edits preserving source, concurrent-version conflicts, history restoration, archive/trash recovery, literal search and pagination. PostgreSQL uses isolated schemas. API tests check acknowledgement-gated drafts, retry deduplication, auth and payload limits.
 
 The browser flow uses fake STT/LLM/TTS: speak/upload, save a reply draft, edit, inspect original text, restore a version, export, guard unsaved changes, archive, trash/restore, import untrusted plain text, search and reload the selected document on mobile. No paid model calls or real microphone data are used by these tests.
