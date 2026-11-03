@@ -1,0 +1,74 @@
+{
+  "protocol": "one synthetic Chinese microphone fixture, real live STT/text LLM/TTS and headless WebAudio ACK; software timings only",
+  "model": "gpt-live-transcribe",
+  "timeline": [
+    {
+      "type": "ready",
+      "seconds": 1.178
+    },
+    {
+      "type": "speech_started",
+      "seconds": 1.827
+    },
+    {
+      "type": "transcript",
+      "seconds": 9.343,
+      "text": "项目代号是北极星。请告诉我项目代号是什么？只用一句话回答。"
+    }
+  ],
+  "transcript": "项目代号是北极星。请告诉我项目代号是什么？只用一句话回答。",
+  "answer": "项目代号是北极星。",
+  "first_schedule_after_final_seconds": "3.71s",
+  "generation_after_final_seconds": "4.45s",
+  "complete_after_click_seconds": 16.733,
+  "browser_errors": [],
+  "acknowledged_segments": 1,
+  "audit": [
+    {
+      "model": "gpt-live-transcribe",
+      "state": "completed",
+      "usage": "{\"audio_seconds_sent\": 7.18, \"measurement\": \"local PCM; provider usage when present\", \"provider_turns\": [{\"type\": \"duration\", \"seconds\": 8}]}",
+      "error_code": null
+    },
+    {
+      "model": "gpt-6-luna",
+      "state": "completed",
+      "usage": "{\"input_tokens\": 248, \"input_tokens_details\": {\"cache_write_tokens\": 0, \"cached_tokens\": 0}, \"output_tokens\": 12, \"output_tokens_details\": {\"reasoning_tokens\": 0}, \"total_tokens\": 260}",
+      "error_code": null
+    },
+    {
+      "model": "gpt-4o-mini-tts",
+      "state": "completed",
+      "usage": "{\"source\": \"local_measurement_not_billing\", \"input_characters\": 9, \"output_pcm_bytes\": 148800}",
+      "error_code": null
+    }
+  ],
+  "source_hashes": {
+    "src/voice_context/sessions.py": "c43307204c622f4b8070f58255e289e7dd18d3192d0fb752b15c1d2068c80f38",
+    "src/voice_context/gateway.py": "7c12dc4be88bab4fba1366d173e9940685fb343873107eed08ea874b1ede568e",
+    "src/voice_context/tasks.py": "a0e93e96c90495482684ec52046cadd365b2ffc5e255dad3a7097ad7480928e9",
+    "src/voice_context/models.py": "9c6b9211127944c6f059b554fddea81063e4ec2f23330d0c051179641000fbb8",
+    "src/voice_context/transcripts.py": "ad4d98b03346280be5623e68ba50c5ca30f239a774d7feda55630cee615798ca",
+    "src/voice_context/conversation.py": "feb3ccf2c12e763778ff6d26ab64c1ac1348db12131181e7981f34b0552dea3b",
+    "src/voice_context/cache.py": "9287cf5118a0858e10c27aaf35b2095ae5477bdfd0c72d9ddcfffec994c10b93",
+    "src/voice_context/__init__.py": "5732eeaaaa9d425ba06f97712b2e24576dce36ae8662fc08d5fa9acd13655158",
+    "src/voice_context/native.py": "725488f63cd5e9473f6f85004590b2232ad78d6723ec16823cb999690bea21fa",
+    "src/voice_context/openai_provider.py": "393d7f8389695871cf702efa8dee96ab21bec0e14bbefeb0e43a7b4fde1c95ca",
+    "src/voice_context/providers.py": "c01dd147134174374884841b7e343ccf1be9fa3d67b2ecfafa1569886e4003bb",
+    "src/voice_context/engine.py": "f5289a867a991abc863d1d91f12ce82b4f5ab95675f05c3cab93f7abfb16b7d7",
+    "src/voice_context/voice_server.py": "8653459f28722131e70da082bf1c0dbde5c17dfdd3bd277b0d3f55ba12c07054",
+    "src/voice_context/audio_providers.py": "9cf99e26b13828f2cb8ad0eff51bb657cf6d666fe5caf47259522fc81c661aa7",
+    "src/voice_context/routing.py": "78b411031e8d00fb44e9928215cd8575bd6a1fe8dba220340344561a112461ae",
+    "src/voice_context/storage.py": "d5199193ff23d0bd89a33b2aa5e2d59d4d5da607dceb5254be1f8163642df85e",
+    "src/voice_context/broker.py": "21e59f502d8373e48e056621428cd39114c8c9b016b16fd1ba8490bef5afba7b",
+    "src/voice_context/realtime_stt.py": "7e66be82de3e34cf3f20630e64dffda1742df46fbbea3db3094a68faf0d4b9d1",
+    "src/voice_context/__main__.py": "b39e560eafdf161b1c4a737a765ea903c74e733ef000a7beb708493145e4dca7",
+    "src/voice_context/web/index.html": "2311c9557b9933147d1fa63bac1223070c8f5ca1dff791882f5a0465465420ec",
+    "src/voice_context/web/style.css": "42ec41b682c65538145a89d128c2df3c4e3b03b6486ebb24b47ae23d70cb45e1",
+    "src/voice_context/web/capture.js": "b01b9c0fec78e51366ec2c96c9b92ffd14e777b0f74bba084ee9e562b98997da",
+    "src/voice_context/web/live.js": "f1b1db938f09bccdc34b7be1de0fc05081b87cac606589fd74ded580bdb954dd",
+    "src/voice_context/web/app.js": "0d6259000f2e6d7a9fe896a125599a0f39ce1baf04d64c483608b4e067d979bc"
+  },
+  "expected_present": true,
+  "single_turn": true
+}

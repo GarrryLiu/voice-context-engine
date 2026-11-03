@@ -1,4 +1,4 @@
-"""Loopback-only, single active turn voice prototype. Run via python -m."""
+"""Loopback-only, bounded concurrent turn voice prototype. Run via python -m."""
 import argparse
 import asyncio
 import base64
@@ -12,6 +12,7 @@ import secrets
 import threading
 import time
 import uuid
+from dataclasses import dataclass,field
 from .conversation import Conversation
 from .openai_provider import settings,make_client,OpenAITextProvider,ModelJournal
 from .audio_providers import OpenAIRecordingSTT,OpenAIPcmTTS
@@ -20,11 +21,21 @@ WEB=Path(__file__).with_name('web')
 MIMES={'audio/webm':'webm','audio/ogg':'ogg','audio/mp4':'mp4','audio/wav':'wav','audio/x-wav':'wav'}
 
 
+@dataclass
+class TurnLease:
+    conversation: Conversation
+    epoch: int
+    stop: threading.Event=field(default_factory=threading.Event)
+    released: bool=False
+    @property
+    def session(self):return self.conversation.session
+
+
 class VoiceService:
-    def __init__(self,path,env_file='.env',factory=None,redis_url=None):
+    def __init__(self,path,env_file='.env',factory=None,redis_url=None,max_workers=4,live_factory=None):
         self.path,self.env_file,self.factory,self.redis_url=path,env_file,factory,redis_url
-        self.lock=threading.RLock();self.slots=threading.BoundedSemaphore(1)
-        self.sessions={};self.active=set()
+        self.lock=threading.RLock();self.slots=threading.BoundedSemaphore(max_workers)
+        self.sessions={};self.active={};self.owners={};self.live_sessions=set();self.live_factory=live_factory
     def session(self,session):
         if not isinstance(session,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',session):raise ValueError('invalid session')
         with self.lock:
@@ -55,17 +66,38 @@ class VoiceService:
         with c.lock:
             if c.pipeline.sessions.get(session)['epoch']!=data['epoch']:raise ValueError('stale playback')
             return c.pipeline.sessions.acknowledge(session,data['request_id'],data['sequence'],data['offset'])
-    def acquire(self,session):
+    def acquire(self,session,expected_epoch=None):
         c=self.session(session)
-        if not self.slots.acquire(blocking=False):raise ValueError('another turn is active')
-        with self.lock:self.active.add(session)
-        return c
-    def stream(self,c,data,filename,stop=None,entered=None):
+        if not self.slots.acquire(blocking=False):raise ValueError('provider worker limit reached')
+        try:
+            with self.lock,c.lock:
+                if expected_epoch is not None and c.pipeline.sessions.get(session)['epoch']!=expected_epoch:
+                    raise ValueError('stale turn')
+                old=self.owners.get(session)
+                if old:old.stop.set()
+                lease=TurnLease(c,c.interrupt()['epoch'])
+                self.owners[session]=lease
+                self.active[session]=self.active.get(session,0)+1
+                return lease
+        except Exception:
+            self.slots.release();raise
+    def release(self,lease):
+        with self.lock:
+            if lease.released:return
+            lease.released=True
+            count=self.active[lease.session]-1
+            if count:self.active[lease.session]=count
+            else:self.active.pop(lease.session)
+            if self.owners.get(lease.session) is lease:self.owners.pop(lease.session)
+            self.slots.release()
+    def stream(self,lease,data,filename,stop=None,entered=None,text_input=None):
+        c=lease.conversation
         if entered is not None:entered.set()
+        stop=stop or lease.stop
         events=queue.Queue(maxsize=256);stop=stop or threading.Event();finished=threading.Event()
         reply_id='voice-'+uuid.uuid4().hex;meta={};started=time.perf_counter()
         def emit(kind,**fields):
-            if stop.is_set():raise RuntimeError('client disconnected')
+            if stop.is_set() or lease.stop.is_set():raise RuntimeError('client disconnected')
             events.put({'type':kind,**fields},timeout=2)
         def run():
             client=journal=None
@@ -79,7 +111,10 @@ class VoiceService:
                 class ObservedText:
                     name=text.name
                     def stream(self,context,cancelled,request_id):
-                        with c.lock:meta.update(request_id=reply_id,epoch=c.pipeline.sessions.get(c.session)['epoch'])
+                        with c.lock:
+                            reply=c.pipeline.engine.db.execute('SELECT epoch FROM replies WHERE id=?',(reply_id,)).fetchone()
+                            meta.update(request_id=reply_id,epoch=reply['epoch'])
+                            lease.epoch=meta['epoch']
                         emit('reply',**meta)
                         stream=text.stream(context,cancelled,request_id)
                         try:
@@ -90,10 +125,15 @@ class VoiceService:
                             if hasattr(stream,'close'):stream.close()
                 emit('status',text='正在转写')
                 stt_start=time.perf_counter()
-                result=c.transcribe('utterance-'+uuid.uuid4().hex,stt,(data[i:i+4096] for i in range(0,len(data),4096)))
-                with c.lock:transcript=c.pipeline.transcripts.recent(result['session']['branch'],1)[0]['text']
+                if stop.is_set() or lease.stop.is_set():return
+                if text_input is None:
+                    result=c.transcribe('utterance-'+uuid.uuid4().hex,stt,(data[i:i+4096] for i in range(0,len(data),4096)),expected_epoch=lease.epoch,on_begin=lambda ticket:setattr(lease,'epoch',ticket['epoch']))
+                    with c.lock:transcript=c.pipeline.transcripts.recent(result['session']['branch'],1)[0]['text']
+                    reply_epoch=result['session']['epoch']
+                else:
+                    transcript=text_input;reply_epoch=lease.epoch
                 emit('transcript',text=transcript,stt_seconds=time.perf_counter()-stt_start)
-                result=c.respond(reply_id,ObservedText(),tts,context_budget=12000)
+                result=c.respond(reply_id,ObservedText(),tts,context_budget=12000,expected_epoch=reply_epoch)
                 emit('generated',total_seconds=time.perf_counter()-started,metrics=getattr(text,'last_call',None),**meta)
             except Exception as error:
                 try:emit('error',error=type(error).__name__,message='本轮未完成，请检查连接或稍后重试。')
@@ -107,14 +147,15 @@ class VoiceService:
                     finally:finished.set()
         worker=threading.Thread(target=run,daemon=True);worker.start()
         try:
-            while not stop.is_set():
+            while not stop.is_set() and not lease.stop.is_set():
                 while True:
                     try:yield events.get_nowait()
                     except queue.Empty:break
                 frame=None
                 if meta:
                     with c.lock:
-                        row=c.pipeline.engine.db.execute('SELECT sequence,bytes,rendered FROM output_chunks WHERE reply=? AND rendered<bytes ORDER BY sequence LIMIT 1',(reply_id,)).fetchone()
+                        row=None
+                        if meta['epoch']==c.pipeline.sessions.get(c.session)['epoch']:row=c.pipeline.engine.db.execute('SELECT sequence,bytes,rendered FROM output_chunks WHERE reply=? AND rendered<bytes ORDER BY sequence LIMIT 1',(reply_id,)).fetchone()
                         if row:
                             pcm,n=c.render(min(4096,row['bytes']-row['rendered']))
                             if n:frame={'type':'audio',**meta,'sequence':row['sequence'],'offset':row['rendered']+n,
@@ -126,24 +167,25 @@ class VoiceService:
         finally:
             stop.set()
             if worker.is_alive():
-                try:c.interrupt()
+                try:
+                    with self.lock,c.lock:
+                        if self.owners.get(c.session) is lease and c.pipeline.sessions.get(c.session)['epoch']==lease.epoch:c.interrupt()
                 except Exception:pass
-                worker.join(timeout=15)
+                worker.join(timeout=.05)
             # Keep the slot reserved until a disconnected worker actually exits.
             def release():
                 worker.join()
-                with self.lock:self.active.discard(c.session)
-                self.slots.release()
+                self.release(lease)
             if worker.is_alive():threading.Thread(target=release,daemon=True).start()
             else:release()
     def close(self):
         with self.lock:
             for session,c in self.sessions.items():
-                if session not in self.active:c.close()
+                if session not in self.active and session not in self.live_sessions:c.close()
 
 
 def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None):
-    from fastapi import FastAPI,Request
+    from fastapi import FastAPI,Request,WebSocket
     from fastapi.responses import HTMLResponse,Response,JSONResponse,StreamingResponse
     service=service or VoiceService(path,env_file,redis_url=redis_url);token=secrets.token_urlsafe(32)
     @asynccontextmanager
@@ -168,6 +210,14 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     def index():return HTMLResponse((WEB/'index.html').read_text().replace('__LOCAL_TOKEN__',token))
     @app.get('/app.js')
     def js():return Response((WEB/'app.js').read_text(),media_type='text/javascript')
+    @app.get('/live.js')
+    def live_js():return Response((WEB/'live.js').read_text(),media_type='text/javascript')
+    @app.get('/capture.js')
+    def capture_js():return Response((WEB/'capture.js').read_text(),media_type='text/javascript')
+    @app.websocket('/api/live')
+    async def live(ws:WebSocket):
+        from .realtime_stt import serve
+        await serve(ws,service,token)
     @app.get('/style.css')
     def css():return Response((WEB/'style.css').read_text(),media_type='text/css')
     @app.get('/api/state')
@@ -191,17 +241,33 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
             data=json.loads(raw)
             return {'advanced':await asyncio.to_thread(service.acknowledge,request.headers.get('x-voice-session',''),data)}
         except Exception:return JSONResponse({'error':'invalid_or_stale_ack'},status_code=409)
+    @app.post('/api/reply')
     @app.post('/api/turn')
     async def turn(request:Request):
+        text_input=None
         mime=request.headers.get('content-type','').split(';')[0]
-        if mime not in MIMES:return JSONResponse({'error':'unsupported_audio_type'},status_code=415)
-        raw=await limited_body(request,2*1024*1024)
-        if raw is None:return Response(status_code=413)
-        if not raw:return Response(status_code=400)
-        try:c=await asyncio.to_thread(service.acquire,request.headers.get('x-voice-session',''))
-        except ValueError:return JSONResponse({'error':'busy_or_invalid_session'},status_code=409)
-        stop=threading.Event();entered=threading.Event();advance_lock=threading.Lock()
-        iterator=service.stream(c,raw,'capture.'+MIMES[mime],stop,entered)
+        if request.url.path=='/api/reply':
+            raw=await limited_body(request,4096)
+            if raw is None:return Response(status_code=413)
+            try:
+                data=json.loads(raw);session=request.headers.get('x-voice-session','')
+                conversation=service.session(session)
+                with service.lock,conversation.lock:
+                    row=conversation.pipeline.engine.db.execute('SELECT text,branch FROM transcripts WHERE id=? AND session=? AND revoked=0',
+                        (data['transcript_id'],session)).fetchone()
+                    state=conversation.pipeline.sessions.get(session)
+                    if not row or row['branch']!=state['branch'] or state['epoch']!=data['epoch']:raise ValueError('stale transcript')
+                    c=service.acquire(session,expected_epoch=data['epoch']);text_input=row['text']
+            except (ValueError,KeyError,TypeError):return JSONResponse({'error':'stale_or_busy_reply'},status_code=409)
+        else:
+            if mime not in MIMES:return JSONResponse({'error':'unsupported_audio_type'},status_code=415)
+            raw=await limited_body(request,2*1024*1024)
+            if raw is None:return Response(status_code=413)
+            if not raw:return Response(status_code=400)
+            try:c=await asyncio.to_thread(service.acquire,request.headers.get('x-voice-session',''))
+            except ValueError:return JSONResponse({'error':'busy_or_invalid_session'},status_code=409)
+        stop=c.stop;entered=threading.Event();advance_lock=threading.Lock()
+        iterator=service.stream(c,raw,'capture.'+MIMES.get(mime,'wav'),stop,entered,text_input=text_input)
         def advance():
             with advance_lock:
                 try:return next(iterator)
@@ -218,8 +284,7 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
                     with advance_lock:
                         iterator.close()
                         if not entered.is_set():
-                            with service.lock:service.active.discard(c.session)
-                            service.slots.release()
+                            service.release(c)
                 import anyio
                 with anyio.CancelScope(shield=True):await asyncio.to_thread(close)
         return StreamingResponse(body(),media_type='application/x-ndjson')
@@ -241,7 +306,7 @@ def main():
     args=parser.parse_args()
     settings(args.env_file) # Validate privately before opening the listener.
     import uvicorn
-    uvicorn.run(create_app(args.db,args.env_file,redis_url=args.redis_url),host='127.0.0.1',port=args.port,access_log=False)
+    uvicorn.run(create_app(args.db,args.env_file,redis_url=args.redis_url),host='127.0.0.1',port=args.port,access_log=False,ws_max_size=16384,ws_max_queue=8)
 
 
 if __name__=='__main__':main()

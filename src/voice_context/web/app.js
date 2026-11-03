@@ -29,13 +29,16 @@ async function play(event,turnGeneration,started){
  if($('first').textContent==='—')$('first').textContent=((performance.now()-started)/1000).toFixed(2)+'s';
  status('正在播放');buttons();
 }
-async function send(blob){
+async function send(blob,reply=null){
  if(busy)return;
- await audioContext();clearPlayback();const current=generation,started=performance.now();receivedDone=false;failed=false;ackFailed=false;setBusy(true);
- $('transcript').textContent='';$('answer').textContent='';for(const id of ['stt','first','total'])$(id).textContent='—';status('正在上传录音…');
+ const before=generation;await audioContext();
+ if(before!==generation||busy||(reply&&reply.epoch!==epoch))return;
+ clearPlayback();const current=generation,started=performance.now();receivedDone=false;failed=false;ackFailed=false;setBusy(true);
+ $('transcript').textContent='';$('answer').textContent='';for(const id of ['stt','first','total'])$(id).textContent='—';status(reply?'正在思考…':'正在上传录音…');
+ if(reply)$('transcript').textContent='已确认发言，正在生成回复…';
  controller=new AbortController();
  try{
-  const r=await fetch('/api/turn',{method:'POST',headers:{...headers,'Content-Type':blob.type||'audio/webm'},body:blob,signal:controller.signal});
+  const r=await fetch(reply?'/api/reply':'/api/turn',{method:'POST',headers:{...headers,'Content-Type':reply?'application/json':blob.type||'audio/webm'},body:reply?JSON.stringify(reply):blob,signal:controller.signal});
   if(!r.ok)throw Error('录音请求失败 ('+r.status+')');
   const reader=r.body.getReader(),decoder=new TextDecoder();let pending='';
   async function handle(e){if(current!==generation)return;

@@ -12,7 +12,9 @@ recording and real synthesized speech. No semantic embeddings or deployed servic
 and revision-fenced Redis context cache now run against real local services.
 Opt-in OpenAI streaming text and structured extraction are available; eight synthetic
 live-model scenarios have been exercised. See [model setup and limits](docs/live-model.md).
-A [local voice page](docs/local-voice.md) now connects completed-recording STT,
+A [continuous voice mode](docs/continuous-voice.md) now adds client VAD, authenticated live STT,
+automatic playback barge-in and bounded overlapping provider calls. The
+[local voice page](docs/local-voice.md) also supports completed-recording STT,
 streaming LLM, C++ segmentation/queues and real PCM TTS with browser playback ACK.
 Physical microphone/speaker latency and billed-cost savings remain unmeasured.
 

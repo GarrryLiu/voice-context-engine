@@ -92,10 +92,85 @@ class VoiceServerTests(unittest.TestCase):
         self.assertEqual(self.client.post('/api/control',headers=self.headers,json={'action':'fork','branch':'idea'}).status_code,200)
         r=self.client.post('/api/control',headers=self.headers,json={'action':'switch','branch':'idea'})
         self.assertEqual(r.json()['branch'],'idea')
-        c=self.service.acquire('test-session')
+        leases=[self.service.acquire('test-session') for _ in range(4)]
         try:self.assertEqual(self.client.post('/api/turn',headers={**self.headers,'content-type':'audio/wav'},content=b'x').status_code,409)
         finally:
-            self.service.active.discard(c.session);self.service.slots.release()
+            for lease in leases:self.service.release(lease)
+    def test_new_turn_finishes_while_old_provider_ignores_cancel(self):
+        import threading
+        entered=Event();release=Event();old_events=[]
+        original=self.service.factory
+        class Blocked:
+            name='blocked'
+            def stream(self,*args):
+                entered.set();release.wait(5);yield 'STALE.'
+        first=True
+        def factory(filename,partial):
+            nonlocal first
+            stt,text,tts,client,journal=original(filename,partial)
+            if first:first=False;text=Blocked()
+            return stt,text,tts,client,journal
+        self.service.factory=factory
+        old=self.service.acquire('test-session')
+        worker=threading.Thread(target=lambda:old_events.extend(self.service.stream(old,b'x','test.wav')))
+        worker.start()
+        try:
+            self.assertTrue(entered.wait(2))
+            self.service.controls('test-session','interrupt')
+            new=self.service.acquire('test-session')
+            events=list(self.service.stream(new,b'x','test.wav'))
+            self.assertFalse(release.is_set())
+            self.assertTrue(any(e['type']=='audio' for e in events))
+            self.assertFalse(any(e['type']=='error' for e in events))
+            epoch=self.service.state('test-session')['epoch']
+            release.set();worker.join(3)
+            self.assertEqual(self.service.state('test-session')['epoch'],epoch)
+            self.assertFalse(any(e['type']=='audio' for e in old_events))
+        finally:release.set();worker.join(5)
+    def test_old_stream_cleanup_cannot_interrupt_new_live_capture(self):
+        import threading
+        from voice_context.realtime_stt import LiveTranscription
+        entered=Event();release=Event();original=self.service.factory
+        class Blocked:
+            name='blocked'
+            def stream(self,*args):entered.set();release.wait(5);yield 'Late.'
+        def factory(*args):
+            stt,_,tts,client,journal=original(*args)
+            return stt,Blocked(),tts,client,journal
+        self.service.factory=factory;lease=self.service.acquire('test-session')
+        thread=threading.Thread(target=lambda:list(self.service.stream(lease,b'x','test.wav')));thread.start()
+        try:
+            self.assertTrue(entered.wait(2))
+            live=LiveTranscription(lease.conversation);new_epoch=live.onset()['epoch']
+            lease.stop.set();thread.join(1)
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(self.service.state('test-session')['epoch'],new_epoch)
+            live.items['new']=new_epoch
+            self.assertIsNotNone(live.accept('new','Confirmed live input.'))
+        finally:
+            release.set();thread.join(5)
+            import time
+            deadline=time.monotonic()+2
+            while 'test-session' in self.service.active and time.monotonic()<deadline:time.sleep(.01)
+    def test_late_provider_failure_still_delivers_error_after_epoch_abort(self):
+        import time
+        original=self.service.factory
+        class PartialFailure:
+            name='late-failure'
+            def stream(self,*args):
+                yield 'First sentence.'
+                time.sleep(.05)
+                raise RuntimeError('private failure body')
+        def factory(*args):
+            stt,_,tts,client,journal=original(*args)
+            return stt,PartialFailure(),tts,client,journal
+        self.service.factory=factory
+        lease=self.service.acquire('test-session')
+        events=list(self.service.stream(lease,b'x','test.wav'))
+        self.assertTrue(any(e['type']=='audio' for e in events))
+        self.assertTrue(any(e['type']=='error' for e in events))
+        self.assertEqual(events[-1]['type'],'done')
+        self.assertNotIn('private failure',json.dumps(events))
     def test_provider_failure_emits_safe_terminal_and_releases_slot(self):
         class Broken:
             name='broken'
