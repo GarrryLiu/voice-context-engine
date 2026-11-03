@@ -1,15 +1,17 @@
-'use strict';
-let topicNames={};
+import {runtime,live} from './client/runtime.js';
+const {$,ui,api,status,refresh,buttons}=runtime;
+const {liveActive}=live;
+export let topicNames={};
 try{topicNames=JSON.parse(localStorage.getItem('voice-topic-names')||'{}')||{};}catch{}
 if(typeof topicNames!=='object'||Array.isArray(topicNames))topicNames={};
-function topicName(id){return typeof topicNames[id]==='string'?topicNames[id]:id==='main'?'My workspace':id;}
+export function topicName(id){return typeof topicNames[id]==='string'?topicNames[id]:id==='main'?'My workspace':id;}
 let connectedAt=null,renderQueued=false,topicSignature='';
-function renderProduct(){
+export function renderProduct(){
  renderQueued=false;
  const branch=$('branch'),active=liveActive();
  if(!['documents','workspace'].includes(document.body.dataset.view))$('topic-title').textContent=topicName(branch.value||'main');
  $('topic-count').textContent=String(branch.options.length);
- $('new-topic').disabled=!branch.value||$('fork').disabled||active||starting||switching;
+ $('new-topic').disabled=!branch.value||$('fork').disabled||active||runtime.starting||runtime.switching;
  const signature=JSON.stringify([branch.value,branch.disabled,Array.from(branch.options,o=>[o.value,topicName(o.value)])]);
  if(signature!==topicSignature){topicSignature=signature;
  $('topics').replaceChildren(...Array.from(branch.options,option=>{
@@ -21,10 +23,10 @@ function renderProduct(){
  }));}
  const text=$('transcript').textContent.trim(),answer=$('answer').textContent.trim();
  document.body.classList.toggle('has-conversation',!!(text&&text!==ui('等待录音…'))||!!(answer&&answer!==ui('开始一次对话。')));
- const listening=!!liveTracks&&liveReady;
+ const listening=live.listening;
  document.body.classList.toggle('is-live',active);$('live-indicator').hidden=!listening;
  if(listening&&connectedAt===null)connectedAt=Date.now();if(!listening)connectedAt=null;
- $('live-caption').textContent=sources.size?'Speaking · interrupt anytime':busy?'Thinking it through':'Listening · say what’s on your mind';
+ $('live-caption').textContent=runtime.playing?'Speaking · interrupt anytime':runtime.busy?'Thinking it through':'Listening · say what’s on your mind';
 }
 function scheduleProduct(){if(!renderQueued){renderQueued=true;requestAnimationFrame(renderProduct);}}
 const productObserver=new MutationObserver(scheduleProduct);
@@ -33,14 +35,14 @@ $('new-topic').onclick=()=>{if($('new-topic').disabled)return;$('topic-name').va
 $('cancel-topic').onclick=()=>$('topic-dialog').close();
 $('topic-form').onsubmit=async event=>{
  event.preventDefault();const name=$('topic-name').value.trim();if(!name)return;
- if(liveActive()||busy||switching){$('topic-error').textContent='End the current conversation before creating a thought.';return;}
- const id='thought-'+crypto.randomUUID().slice(0,12);switching=true;$('create-topic').disabled=true;buttons();scheduleProduct();
+ if(liveActive()||runtime.busy||runtime.switching){$('topic-error').textContent='End the current conversation before creating a thought.';return;}
+ const id='thought-'+crypto.randomUUID().slice(0,12);runtime.setSwitching(true);$('create-topic').disabled=true;buttons();scheduleProduct();
  try{
   await api('/api/control',{action:'fork',branch:id});await api('/api/control',{action:'switch',branch:id});
   topicNames[id]=name;try{localStorage.setItem('voice-topic-names',JSON.stringify(topicNames));}catch{}
   await refresh();$('topic-dialog').close();status('Your new thought is ready');
  }catch{$('topic-error').textContent='Could not create the thought. Check your connection and try again.';}
- finally{switching=false;$('create-topic').disabled=false;buttons();scheduleProduct();}
+ finally{runtime.setSwitching(false);$('create-topic').disabled=false;buttons();scheduleProduct();}
 };
 $('help').onclick=()=>$('help-dialog').showModal();$('close-help').onclick=()=>$('help-dialog').close();
 const productClock=setInterval(()=>{const seconds=connectedAt===null?0:Math.floor((Date.now()-connectedAt)/1000);$('session-time').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');},1000);
