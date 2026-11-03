@@ -24,6 +24,10 @@ The [product preview](docs/product-views.md) at `/product` offers a voice-first 
 with named thought branches and a focused conversation view. The original functional
 lab remains at `/` and `/lab`; both use the same local service and persisted state.
 
+The [Documents workspace](docs/voice-documents.md) saves confirmed speech as voice notes,
+turns acknowledged replies into editable drafts, and supports version history, source
+snapshots, collections, archive/trash, text import and Markdown export.
+
 ## Quick start
 
 Requires Python 3.11+; SQLite reference mode has no third-party dependencies.

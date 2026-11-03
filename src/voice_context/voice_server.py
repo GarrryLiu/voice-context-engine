@@ -14,6 +14,7 @@ import time
 import uuid
 from dataclasses import dataclass,field
 from .conversation import Conversation
+from .documents import DocumentConflict
 from .openai_provider import settings,make_client,OpenAITextProvider,ModelJournal
 from .audio_providers import OpenAIRecordingSTT,OpenAIPcmTTS
 
@@ -178,6 +179,22 @@ class VoiceService:
                 self.release(lease)
             if worker.is_alive():threading.Thread(target=release,daemon=True).start()
             else:release()
+    def documents(self,session,action,data):
+        c=self.session(session)
+        with c.lock:
+            store=c.pipeline.transcripts.documents
+            if not isinstance(data,dict):raise ValueError('object required')
+            if action=='list':return store.listing(**data)
+            if action=='get':return store.get(data['id'])
+            if action=='revision':return store.revision(data['id'],data['revision'])
+            if action=='history':return {'versions':store.history(data['id'])}
+            if action=='create':
+                branch=data.get('branch') or c.pipeline.sessions.get(session)['branch']
+                return store.create(data['title'],data.get('content',''),branch,data.get('kind','note'),data.get('filename',''))
+            if action=='draft':return store.draft(data['reply_id'],session)
+            if action=='change':return store.update(data['id'],data['version'],data['changes'])
+            if action=='restore':return store.restore(data['id'],data['version'],data['restore_version'])
+            raise ValueError('unknown document action')
     def close(self):
         with self.lock:
             for session,c in self.sessions.items():
@@ -217,6 +234,10 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     def product_css():return Response((WEB/'product.css').read_text(),media_type='text/css')
     @app.get('/strings.js')
     def strings_js():return Response((WEB/'strings.js').read_text(),media_type='text/javascript')
+    @app.get('/documents.js')
+    def documents_js():return Response((WEB/'documents.js').read_text(),media_type='text/javascript')
+    @app.get('/documents.css')
+    def documents_css():return Response((WEB/'documents.css').read_text(),media_type='text/css')
     @app.get('/product.js')
     def product_js():return Response((WEB/'product.js').read_text(),media_type='text/javascript')
     @app.get('/app.js')
@@ -235,6 +256,38 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     def state(request:Request):
         try:return service.state(request.headers.get('x-voice-session',''))
         except ValueError:return JSONResponse({'error':'invalid_or_full_session'},status_code=400)
+    @app.get('/api/documents')
+    async def documents_list(request:Request):
+        try:
+            args=dict(request.query_params);args['offset']=int(args.get('offset',0))
+            return await asyncio.to_thread(service.documents,request.headers.get('x-voice-session',''),'list',args)
+        except (ValueError,TypeError):return JSONResponse({'error':'invalid_document_filter'},status_code=400)
+    @app.get('/api/documents/item')
+    async def document_item(request:Request):
+        try:return await asyncio.to_thread(service.documents,request.headers.get('x-voice-session',''),'get',{'id':request.query_params['id']})
+        except KeyError:return JSONResponse({'error':'document_not_found'},status_code=404)
+        except ValueError:return JSONResponse({'error':'invalid_session'},status_code=400)
+    @app.get('/api/documents/history')
+    async def document_history(request:Request):
+        try:return await asyncio.to_thread(service.documents,request.headers.get('x-voice-session',''),'history',{'id':request.query_params['id']})
+        except KeyError:return JSONResponse({'error':'document_not_found'},status_code=404)
+        except ValueError:return JSONResponse({'error':'invalid_session'},status_code=400)
+    @app.get('/api/documents/revision')
+    async def document_revision(request:Request):
+        try:return await asyncio.to_thread(service.documents,request.headers.get('x-voice-session',''),'revision',
+            {'id':request.query_params['id'],'revision':int(request.query_params['version'])})
+        except KeyError:return JSONResponse({'error':'version_not_found'},status_code=404)
+        except (ValueError,TypeError):return JSONResponse({'error':'invalid_version'},status_code=400)
+    @app.post('/api/documents/{action}')
+    async def document_write(action:str,request:Request):
+        raw=await limited_body(request,262144)
+        if raw is None:return Response(status_code=413)
+        try:
+            data=json.loads(raw)
+            return await asyncio.to_thread(service.documents,request.headers.get('x-voice-session',''),action,data)
+        except DocumentConflict:return JSONResponse({'error':'document_conflict','message':'A newer version exists. Reload before saving.'},status_code=409)
+        except KeyError:return JSONResponse({'error':'document_not_found'},status_code=404)
+        except (ValueError,TypeError):return JSONResponse({'error':'invalid_document'},status_code=400)
     @app.post('/api/control')
     async def control(request:Request):
         raw=await limited_body(request,4096)

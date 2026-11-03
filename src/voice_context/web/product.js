@@ -7,7 +7,7 @@ let connectedAt=null,renderQueued=false,topicSignature='';
 function renderProduct(){
  renderQueued=false;
  const branch=$('branch'),active=liveActive();
- $('topic-title').textContent=topicName(branch.value||'main');
+ if(document.body.dataset.view!=='documents')$('topic-title').textContent=topicName(branch.value||'main');
  $('topic-count').textContent=String(branch.options.length);
  $('new-topic').disabled=!branch.value||$('fork').disabled||active||starting||switching;
  const signature=JSON.stringify([branch.value,branch.disabled,Array.from(branch.options,o=>[o.value,topicName(o.value)])]);
