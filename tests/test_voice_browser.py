@@ -176,19 +176,19 @@ class VoiceBrowserTests(unittest.TestCase):
                         page.select_option('#document-status-filter','archived');expect(page.locator('.document-row')).to_have_count(1)
                         page.click('#trash-document');expect(page.locator('#document-kind-label')).to_have_text('Draft · trash')
                         page.select_option('#document-status-filter','trash');expect(page.locator('.document-row')).to_have_count(1)
-                        original_documents=service.documents;hold_list=threading.Event();release_list=threading.Event();pending_list=[True]
+                        original_documents=service.product.documents;hold_list=threading.Event();release_list=threading.Event();pending_list=[True]
                         def delayed_list(session,action,data):
                             if action=='list' and pending_list[0]:
                                 pending_list[0]=False;hold_list.set();release_list.wait(5)
                             return original_documents(session,action,data)
-                        service.documents=delayed_list
+                        service.product.documents=delayed_list
                         page.click('#trash-document');expect(page.locator('#document-kind-label')).to_have_text('Draft · active')
                         expect(page.locator('#import-document')).to_be_enabled(timeout=2000)
                         page.select_option('#document-status-filter','active')
                         reference=root/'Research.md';reference.write_text('Reference <script>window.docXss=true</script> text.')
                         page.set_input_files('#import-document',str(reference))
                         expect(page.locator('#document-title')).to_have_value('Research')
-                        self.assertTrue(hold_list.is_set());release_list.set();service.documents=original_documents
+                        self.assertTrue(hold_list.is_set());release_list.set();service.product.documents=original_documents
                         self.assertIsNone(page.evaluate('()=>window.docXss'))
                         expect(page.locator('#document-source-text')).to_have_text(reference.read_text())
                         page.fill('#document-search','Reference');expect(page.locator('.document-row')).to_have_count(1)
