@@ -56,7 +56,7 @@ class ProductData(Protocol):
 def capabilities(mode='connected'):
     """Additive HTTP v1 discovery; never includes model configuration or secrets."""
     if mode not in {'connected','demo'}:raise ValueError('unknown mode')
-    return {'contract_version':CONTRACT_VERSION,'mode':mode,
+    return {'contract_version':CONTRACT_VERSION,'mode':mode,'features':{'live_voice':mode=='connected','audio_input':mode=='connected','demo_text':mode=='demo'},
             'endpoints':{'state':'/api/state','control':'/api/control','turn':'/api/turn',
                          'reply':'/api/reply','ack':'/api/ack','live':'/api/live',
                          'workspace':'/api/workspace','documents':'/api/documents'},

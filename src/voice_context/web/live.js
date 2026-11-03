@@ -11,6 +11,7 @@ async function endLive(message='连续对话已结束'){
  await stopAll();status(message);liveButtons();
 }
 $('live').onclick=async()=>{
+ if(document.querySelector('meta[name=voice-mode]')?.content==='demo'){status('Demo mode uses typed example input.');return;}
  if(liveActive()){await endLive();return;}
  if(busy||starting||switching)return;
  liveStarting=true;liveClosed=false;liveButtons();status('正在连接实时转写…');

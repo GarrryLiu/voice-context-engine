@@ -1,3 +1,4 @@
+import './client/demo.js';
 import './product.js';
 import './documents.js';
 import './workspace.js';

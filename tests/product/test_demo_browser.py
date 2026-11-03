@@ -1,0 +1,53 @@
+import os
+from pathlib import Path
+import socket
+import tempfile
+import threading
+import time
+import unittest
+
+
+@unittest.skipUnless(os.environ.get('VOICE_BROWSER_TEST'),'opt-in browser required')
+class DemoProductBrowserTests(unittest.TestCase):
+    def test_standalone_product_flow_without_native_models_or_microphone(self):
+        import uvicorn
+        from playwright.sync_api import sync_playwright,expect
+        from voice_context.server.app import create_app
+        with tempfile.TemporaryDirectory() as root:
+            app=create_app(str(Path(root)/'demo.db'),mode='demo')
+            listener=socket.socket();listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
+            server=uvicorn.Server(uvicorn.Config(app,log_level='error'))
+            thread=threading.Thread(target=lambda:server.run(sockets=[listener]),daemon=True);thread.start()
+            deadline=time.monotonic()+5
+            while not server.started:
+                if time.monotonic()>deadline:self.fail('demo server start timeout')
+                time.sleep(.02)
+            try:
+                with sync_playwright() as pw:
+                    launch={'headless':True,'args':['--autoplay-policy=no-user-gesture-required']}
+                    if os.environ.get('VOICE_CHROME_PATH'):launch['executable_path']=os.environ['VOICE_CHROME_PATH']
+                    browser=pw.chromium.launch(**launch)
+                    try:
+                        page=browser.new_page(viewport={'width':1440,'height':950});errors=[];external=[]
+                        page.on('pageerror',lambda error:errors.append(str(error)))
+                        page.on('request',lambda request:external.append(request.url) if not request.url.startswith(f'http://127.0.0.1:{port}/') else None)
+                        page.add_init_script("""const Original=window.AudioContext;window.AudioContext=class extends Original{constructor(...args){super(...args);if(this.setSinkId)this.setSinkId({type:'none'}).catch(()=>{});}};
+                            navigator.mediaDevices.getUserMedia=()=>{throw Error('Demo must not request a microphone');};""")
+                        page.goto(f'http://127.0.0.1:{port}/product')
+                        expect(page.locator('.demo-mode-banner')).to_contain_text('No model calls')
+                        page.fill('#demo-text','A workspace for unfinished ideas.');page.click('#demo-send')
+                        expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.',timeout=10000)
+                        expect(page.locator('#answer')).to_contain_text('Demo reply:')
+                        page.click('#finish-session');expect(page.locator('.graph-node')).to_have_count(1)
+                        page.locator('.graph-node').click();expect(page.locator('#graph-edit-content')).to_have_value('A workspace for unfinished ideas.')
+                        page.fill('#graph-edit-title','An unfinished idea');page.locator('#graph-editor button[type=submit]').click()
+                        expect(page.locator('#graph-notice')).to_contain_text('Saved locally')
+                        page.reload();expect(page.locator('.graph-node')).to_have_count(1)
+                        expect(page.locator('.graph-node')).to_contain_text('An unfinished idea')
+                        page.click('#graph-continue');expect(page.locator('#demo-text')).to_be_visible()
+                        page.fill('#demo-text','A second thought.');page.click('#demo-send')
+                        expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.',timeout=10000)
+                        page.click('#finish-session');expect(page.locator('.graph-node')).to_have_count(2)
+                        self.assertEqual(external,[]);self.assertEqual(errors,[])
+                    finally:browser.close()
+            finally:server.should_exit=True;thread.join(10)
