@@ -62,3 +62,8 @@ $('live').onclick=async()=>{
 // Shared manual-turn state changes must keep capture controls consistent.
 const liveObserver=new MutationObserver(liveButtons);liveObserver.observe($('status'),{childList:true});
 window.addEventListener('pagehide',()=>{liveClosed=true;if(liveTracks)liveTracks.getTracks().forEach(t=>t.stop());if(liveSocket)liveSocket.close();});
+
+window.voiceLive=Object.freeze({liveActive,endLive,
+ get listening(){return !!liveTracks&&liveReady;},stopAll});
+
+window.dispatchEvent(new Event('voiceline:runtime-ready'));

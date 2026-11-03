@@ -20,3 +20,7 @@ Authenticated `GET /api/capabilities` describes routes, mode and limits. API res
 ## Backend composition
 
 `server/app.py` owns security and lifecycle; `server/routes/` separates voice, product data and static resources. `infra/runtime/service.py` owns execution. `product/services.py` depends on a store-access port; `server/adapters.py` binds it to the existing serialized connection without changing transaction semantics. Product models live in `product/`; old Python import paths and `VoiceService` methods remain compatibility facades. The transcript-capture bridge still shares a transaction intentionally; removing that bridge is a separate migration, not an automatic queue conversion.
+
+## Frontend module boundary
+
+Product scripts are ES modules bootstrapped by `product-entry.js`. `client/runtime.js` exposes explicit read-only runtime/live ports; product code no longer assigns runtime globals or replaces another view's functions. Navigation owns shared guards, microphone checks and view transitions. The capture/playback implementation remains in the existing scripts to preserve tested timing behavior; a later internal rewrite can keep the same port.

@@ -67,3 +67,11 @@ $('branch').onchange=async()=>{if(switching)return;const branch=$('branch').valu
 $('fork').onclick=async()=>{const branch=prompt('新分支名称（字母、数字、短横线）');if(!branch)return;try{await api('/api/control',{action:'fork',branch});await api('/api/control',{action:'switch',branch});await refresh();}catch(e){status(e.message);}};
 window.addEventListener('pagehide',()=>{if(tracks)tracks.getTracks().forEach(t=>t.stop());clearPlayback();if(controller)controller.abort();});
 refresh().catch(e=>{status(e.message);$('connection').textContent=ui('连接失败');});
+
+// Explicit product-facing port. Capture/playback internals stay owned here.
+window.voiceRuntime=Object.freeze({$,ui,headers,api,status,refresh,buttons,
+ get busy(){return busy;},get starting(){return starting;},get switching(){return switching;},
+ get playing(){return sources.size;},get recording(){return recorder?.state==='recording';},
+ setSwitching(value){switching=!!value;buttons();}});
+
+window.dispatchEvent(new Event('voiceline:runtime-ready'));

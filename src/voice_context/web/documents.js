@@ -1,9 +1,13 @@
-'use strict';
+import {runtime,live} from './client/runtime.js';
+import {registerView,navigate,addNavigationGuard} from './client/navigation.js';
+import {topicName,renderProduct} from './product.js';
+const {$,ui,api,status,refresh,headers}=runtime;
+const {liveActive,endLive,stopAll}=live;
 let currentDocument=null,documentDirty=false,documentWriting=false,documentKind='',documentRows=[],documentNext=null;
 let documentListRequest=0,documentEditorRequest=0,documentSearchTimer=null,leavePromise=null;
 const kindLabels={voice:'Voice note',draft:'Draft',reference:'Reference',note:'Document'};
 function documentNotice(text,error=false){$('document-notice').textContent=text;$('document-notice').classList.toggle('error',error);}
-async function documentAPI(path,data){
+export async function documentAPI(path,data){
  const response=await fetch('/api/documents'+path,{method:data?'POST':'GET',headers:{...headers,'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined,signal:AbortSignal.timeout(15000)});
  if(!response.ok){const error=Error(response.status===409?'A newer version exists. Your edits are kept. Export them or reload the document.':response.status===404?'This document or version is unavailable.':'Could not complete that change. Check your connection, document size, and selected thought.');error.conflict=response.status===409;throw error;}
  return response.json();
@@ -47,7 +51,7 @@ async function saveDocument(extra={}){
  }catch(error){documentNotice(error.message,true);return false;}
  finally{documentWriting=false;documentEditorState();}
 }
-async function canLeaveDocument(){
+export async function canLeaveDocument(){
  if(documentWriting)return false;if(!documentDirty)return true;if(leavePromise)return leavePromise;
  leavePromise=new Promise(resolve=>{
   const dialog=$('document-unsaved-dialog');dialog.showModal();
@@ -86,21 +90,21 @@ async function loadDocuments(append=false){
  try{const result=await documentAPI('?'+query);if(request!==documentListRequest)return;documentRows=append?[...documentRows,...result.documents]:result.documents;documentNext=result.next_offset;renderDocumentRows();}
  catch(error){if(request===documentListRequest)documentNotice(error.message,true);}
 }
-async function showDocuments(identifier=null){
- if(!await canLeaveDocument())return;
- if(liveActive())await endLive('Conversation paused. Your voice notes are saved.');else if(busy)await stopAll();
+async function enterDocuments(identifier=null){
  if(!$('branch').options.length)await refresh();
  document.body.dataset.view='documents';$('documents-workspace').hidden=false;
  $('nav-documents').classList.add('selected');$('nav-thoughts').classList.remove('selected');$('topic-title').textContent='Documents';
  thoughtOptions($('document-thought-filter'),true);history.replaceState(null,'','#documents'+(identifier?'/'+encodeURIComponent(identifier):''));
  await loadDocuments();if(identifier)await selectDocument(identifier);
 }
-async function showThoughts(){
- if(!await canLeaveDocument())return false;
+async function enterThoughts(){
  document.body.dataset.view='thoughts';$('documents-workspace').hidden=true;
  $('nav-documents').classList.remove('selected');$('nav-thoughts').classList.add('selected');history.replaceState(null,'',location.pathname);renderProduct();return true;
 }
-$('nav-documents').onclick=()=>showDocuments();$('nav-thoughts').onclick=showThoughts;
+export function showDocuments(id=null){return navigate('documents',id);}
+export function showThoughts(){return navigate('thoughts');}
+registerView('documents',enterDocuments);registerView('thoughts',enterThoughts);addNavigationGuard(canLeaveDocument);
+$('nav-documents').onclick=()=>showDocuments();$('nav-thoughts').onclick=()=>showThoughts();
 for(const id of ['new-topic','topics'])$(id).addEventListener('click',async event=>{
  if(!['documents','workspace'].includes(document.body.dataset.view))return;
  const target=id==='topics'?event.target.closest('button'):$(id);if(!target||target.disabled)return;
@@ -151,7 +155,7 @@ $('restore-document-version').onclick=async()=>{
  catch(error){documentNotice(error.message,true);}
 };
 function updateReplySave(){
- $('save-reply').disabled=busy||liveActive()||!!sources.size||!$('answer').textContent.trim()||$('answer').textContent===ui('开始一次对话。');
+ $('save-reply').disabled=runtime.busy||liveActive()||!!runtime.playing||!$('answer').textContent.trim()||$('answer').textContent===ui('开始一次对话。');
 }
 $('save-reply').onclick=async()=>{
  $('save-reply').disabled=true;
@@ -171,4 +175,3 @@ documentBranchObserver.observe($('branch'),{childList:true});
 window.addEventListener('beforeunload',event=>{if(documentDirty){event.preventDefault();event.returnValue='';}});
 window.addEventListener('pagehide',()=>{documentVoiceObserver.disconnect();documentBranchObserver.disconnect();clearTimeout(documentSearchTimer);});
 updateReplySave();
-if(location.hash.startsWith('#documents')){const id=location.hash.slice('#documents/'.length);showDocuments(location.hash.startsWith('#documents/')?decodeURIComponent(id):null);}

@@ -1,5 +1,6 @@
 from pathlib import Path
 from fastapi.responses import HTMLResponse,Response
+from fastapi import HTTPException
 
 WEB=Path(__file__).parents[2]/'web'
 
@@ -34,3 +35,9 @@ def register(app,token):
     @app.get('/style.css')
     def css():return Response((WEB/'style.css').read_text(),media_type='text/css')
 
+    @app.get('/product-entry.js')
+    def product_entry():return Response((WEB/'product-entry.js').read_text(),media_type='text/javascript')
+    @app.get('/client/{name}.js')
+    def client_module(name:str):
+        if name not in {'runtime','navigation'}:raise HTTPException(status_code=404)
+        return Response((WEB/'client'/(name+'.js')).read_text(),media_type='text/javascript')

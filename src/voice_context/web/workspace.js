@@ -1,4 +1,9 @@
-'use strict';
+import {runtime,live} from './client/runtime.js';
+import {registerView,navigate,addNavigationGuard,onNavigation} from './client/navigation.js';
+import {topicName,topicNames} from './product.js';
+import {documentAPI,showDocuments,showThoughts} from './documents.js';
+const {$,ui,api,status,refresh}=runtime;
+const {liveActive,endLive,stopAll}=live;
 let workspaceData={categories:['Inbox'],sessions:[],links:[]},workspaceVersion=0,workspaceLoaded=false,workspaceLoading=null,workspaceSaving=false,workspacePending=false,workspaceBlocked=false,workspaceSavePromise=null;
 let graphSession=null,graphSelected=null,graphCategory='',graphListMode=false,graphScale=1,graphPan={x:0,y:0},graphDrag=null,graphFormDirty=false,graphNameAction='session';
 let activeProductSession=null,graphFinishing=false;
@@ -18,7 +23,7 @@ async function loadWorkspace(){
 }
 function persistWorkspace(){
  workspacePending=true;if(workspaceBlocked)return Promise.resolve(false);if(workspaceSaving)return workspaceSavePromise;
- workspaceSaving=true;
+ workspaceSaving=true;graphNotice('Saving workspace…');
  workspaceSavePromise=(async()=>{
   try{while(workspacePending){workspacePending=false;const data=structuredClone(workspaceData);const result=await graphRequest({version:workspaceVersion,data});workspaceVersion=result.version;graphNotice('Saved locally · workspace v'+workspaceVersion);}return true;}
   catch(error){workspacePending=true;workspaceBlocked=true;graphNotice(error.message,true);return false;}
@@ -103,12 +108,9 @@ function renderGraphInspector(){
  $('graph-connections').replaceChildren(...graphLinks().filter(e=>e.includes(item.id)).map(edge=>{const other=graphItems().find(n=>n.id===edge.find(id=>id!==item.id));const b=graphEl('button','','↔ '+(other?.title||'Hidden node')+' ×');b.type='button';b.title='Remove connection';b.onclick=()=>{const links=graphLinks();links.splice(links.indexOf(edge),1);persistWorkspace();renderGraph();};return b;}));
 }
 function graphHash(){history.replaceState(null,'','#workspace'+(graphSession?'/'+encodeURIComponent(graphSession):''));}
-async function showGraph(id=null){
- if(starting||switching||recorder?.state==='recording'){status('Send your recording before opening the workspace.');return;}
- if(!await canLeaveDocument()||!graphCanLeave())return;
- if(liveActive())await endLive('Conversation paused.');else if(busy)await stopAll();
+async function enterGraph(id=null){
  try{await loadWorkspace();graphFormDirty=false;document.body.dataset.view='workspace';$('documents-workspace').hidden=true;$('graph-workspace').hidden=false;for(const id of ['nav-thoughts','nav-documents'])$(id).classList.remove('selected');$('nav-workspace').classList.add('selected');graphSession=workspaceData.sessions.some(s=>s.id===id)?id:null;graphSelected=null;$('topic-title').textContent='Workspace';$('graph-search').value='';graphReset();renderGraph();graphHash();}
- catch(error){status('Could not load the workspace. Check the local server.');}
+ catch(error){status('Could not load the workspace. Check the local server.');throw error;}
 }
 function openSessionMap(id){if(!graphCanLeave())return;graphFormDirty=false;graphSession=id;graphSelected=null;$('graph-search').value='';graphReset();renderGraph();graphHash();}
 function graphNameDialog(action){if(!graphCanLeave())return;graphNameAction=action;$('graph-name-heading').textContent=action==='category'?'Make room for a new category.':action==='node'?'Follow a new thought.':'What’s on your mind?';$('graph-name-eyebrow').textContent='A NEW '+action.toUpperCase();$('graph-name').value='';$('graph-name-dialog').showModal();$('graph-name').focus();}
@@ -132,6 +134,8 @@ graphDelete.onclick=()=>{const item=selectedGraphItem();if(!item||!window.confir
  else{workspaceData.sessions=workspaceData.sessions.filter(s=>s.id!==item.id);workspaceData.links=workspaceData.links.filter(e=>!e.includes(item.id));if(activeProductSession===item.id){activeProductSession=null;try{localStorage.removeItem('voiceline-active-product-session');}catch{}}}
  graphFormDirty=false;graphSelected=null;persistWorkspace();renderGraph();};
 $('graph-source').onclick=()=>{const source=selectedGraphItem()?.source;if(source&&graphCanLeave()){graphFormDirty=false;showDocuments(source);}};
+function showGraph(id=null){return navigate('workspace',id);}
+registerView('workspace',enterGraph);addNavigationGuard(graphCanLeave);onNavigation(name=>{if(name!=='workspace')graphFormDirty=false;});
 $('graph-back').onclick=()=>showGraph();$('nav-workspace').onclick=()=>showGraph();
 $('graph-new-session').onclick=()=>graphNameDialog('session');$('graph-empty-new').onclick=()=>graphNameDialog(graphSession?'node':'session');$('graph-add-category').onclick=()=>graphNameDialog('category');$('graph-add-node').onclick=()=>graphNameDialog('node');
 $('graph-search').oninput=()=>{if(!graphCanLeave()){$('graph-search').value='';return;}graphFormDirty=false;graphSelected=null;renderGraph();};
@@ -152,9 +156,9 @@ async function resumeProductSession(){
 $('graph-continue').onclick=resumeProductSession;
 async function finishProductSession(){
  if(graphFinishing)return;
- if(starting||switching||recorder?.state==='recording'){status('Send your recording before organizing the session.');return;}
+ if(runtime.starting||runtime.switching||runtime.recording){status('Send your recording before organizing the session.');return;}
  graphFinishing=true;$('finish-session').disabled=true;
- try{if(liveActive())await endLive('Session ended.');else if(busy)await stopAll();await loadWorkspace();await refresh();
+ try{if(liveActive())await endLive('Session ended.');else if(runtime.busy)await stopAll();await loadWorkspace();await refresh();
  const branch=$('branch').value;let item=workspaceData.sessions.find(s=>s.id===activeProductSession&&s.branch===branch)||workspaceData.sessions.find(s=>s.branch===branch);
  if(!item){item={id:crypto.randomUUID(),title:topicName(branch)==='My workspace'?'An untitled thought':topicName(branch),category:'Inbox',branch,demo:false,...graphPlace(workspaceData.sessions),nodes:[],edges:[]};workspaceData.sessions.push(item);}
  let offset=0;
@@ -173,15 +177,11 @@ $('graph-demo').onclick=async()=>{
  const startY=workspaceData.sessions.length?Math.max(...workspaceData.sessions.map(s=>s.y))+190:0;for(const s of sessions){s.y+=startY;}
  workspaceData.sessions.push(...sessions);workspaceData.links.push([sessions[0].id,sessions[1].id],[sessions[0].id,sessions[2].id],[sessions[1].id,sessions[3].id],[sessions[2].id,sessions[3].id]);const saved=await persistWorkspace();graphSession=null;graphCategory='';graphReset();renderGraph();if(saved)graphNotice('Example workspace · sample content only. Your real sessions are kept separately.');
 };
-// Keep the existing document editor available as a secondary source library.
-const originalShowThoughts=showThoughts;showThoughts=async function(){if(!graphCanLeave())return false;const ok=await originalShowThoughts();if(ok){graphFormDirty=false;$('graph-workspace').hidden=true;$('nav-workspace').classList.remove('selected');}return ok;};
-const originalShowDocuments=showDocuments;showDocuments=async function(id=null){if(!graphCanLeave())return;await originalShowDocuments(id);if(document.body.dataset.view==='documents'){graphFormDirty=false;$('graph-workspace').hidden=true;$('nav-workspace').classList.remove('selected');}};
-$('nav-thoughts').onclick=()=>showThoughts();$('nav-documents').onclick=()=>showDocuments();
 window.addEventListener('beforeunload',event=>{if(graphFormDirty||workspacePending||workspaceSaving){event.preventDefault();event.returnValue='';}});
 const graphTools=graphEl('div','graph-data-tools');
 for(const [label,fn] of [['Export map',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(workspaceData,null,2)],{type:'application/json'}));const a=graphEl('a');a.href=url;a.download='voiceline-workspace.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}],['Reload',async()=>{if(!graphCanLeave()||((workspacePending||workspaceBlocked)&&!window.confirm('Reload the saved workspace? Export first to keep unsaved map changes.')))return;workspaceLoaded=false;try{await loadWorkspace();workspacePending=false;workspaceBlocked=false;graphSelected=null;graphFormDirty=false;if(!selectedGraphSession())graphSession=null;renderGraph();graphNotice('Loaded the latest saved workspace.');}catch{graphNotice('Could not reload the workspace.',true);}}]]){const b=graphEl('button','',label);b.onclick=fn;graphTools.append(b);}
 document.querySelector('.graph-heading-actions').append(graphTools);
 loadWorkspace().catch(()=>{});
-if(location.hash.startsWith('#workspace'))showGraph(location.hash.startsWith('#workspace/')?decodeURIComponent(location.hash.slice(11)):null);
+
 
 const graphResizeObserver=new ResizeObserver(()=>{if(document.body.dataset.view==='workspace'){graphReset();drawGraphEdges();}});graphResizeObserver.observe($('graph-canvas'));window.addEventListener('pagehide',()=>graphResizeObserver.disconnect());
