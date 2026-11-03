@@ -8,7 +8,12 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     from fastapi.responses import Response
     from .compat import VoiceService
     from .routes import static,voice,product as product_routes
-    service=service or VoiceService(path,env_file,redis_url=redis_url)
+    if mode not in {'connected','demo'}:raise ValueError('invalid mode')
+    if service is None:
+        if mode=='demo':
+            from .demo import DemoService
+            service=DemoService(path)
+        else:service=VoiceService(path,env_file,redis_url=redis_url)
     product=product or service.product
     token=secrets.token_urlsafe(32)
     @asynccontextmanager
@@ -30,7 +35,7 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
         response.headers['X-Content-Type-Options']='nosniff'
         response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; media-src 'self' blob:; frame-ancestors 'none'"
         return response
-    static.register(app,token)
+    static.register(app,token,mode)
     voice.register(app,service,token,mode)
     product_routes.register(app,product)
     return app

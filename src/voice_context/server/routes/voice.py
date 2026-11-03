@@ -11,6 +11,8 @@ MIMES={'audio/webm':'webm','audio/ogg':'ogg','audio/mp4':'mp4','audio/wav':'wav'
 def register(app,service,token,mode='connected'):
     @app.websocket('/api/live')
     async def live(ws:WebSocket):
+        if mode=='demo':
+            await ws.close(code=1008);return
         from ...realtime_stt import serve
         await serve(ws,service,token)
     @app.get('/api/capabilities')
@@ -19,6 +21,15 @@ def register(app,service,token,mode='connected'):
     def state(request:Request):
         try:return service.state(request.headers.get('x-voice-session',''))
         except ValueError:return JSONResponse({'error':'invalid_or_full_session'},status_code=400)
+    @app.post('/api/demo/utterance')
+    async def demo_utterance(request:Request):
+        if mode!='demo':return Response(status_code=404)
+        raw=await limited_body(request,131072)
+        if raw is None:return Response(status_code=413)
+        try:
+            data=json.loads(raw)
+            return await asyncio.to_thread(service.submit_demo,request.headers.get('x-voice-session',''),data['text'])
+        except (ValueError,TypeError,KeyError):return JSONResponse({'error':'invalid_demo_text'},status_code=400)
     @app.post('/api/control')
     async def control(request:Request):
         raw=await limited_body(request,4096)
@@ -55,6 +66,7 @@ def register(app,service,token,mode='connected'):
                     c=service.acquire(session,expected_epoch=data['epoch']);text_input=row['text']
             except (ValueError,KeyError,TypeError):return JSONResponse({'error':'stale_or_busy_reply'},status_code=409)
         else:
+            if mode=='demo':return JSONResponse({'error':'demo_text_only'},status_code=409)
             if mime not in MIMES:return JSONResponse({'error':'unsupported_audio_type'},status_code=415)
             raw=await limited_body(request,2*1024*1024)
             if raw is None:return Response(status_code=413)

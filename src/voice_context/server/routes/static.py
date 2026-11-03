@@ -4,12 +4,12 @@ from fastapi import HTTPException
 
 WEB=Path(__file__).parents[2]/'web'
 
-def register(app,token):
+def register(app,token,mode='connected'):
     @app.get('/lab')
     @app.get('/')
-    def index():return HTMLResponse((WEB/'index.html').read_text().replace('__LOCAL_TOKEN__',token))
+    def index():return HTMLResponse((WEB/'index.html').read_text().replace('__LOCAL_TOKEN__',token).replace('__VOICE_MODE__',mode))
     @app.get('/product')
-    def product():return HTMLResponse((WEB/'product.html').read_text().replace('__LOCAL_TOKEN__',token))
+    def product():return HTMLResponse((WEB/'product.html').read_text().replace('__LOCAL_TOKEN__',token).replace('__VOICE_MODE__',mode))
     @app.get('/brand.svg')
     def brand_svg():return Response((WEB/'brand.svg').read_text(),media_type='image/svg+xml')
     @app.get('/product.css')
@@ -39,5 +39,5 @@ def register(app,token):
     def product_entry():return Response((WEB/'product-entry.js').read_text(),media_type='text/javascript')
     @app.get('/client/{name}.js')
     def client_module(name:str):
-        if name not in {'runtime','navigation'}:raise HTTPException(status_code=404)
+        if name not in {'runtime','navigation','demo'}:raise HTTPException(status_code=404)
         return Response((WEB/'client'/(name+'.js')).read_text(),media_type='text/javascript')

@@ -24,3 +24,9 @@ Authenticated `GET /api/capabilities` describes routes, mode and limits. API res
 ## Frontend module boundary
 
 Product scripts are ES modules bootstrapped by `product-entry.js`. `client/runtime.js` exposes explicit read-only runtime/live ports; product code no longer assigns runtime globals or replaces another view's functions. Navigation owns shared guards, microphone checks and view transitions. The capture/playback implementation remains in the existing scripts to preserve tested timing behavior; a later internal rewrite can keep the same port.
+
+## Connected and demo modes
+
+`python -m voice_context.voice_server --mode demo --port 8766` starts with a separate `voice-demo.db`, without loading `.env`, opening model clients, requiring a native library, or connecting to Kafka/Redis. The banner labels typed input, fixed replies and silent audio as simulated. The same authenticated HTTP routes, product stores, context branches, reply format and explicit ACK semantics are exercised. Audio upload and live STT are refused in demo mode. A database already initialized for connected mode is rejected rather than populated with fixtures.
+
+Connected mode remains the default and keeps the previous startup/configuration behavior. Demo verifies product flows; its timing and fixed content are not infra performance or model-quality measurements. It cannot replace connected-mode integration tests.
