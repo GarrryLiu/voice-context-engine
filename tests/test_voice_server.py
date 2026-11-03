@@ -73,6 +73,18 @@ class VoiceServerTests(unittest.TestCase):
         self.assertEqual(state['recent'],[])
         self.assertEqual(c.pipeline.context(branch='product-independent')['recent'],[])
 
+    def test_v1_boundary_discovery_and_compatible_wire_shapes(self):
+        self.assertEqual(self.client.get('/api/capabilities').status_code,403)
+        r=self.client.get('/api/capabilities',headers=self.headers)
+        self.assertEqual(r.headers['x-voice-contract'],'1')
+        caps=r.json();self.assertEqual(caps['mode'],'connected')
+        self.assertEqual(caps['semantics']['new_branch'],'independent_context')
+        state=self.client.get(caps['endpoints']['state'],headers=self.headers).json()
+        self.assertEqual(set(state),{'session','branch','epoch','branches','recent','responses'})
+        snapshot=self.client.get(caps['endpoints']['workspace'],headers=self.headers).json()
+        self.assertEqual(set(snapshot),{'version','data'})
+        self.assertNotIn('LLM_API_KEY',r.text)
+
     def test_product_workspace_auth_persistence_and_conflict(self):
         self.assertEqual(self.client.get('/api/workspace').status_code,403)
         initial=self.client.get('/api/workspace',headers=self.headers).json()
