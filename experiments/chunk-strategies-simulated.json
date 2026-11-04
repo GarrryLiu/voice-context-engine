@@ -1,0 +1,5990 @@
+{
+  "created_utc": "2026-11-04T06:10:51.384004+00:00",
+  "live_tts": false,
+  "model": "synthetic",
+  "voice": null,
+  "python": "3.14.7",
+  "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
+  "configuration": {
+    "text_character_delay_seconds": 0.01,
+    "min_chars": 12,
+    "max_wait_seconds": 0.6,
+    "max_chars": 1600,
+    "feedback_ttl_seconds": 1.0,
+    "initial_tts_estimate_seconds": 0.25,
+    "repetitions": 1,
+    "playback": "idealized PCM duration, not browser feedback"
+  },
+  "source_sha256": {
+    "src/voice_context/chunk_scheduler.py": "6a9d3d49034f47ac917282340007f13b5a5abf3e800fcc213f00fdf3cc8413fe",
+    "src/voice_context/conversation.py": "355c115988a45a046a29636d5cc131fbb0d239b6c8b8952635d39d52eb5b1010",
+    "src/voice_context/text_prefetch.py": "de42147a1cb71d03dbb2703ade54dec17e4889a337e044dbd97231fcb215db54",
+    "experiments/chunk_strategies.py": "b5b921ad10a580d4a484e6c54c5adf56c90ab0afc36bf3fd18ce9198e886f580"
+  },
+  "fixtures": [
+    "Before we choose the implementation, let us compare the latency and reliability. Then we can record the decision.",
+    "先把我们今天讨论的产品需求整理一下，然后比较不同的实现方案。最后记录下一步需要验证的问题。",
+    "Dr. Smith measured 3.14 seconds, which is only one sample. We need more observations before drawing a conclusion.",
+    "We should preserve every completed thought, even when the final words have no punctuation"
+  ],
+  "samples": [
+    {
+      "strategy": "sentence",
+      "total_seconds": 1.5013655831571668,
+      "first_audio_queued_seconds": 0.7009334580507129,
+      "tts_requests": 3,
+      "input_characters": 113,
+      "output_pcm_bytes": 97628,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.01562441699206829,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.02817000006325543,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.04072191705927253,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.05331170908175409,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.065859500085935,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.0784165000077337,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.09097445895895362,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1015731249935925,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1140888340305537,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.12663000007160008,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13693554210476577,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14950975007377565,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1620571669191122,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17299550003372133,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18486270890571177,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19740887498483062,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20998045895248652,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.22026795893907547,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.23282645898871124,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2453894589561969,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2558181250933558,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2670995839871466,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.27938554203137755,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2914961250498891,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.30291300010867417,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.31549658393487334,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3274906671140343,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3398319589905441,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.35242041712626815,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.36317687504924834,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3746209170203656,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3871808750554919,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3997233749832958,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4122781250625849,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4237726249266416,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.43626124993897974,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4487721670884639,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.45902033406309783,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.46955449995584786,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4799209591001272,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.490383124910295,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5020651249215007,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5142735841218382,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5259910840541124,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5364822919946164,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5475287090521306,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5580552499741316,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5696190840099007,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5821650419384241,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5947072089184076,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6058492090087384,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6162998750805855,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.6187353751156479,
+          "text": "Before we choose the implementation, let us compare ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6288460420910269,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6413803750183433,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6536083340179175,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6661250421311706,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6786387499887496,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.7029326669871807,
+          "bytes": 44928,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.716561125125736,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7266486671287566,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7366908749099821,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7492085839621723,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7617405839264393,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7742779590189457,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7868376669939607,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7993879590649158,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8119389170315117,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8244820421095937,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8370247920975089,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8495527501218021,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8620927920565009,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8746329590212554,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8871599589474499,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8996873749420047,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9122297090943903,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9239753750152886,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9365317500196397,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9490933751221746,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9607060421258211,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9732375000603497,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9855983341112733,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9981274590827525,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.99965012492612,
+          "text": "the latency and reliability. ",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 1.010663708904758,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0231935840565711,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0357053340412676,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0482346669305116,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0607661250978708,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.0831163339316845,
+          "bytes": 25054,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 1.097540209069848,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1094001249875873,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1219557500444353,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1338888339232653,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1464435840025544,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1589876250363886,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1715384589042515,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1840018341317773,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1953928750008345,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2081844171043485,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2208857089281082,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2321699589956552,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2447902921121567,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2559261249843985,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2664109589532018,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2786270841024816,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.291266999905929,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3020237090531737,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.313172458903864,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3247267089318484,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3355042089242488,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3480763749685138,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3599463750142604,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3718408339191228,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.384159834124148,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.396715166978538,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4092564170714468,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.411947000073269,
+          "text": "Then we can record the decision.",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.4960582919884473,
+          "bytes": 27646,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 0
+    },
+    {
+      "strategy": "short_first",
+      "total_seconds": 1.5319558749906719,
+      "first_audio_queued_seconds": 0.5527500421740115,
+      "tts_requests": 3,
+      "input_characters": 113,
+      "output_pcm_bytes": 97628,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.014351667137816548,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.026876917108893394,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.03939900011755526,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.05192033317871392,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06438275007531047,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07691200007684529,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.089511499973014,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10042233299463987,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.11297850008122623,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.12537079211324453,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13791375001892447,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14907091716304421,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1616067080758512,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1741397080477327,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18440700019709766,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19618637510575354,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2087222500704229,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.22125025000423193,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.23172475001774728,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24426125013269484,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.25655966717749834,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.26694116718135774,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.27952250000089407,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.29208337515592575,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3026267499662936,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3144515419844538,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.32701262505725026,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.33862200006842613,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3492933751549572,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.35940283304080367,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3717799580190331,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.38412612513639033,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3966823329683393,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4067741250619292,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.41805491712875664,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.43011449999175966,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.44171816715970635,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.4448041671421379,
+          "text": "Before we choose the implementation, ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.45334308315068483,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.46436137496493757,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.47669899999164045,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.48687995807267725,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.49763812497258186,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.5266982500907034,
+          "bytes": 31966,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.5665517919696867,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.576941667124629,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5893247921485454,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6006201670970768,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6132135831285268,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6257941250223666,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6367106670513749,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.648356124991551,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6600282080471516,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6718566671479493,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6844327501021326,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6969911251217127,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.709550250088796,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7200807500630617,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7326491251587868,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7433984170202166,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7559677080716938,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7684957080055028,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7810317501425743,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7933728331699967,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8058878751471639,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8184036251623183,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8309207921847701,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8434372500050813,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8559517080429941,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8684840421192348,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8810359581839293,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8933705000672489,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9059297919739038,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.918513375101611,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9310323749668896,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9435490830801427,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9560633329674602,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9685842080507427,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9811099581420422,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.993365417001769,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.005886917002499,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0183986250776798,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.028968958184123,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.0306622080970556,
+          "text": "let us compare the latency and reliability. ",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 1.0414838751312345,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0539985420182347,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0648060000967234,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0773327080532908,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0898760831914842,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.1156739580910653,
+          "bytes": 38016,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 1.1310694580897689,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1433252079878002,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1559063331224024,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1683898749761283,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1795380001422018,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1916864169761539,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2042475421912968,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.216844583163038,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2294095831457525,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2414437499828637,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2540002500172704,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2650537921581417,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2766457500401884,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2891865000128746,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2992532500065863,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3102522080298513,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3228003750555217,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3345591670367867,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3469830001704395,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3571113331709057,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3696374581195414,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.381251708138734,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.393804208142683,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4057185831479728,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.418028417043388,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4300342921633273,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4425310830119997,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.4480279171839356,
+          "text": "Then we can record the decision.",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.5297955831047148,
+          "bytes": 27646,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 0
+    },
+    {
+      "strategy": "buffer_aware",
+      "total_seconds": 1.498021291103214,
+      "first_audio_queued_seconds": 0.53504683310166,
+      "tts_requests": 3,
+      "input_characters": 113,
+      "output_pcm_bytes": 97628,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.013994666980579495,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.026535416953265667,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.037715750047937036,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.05005208286456764,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06115874997340143,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07372724986635149,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08522999985143542,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.09691404202021658,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10850475006736815,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.11988708307035267,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13244887487962842,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14498899993486702,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.15752791706472635,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17006441694684327,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1826030418742448,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19514720793813467,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20768729201518,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2190753328613937,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2300973329693079,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2420751249883324,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2545306249521673,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2670513750053942,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.27959529194049537,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2897901670075953,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3003990419674665,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3116427920758724,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3238503329921514,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3354853328783065,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3480431248899549,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.360577582847327,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3724181249272078,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3849681250285357,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3974899579770863,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.40984850004315376,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.42238350003026426,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.43492654198780656,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.44746779184788465,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.4502242498565465,
+          "text": "Before we choose the implementation, ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.46002237498760223,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4725765420589596,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.48439737502485514,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4952046249527484,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5057167920749635,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.5331967920064926,
+          "bytes": 31966,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.5494460000190884,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5620298329740763,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5732229580171406,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5854629578534514,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5976860418450087,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6089604168664664,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6205057080369443,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6329743328969926,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6455235830508173,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6580066669266671,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6694167498499155,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6799504170194268,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6923936249222606,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7049509999342263,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7175013329833746,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7283225420396775,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7386424578726292,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7510066248942167,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7612949998583645,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7720888329204172,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7827737499028444,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7931877919472754,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8039903328754008,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8151893329340965,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8265245829243213,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8386083750519902,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8511682499665767,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.861591957975179,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8725222919601947,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8827204168774188,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8931951669510454,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9057013329584152,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.916211541974917,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.928756957873702,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9409451249521226,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9534862500149757,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9640183749143034,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9754324168898165,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9867001250386238,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.9887585828546435,
+          "text": "let us compare the latency and reliability. ",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 0.998202082933858,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0106065419968218,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0231737080030143,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0338407920207828,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0457863330375403,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.0695174168795347,
+          "bytes": 38016,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 1.0844508749432862,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.097000875044614,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1087811249308288,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1213413330260664,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1338949999772012,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.144211957929656,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1561187079641968,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1678873328492045,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1804457500111312,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1930054579861462,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2033475418575108,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2141725418623537,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.226111999945715,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2374109169468284,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.247772082919255,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2603154580574483,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2709290829952806,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2827699170447886,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2953325000125915,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3057772079482675,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.318387874867767,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3309315419755876,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.342476333025843,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3543520830571651,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3669479580130428,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3795385828707367,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3921239578630775,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.40942837507464,
+          "text": "Then we can record the decision.",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.4945169580169022,
+          "bytes": 27646,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 0
+    },
+    {
+      "strategy": "buffer_aware",
+      "total_seconds": 0.7078992081806064,
+      "first_audio_queued_seconds": 0.3214559170883149,
+      "tts_requests": 3,
+      "input_characters": 45,
+      "output_pcm_bytes": 38874,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.014132791897282004,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.02470312500372529,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.037258833879604936,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.049800666980445385,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06231908383779228,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07484245905652642,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08736729202792048,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.09988833405077457,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.11218887497670949,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1247265839483589,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13699875003658235,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14954154193401337,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.16064250003546476,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17324316687881947,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18450074992142618,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19648995902389288,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2090774590615183,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.22090304200537503,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.23351399996317923,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.23662979202345014,
+          "text": "先把我们今天讨论的产品需求整理一下，",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24614341696724296,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2587420418858528,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.27130862488411367,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.28384170890785754,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.29639854189008474,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.32103866687975824,
+          "bytes": 15550,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.3359305839985609,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.34848295897245407,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3610280838329345,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.37358933384530246,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.38616233388893306,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3987674170639366,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.41132191685028374,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.41615312499925494,
+          "text": "然后比较不同的实现方案。",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 0.4239204169716686,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4364869589917362,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.448114083847031,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.45923262485302985,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4708131249062717,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.4967815838754177,
+          "bytes": 10366,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.5121818338520825,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5249672089703381,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5360908750444651,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5472966248635203,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5598854590207338,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5722652920521796,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5848563339095563,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5974297090433538,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6100486249197274,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.6154050419572741,
+          "text": "最后记录下一步需要验证的问题。",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.7005004589445889,
+          "bytes": 12958,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 1
+    },
+    {
+      "strategy": "short_first",
+      "total_seconds": 0.6986240830738097,
+      "first_audio_queued_seconds": 0.32433225004933774,
+      "tts_requests": 3,
+      "input_characters": 45,
+      "output_pcm_bytes": 38874,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.014232665998861194,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.02519658301025629,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.037725500063970685,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.050245000049471855,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06276441598311067,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07528495788574219,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.0878073750063777,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10021208296529949,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.11175637505948544,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.12440595799125731,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13623983296565711,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14879879099316895,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.16135370801202953,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17192020802758634,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18396504106931388,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19603400002233684,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20860279095359147,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.22118716593831778,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2337597080040723,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.24190079094842076,
+          "text": "先把我们今天讨论的产品需求整理一下，",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24399833311326802,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.25656654103659093,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2686547909397632,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2811952910851687,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.29164241603575647,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.3239064160734415,
+          "bytes": 15550,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.33791683288291097,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3496404578909278,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.36220200010575354,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3747607080731541,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.38636791589669883,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3974698749370873,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.40879249991849065,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.4109633748885244,
+          "text": "然后比较不同的实现方案。",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 0.42132458300329745,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.43359600007534027,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.44611112494021654,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.45862445794045925,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.47113720793277025,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.49598050001077354,
+          "bytes": 10366,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.5086275830399245,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5191589160822332,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5316919579636306,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5442155411001295,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.55676179099828,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5693024580832571,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5818511659745127,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5943864579312503,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6069107500370592,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.6106811659410596,
+          "text": "最后记录下一步需要验证的问题。",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.6957499159034342,
+          "bytes": 12958,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 1
+    },
+    {
+      "strategy": "sentence",
+      "total_seconds": 0.6622445001266897,
+      "first_audio_queued_seconds": 0.4565846249461174,
+      "tts_requests": 2,
+      "input_characters": 45,
+      "output_pcm_bytes": 38876,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.01456170785240829,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.025501250056549907,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.03560995799489319,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.048134957905858755,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.05987579096108675,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07241858285851777,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08495862502604723,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.097505500074476,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10985095798969269,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.12239058292470872,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13493245793506503,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14749695803038776,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.16003229096531868,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17258154088631272,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18512791604734957,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1972120408900082,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20974175003357232,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2222599999513477,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.23427237500436604,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.246823790948838,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.25689412490464747,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.26749104098416865,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.27828729106113315,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2893199159298092,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.30190979107283056,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.31233904091641307,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.324876582948491,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.33562816586345434,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.34816141589544713,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3586976248770952,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3689919160678983,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.37089012493379414,
+          "text": "先把我们今天讨论的产品需求整理一下，然后比较不同的实现方案。",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3813923748675734,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.39348362502641976,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4060230830218643,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.41855816589668393,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4311047079972923,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.4559323750436306,
+          "bytes": 25918,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.4716165829449892,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.48218654096126556,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.49270383291877806,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5035568750463426,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5146375000476837,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5272114998660982,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5397700830362737,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5519927910063416,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5645713750272989,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.5700758749153465,
+          "text": "最后记录下一步需要验证的问题。",
+          "request": 2
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.6549036658834666,
+          "bytes": 12958,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 1
+    },
+    {
+      "strategy": "sentence",
+      "total_seconds": 1.5039861670229584,
+      "first_audio_queued_seconds": 0.7155126670841128,
+      "tts_requests": 3,
+      "input_characters": 113,
+      "output_pcm_bytes": 97630,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.014369042124599218,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.02692845812998712,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.03866012510843575,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.05118620814755559,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.0632426671218127,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07582487515173852,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08825345803052187,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.0990415420383215,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.11011783313006163,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.12201425014063716,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13458445807918906,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14657779200933874,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.15837687510065734,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17102350015193224,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1827082501258701,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19528795802034438,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20786641701124609,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.21885129204019904,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.23047420801594853,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24116845801472664,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2526847501285374,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2651007079984993,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2776852080132812,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2886913330294192,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3012767501641065,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.31319458317011595,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.32576454197987914,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3370088750962168,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3486542501486838,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.36100395815446973,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.37212250009179115,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.38472937513142824,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.39592058304697275,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4083507920149714,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.41873570811003447,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4305170001462102,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.44304912514053285,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4555807081051171,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.46785437501966953,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4789081250783056,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4910156251862645,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5025846671778709,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.513150375103578,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5243553330656141,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5364454581867903,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5490117501467466,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5615842081606388,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5741562501061708,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5867834170348942,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5979429171420634,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6095679581630975,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6217588749714196,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.6287275420036167,
+          "text": "Dr. Smith measured 3.14 seconds, which is only one ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6343252921942621,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6468871671240777,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6594331250526011,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6719827500637621,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6845362919848412,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.7133646670263261,
+          "bytes": 44064,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.7302524170372635,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7428658751305193,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.7458948330022395,
+          "text": "sample. ",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 0.7542657919693738,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7649195829872042,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7774832081049681,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7877017920836806,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7998415420297533,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.8302822920959443,
+          "bytes": 6910,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.8461235000286251,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8574004580732435,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8683935420121998,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8809491670690477,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8935323331970721,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9053644170053303,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9170243751723319,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9292935831472278,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9397750829812139,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9523552081082016,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9640201670117676,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9765721671283245,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9891437080223113,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0017089580651373,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0135208331048489,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0258063750807196,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0376293330918998,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0501368751283735,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0614160420373082,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0733324580360204,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0835237500723451,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0944072920829058,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1064517500344664,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.117974708089605,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1305445830803365,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1412035000976175,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1537571670487523,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1653745421208441,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1779194581322372,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1887440830469131,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2013042920734733,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2138478751294315,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2264247501734644,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2385777500458062,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2497565001249313,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2603227500803769,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.271399833029136,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2829595829825848,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2947930830996484,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3055434999987483,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3180237500928342,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3289097500965,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.339156333124265,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3517429169733077,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.362809207988903,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.375371125061065,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3876448331866413,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3984432080760598,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4085572080221027,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.4114765420090407,
+          "text": "We need more observations before drawing a conclusion.",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.4965745829977095,
+          "bytes": 46656,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 2
+    },
+    {
+      "strategy": "short_first",
+      "total_seconds": 1.5225783751811832,
+      "first_audio_queued_seconds": 0.4917045410256833,
+      "tts_requests": 3,
+      "input_characters": 113,
+      "output_pcm_bytes": 97632,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.014680999796837568,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.027203999925404787,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.03973608301021159,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.052271208027377725,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06480979197658598,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07737274980172515,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08906770800240338,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10175670799799263,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1143076668959111,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.12687245779670775,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13944937498308718,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.15203083283267915,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.16238129185512662,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17495795781724155,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18742320779711008,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20006391685456038,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.21268887491896749,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.22425083280541003,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.23560754186473787,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24816266680136323,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2607232918962836,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.27333875000476837,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.28558695781975985,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.29627970792353153,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3088067078497261,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3213674579747021,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3334291249047965,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.34419741691090167,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.35657149995677173,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3691484578885138,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3816972079221159,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.39326416701078415,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4041606669779867,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.4066320420242846,
+          "text": "Dr. Smith measured 3.14 seconds, ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4165478330105543,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4277082500047982,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4402642499189824,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4527958750259131,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.46531720785424113,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.4916732918936759,
+          "bytes": 28512,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.5065447499509901,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5177194999996573,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5302767918910831,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.54075074987486,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5532941669225693,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5658364170230925,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.578476499998942,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5907766669988632,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6027098749764264,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6152557078748941,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6278388330247253,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6404502498917282,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6519965420011431,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6638721670024097,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.676429791841656,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6889842918608338,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7015509579796344,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7140163329895586,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7266564578749239,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7380669999402016,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7504752078093588,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.7523074578493834,
+          "text": "which is only one sample. ",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 0.7630169580224901,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7755587499123067,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7880783330183476,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8000310419593006,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8110382079612464,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.8361637499183416,
+          "bytes": 22464,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.8480548330117017,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8606120829936117,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8731653748545796,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8857288749422878,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8982604998163879,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9107834578026086,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9211434579920024,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9336844999343157,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9462010830175132,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9587309579364955,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9712628328707069,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9837982079479843,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9963417919352651,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0088873328641057,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.021423416910693,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0340262078680098,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0444439169950783,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0565926670096815,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0691526669543236,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0804365419317037,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.093024207977578,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1055893748998642,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1163816249463707,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1289604168850929,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.141509666806087,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.154070416931063,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1666849579196423,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1793004169594496,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1918520829640329,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2044085420202464,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2152705828193575,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2277451248373836,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2402729999739677,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.250729207880795,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2627024999819696,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.273682207800448,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2854158750269562,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.297630124958232,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3100381668191403,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3226076669525355,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3351712499279529,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3477290829177946,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.36027408298105,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3728355418425053,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3854422078002244,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3980021248571575,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4094551668968052,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4220047499984503,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.433684416813776,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.4384891670197248,
+          "text": "We need more observations before drawing a conclusion.",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.5223459578119218,
+          "bytes": 46656,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 2
+    },
+    {
+      "strategy": "buffer_aware",
+      "total_seconds": 1.5118735418654978,
+      "first_audio_queued_seconds": 0.48142499988898635,
+      "tts_requests": 3,
+      "input_characters": 113,
+      "output_pcm_bytes": 97632,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.013482165988534689,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.024133750004693866,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.0346962078474462,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.04721920797601342,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.0597333749756217,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07224424998275936,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08476991602219641,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.09568387502804399,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10824041604064405,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.12076920783147216,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13330820784904063,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14567891601473093,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.15823249984532595,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17077583284117281,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1833242499269545,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19568129093386233,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20610899990424514,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.21811904083006084,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2290622079744935,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2402064159978181,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2514363748487085,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.262451000045985,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2738189159426838,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.286390540888533,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.29868749994784594,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.30942245782352984,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.32094833301380277,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.333489540964365,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.34403958288021386,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.35584591585211456,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3660755408927798,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3786460410337895,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.39117929083295166,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.393242415972054,
+          "text": "Dr. Smith measured 3.14 seconds, ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4025257909670472,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4150739158503711,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4276260829064995,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.43904933286830783,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.45163704082369804,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.4783096248283982,
+          "bytes": 28512,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.4970453749410808,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5090204998850822,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5215973330195993,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5332911249715835,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5440170408692211,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5551648328546435,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5671192079316825,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5797037908341736,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.592272707959637,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6029268328566104,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6136318750213832,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6251577499788254,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6354653749149293,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.646725625032559,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.659248166019097,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6717865408863872,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.684335625031963,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6957137079443783,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7082792909350246,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7208250409457833,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7333874159958214,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.7363258330151439,
+          "text": "which is only one sample. ",
+          "request": 2
+        },
+        {
+          "event": "text",
+          "seconds": 0.7446079158689827,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7572065410204232,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7696142909117043,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7810034998692572,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.793561500031501,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.8179955829400569,
+          "bytes": 22464,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.8353762908373028,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.847950582858175,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8583756659645587,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8700815830379725,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8821462078485638,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8946933329571038,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9048329158686101,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9169750828295946,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9280131659470499,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9405403749551624,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9521068749018013,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.962390000000596,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9749096659943461,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9874217079486698,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.99993004091084,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0124507078435272,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0249750828370452,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.036266166018322,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0487836659885943,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0612946250475943,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0732918330468237,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0852712499909103,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0977909578941762,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1079387080390006,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1180810409132391,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1306080829817802,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.143143624998629,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1556868748739362,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1682339999824762,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1807742498349398,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.1933117499575019,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.205845250049606,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2183784579392523,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2309013749472797,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2434260409791023,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.255948374979198,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.268475707853213,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.281008749967441,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.2935923328623176,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3037545830011368,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3163339160382748,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3288904579821974,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.341461000032723,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3540412080474198,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3666168749332428,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3789677498862147,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.3914787909016013,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4034008330199867,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.4145470829680562,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.4194857908878475,
+          "text": "We need more observations before drawing a conclusion.",
+          "request": 3
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.5025333329103887,
+          "bytes": 46656,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 2
+    },
+    {
+      "strategy": "buffer_aware",
+      "total_seconds": 1.1879979169461876,
+      "first_audio_queued_seconds": 0.6164285838603973,
+      "tts_requests": 2,
+      "input_characters": 89,
+      "output_pcm_bytes": 76896,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.012294499902054667,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.024848083965480328,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.037389209028333426,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.04992641694843769,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06229966692626476,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.0748753750231117,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08745387499220669,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.09791025007143617,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10826454195193946,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.11989862495101988,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13244962505996227,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.14499499998055398,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.15754775004461408,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17012016708031297,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18269145907834172,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19452504208311439,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2071120000910014,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.21953579201363027,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2321177499834448,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24457375006750226,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.257147999946028,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.26952954195439816,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2809414588846266,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2914318749681115,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.30164341698400676,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.31232870905660093,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3248955418821424,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.33746987488120794,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.34999524988234043,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.36173879192210734,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.37223979202099144,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3844802500680089,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.39460895908996463,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.40677833394147456,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4168794169090688,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4289879589341581,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.44139675004407763,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4539779999759048,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4665442919358611,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4789990419521928,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4916245420463383,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5041722499299794,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5153482090681791,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5264931248966604,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.532675625057891,
+          "text": "We should preserve every completed thought, ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.538201249903068,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5507231669034809,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5615415000356734,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5727375838905573,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5838199169375002,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.6153484170790762,
+          "bytes": 38016,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.6324619168881327,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6434901671018451,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6560645001009107,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6668332500848919,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6793197500519454,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6919014169834554,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7034808748867363,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7153603339102119,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.727161583956331,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.737874791957438,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7489246251061559,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7612254170235246,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7738387088757008,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7854487090371549,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.796587249962613,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8066579590085894,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8167354590259492,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8292779589537531,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8418269590474665,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8543634999077767,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8661760000977665,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8787297499366105,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.890772792045027,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9033294168766588,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9158860840834677,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9284496670588851,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9410252089146525,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.952563792001456,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9651447921060026,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9766200419981033,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9876318338792771,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0001782500185072,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0103638749569654,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0224888750817627,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.035066416952759,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0457092090509832,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0582820840645581,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0688493750058115,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.079033249989152,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0909549999050796,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.0964358339551836,
+          "text": "even when the final words have no punctuation",
+          "request": 2
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.178587958915159,
+          "bytes": 38880,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 3
+    },
+    {
+      "strategy": "short_first",
+      "total_seconds": 1.1892559581901878,
+      "first_audio_queued_seconds": 0.6221190830692649,
+      "tts_requests": 2,
+      "input_characters": 89,
+      "output_pcm_bytes": 76896,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.013602833030745387,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.026150708086788654,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.03674850007519126,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.049312958028167486,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06189029198139906,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07423970801755786,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08669579192064703,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.09929937496781349,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10985595802776515,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1200267500244081,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13259045802988112,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1451339579652995,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.15767262503504753,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1702347919344902,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1826032919343561,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1935703749768436,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.20611179200932384,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.21865499997511506,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2312084580771625,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24376325006596744,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.25630820798687637,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.26883141696453094,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.28136404207907617,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.29392299987375736,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3064740418922156,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.319011207902804,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3315930829849094,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.34413587488234043,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.35676162503659725,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3689904168713838,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.380567624932155,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.39312858297489583,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4052934169303626,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4178474999498576,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4304186669178307,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4429728330578655,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4534569170791656,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4638359579257667,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4763892078772187,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4889488748740405,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5015572078991681,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5141640000510961,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5264125419780612,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5365801248699427,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.5398395829834044,
+          "text": "We should preserve every completed thought, ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.549165166914463,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5598403748590499,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5724132920149714,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5849917500745505,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5975848329253495,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.6226523749064654,
+          "bytes": 38016,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.6360147499945015,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6472668328788131,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6598641250748187,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6724360000807792,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6834319999907166,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6955395420081913,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7066821248736233,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7173202498815954,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7291907500475645,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7417873330414295,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7542872498743236,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7668475420214236,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.779401124920696,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7896332920063287,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8021787079051137,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8129366249777377,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.825487291906029,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8365232080686837,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.849088457878679,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8606913748662919,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8725195829756558,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8850817498750985,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.897641042014584,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9083015830256045,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9200121669564396,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9319007920566946,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9444778750184923,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9561056669335812,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9675174169242382,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9798127498943359,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9901996250264347,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0023521250113845,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0129935829900205,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0255614998750389,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0381160830147564,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0482450418639928,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0593250419478863,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0711615830659866,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0836477919947356,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0962184579111636,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.0995975830592215,
+          "text": "even when the final words have no punctuation",
+          "request": 2
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.184050832875073,
+          "bytes": 38880,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 3
+    },
+    {
+      "strategy": "sentence",
+      "total_seconds": 1.181363208917901,
+      "first_audio_queued_seconds": 0.7121947498526424,
+      "tts_requests": 2,
+      "input_characters": 89,
+      "output_pcm_bytes": 76894,
+      "idealized_gap_seconds": 0,
+      "idealized_gap_count": 0,
+      "exact_text": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.011487832991406322,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.024021125165745616,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.03659075009636581,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.04912895802408457,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.06096241599880159,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.07289104117080569,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.08469520811922848,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.09491958306171,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.10749087505973876,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.11982595804147422,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.13235458312556148,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1443098750896752,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.15472112502902746,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.1656326660886407,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.17649833299219608,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.18792258319444954,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.19826991599984467,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.21088604116812348,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.22204312519170344,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.23301958316005766,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.24490408319979906,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2569055000785738,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.269330166047439,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2818863750435412,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.2937231659889221,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3046216662041843,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.31719287508167326,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.32827195804566145,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.34084645798429847,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3510976249817759,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.36162016610614955,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3729166660923511,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.38392516621388495,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.3948673331178725,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4074402500409633,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4200620411429554,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4303240831941366,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.44079737504944205,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.45265633310191333,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4637797500472516,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.4758811250794679,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.48841525008901954,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5009576249867678,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5135665410198271,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5244077499955893,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5369717502035201,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5495285410434008,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5605607081670314,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5717600411735475,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5841038750950247,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.5955077500548214,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6067276659887284,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6192875001579523,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.6248679580166936,
+          "text": "We should preserve every completed thought, even ",
+          "request": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.630122791044414,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6425110411364585,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6546399160288274,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6660451251082122,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.6786014582030475,
+          "characters": 1
+        },
+        {
+          "event": "pcm",
+          "seconds": 0.7092011661734432,
+          "bytes": 42334,
+          "first_for_request": true
+        },
+        {
+          "event": "text",
+          "seconds": 0.7276948331855237,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7397194160148501,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7522219161037356,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7647934160195291,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7772634581197053,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.7897618331480771,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8023300832137465,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.813898041145876,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8241937500424683,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8365542502142489,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8477979160379618,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8582936250604689,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8708718330599368,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.8834555000066757,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.894832625053823,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9057756660040468,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9159753331914544,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9285602911841124,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9411311252042651,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9537032081279904,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9656305410899222,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9782038750126958,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 0.9897633329965174,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.000882291002199,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0121822501532733,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.023726750165224,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0360497501678765,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0469670412130654,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0595599580556154,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0716003749985248,
+          "characters": 1
+        },
+        {
+          "event": "text",
+          "seconds": 1.0842315000481904,
+          "characters": 1
+        },
+        {
+          "event": "tts_start",
+          "seconds": 1.0888630410190672,
+          "text": "when the final words have no punctuation",
+          "request": 2
+        },
+        {
+          "event": "pcm",
+          "seconds": 1.1735277911648154,
+          "bytes": 34560,
+          "first_for_request": true
+        }
+      ],
+      "fixture": 3
+    }
+  ],
+  "limits": [
+    "Single trial per fixture/strategy; no statistical performance claim.",
+    "PCM duration model excludes browser/network/decode buffering and is not audible-gap measurement.",
+    "No acoustic quality rating. Character/byte counts are not billed cost.",
+    "Fixed text replay is not real LLM generation; buffer-aware uses simulated feedback only."
+  ]
+}
