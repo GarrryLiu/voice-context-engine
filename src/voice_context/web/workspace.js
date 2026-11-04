@@ -41,12 +41,12 @@ function graphPlace(items){
  return {x:45,y:Math.max(0,...items.map(n=>n.y))+175};
 }
 function graphLinks(){return graphSession?(selectedGraphSession()?.edges||[]):workspaceData.links;}
-function selectedGraphItem(){return graphItems().find(n=>n.id===graphSelected);}
+function inspectorLinks(){return graphSelected===graphSession?workspaceData.links:graphLinks();}
+function selectedGraphItem(){return graphSelected===graphSession?selectedGraphSession():graphItems().find(n=>n.id===graphSelected);}
 function renderContinuity(){
  const recent=workspaceData.sessions.filter(s=>!s.demo).slice(-3).reverse();
  $('talk-resume').hidden=!recent.length;
- $('workspace-continuity').hidden=!!graphSession||!recent.length;
- for(const target of ['talk-recent','workspace-recent']){
+ for(const target of ['talk-recent']){
   $(target).replaceChildren(...recent.map(item=>{
    const card=graphEl('article','continuity-card');
    const questions=item.nodes.filter(n=>n.kind==='question').length;
@@ -92,48 +92,59 @@ function renderGraph(){
  const current=selectedGraphSession();
  $('graph-title').textContent=current?current.title:'Your thinking, connected.';
  $('graph-eyebrow').textContent=current?(current.demo?'EXAMPLE RECORD · '+current.category.toUpperCase():current.category.toUpperCase()+' / RECORD'):'CONNECTED THINKING';
- $('graph-subtitle').textContent=current?'Follow an idea. Find a connection. Pick up where you left off.':'Every conversation is a starting point. See where it takes you.';
- $('graph-back').hidden=!current;$('graph-session-actions').hidden=!current;$('graph-demo').hidden=workspaceData.sessions.some(s=>s.demo);
- $('graph-search').placeholder=current?'Find a thought…':'Find a record…';
+ $('graph-subtitle').textContent=current?'Follow an idea. Find a connection. Pick up where you left off.':'Explore a topic. Follow a connection. Keep thinking.';
+ $('graph-back').hidden=!current;$('graph-topic-settings').hidden=!current;$('graph-session-actions').hidden=!current;$('graph-demo').hidden=workspaceData.sessions.some(s=>s.demo);
+ $('graph-search').placeholder=current?'Find a thought…':'Find a topic…';
  $('graph-scope-label').textContent=current?'Ideas, questions & decisions':'Records connected by you';
  $('graph-categories').replaceChildren(...['',...workspaceData.categories].map(category=>{
   const button=graphEl('button','category-item'+(graphCategory===category&&!current?' selected':''));
-  button.append(graphEl('i','category-dot'),graphEl('span','',category||'All records'),graphEl('span','',String(workspaceData.sessions.filter(s=>!category||s.category===category).length)));
+  button.append(graphEl('i','category-dot'),graphEl('span','',category||'All topics'),graphEl('span','',String(workspaceData.sessions.filter(s=>!category||s.category===category).length)));
   button.onclick=()=>{if(!graphCanLeave())return;graphFormDirty=false;graphCategory=category;graphSession=null;graphSelected=null;$('graph-search').value='';graphReset();renderGraph();graphHash();};return button;
  }));
  $('graph-session-count').textContent=workspaceData.sessions.length;
- $('graph-session-list').replaceChildren(...workspaceData.sessions.filter(s=>!graphCategory||s.category===graphCategory).map(item=>{const button=graphEl('button','session-item');button.append(graphEl('span','','⑂'),graphEl('span','',item.title));button.onclick=()=>openSessionMap(item.id);return button;}));
+ $('graph-session-list').replaceChildren(...workspaceData.sessions.filter(s=>!graphCategory||s.category===graphCategory).map(item=>{
+  const group=graphEl('div','topic-tree');
+  const button=graphEl('button','session-item'+(graphSession===item.id?' selected':''));button.title=item.title;button.append(graphEl('span','','⑂'),graphEl('span','',item.title));button.onclick=()=>openSessionMap(item.id);group.append(button);
+  if(graphSession===item.id){for(const node of item.nodes){const child=graphEl('button','tree-thought'+(graphSelected===node.id?' selected':''),node.title);child.title=node.title;child.onclick=()=>{if(!graphCanLeave())return;selectGraphItem(node.id);};group.append(child);}}
+  return group;
+ }));
  const items=graphItems();$('graph-nodes').replaceChildren(...items.map(item=>{
   const button=graphEl('button','graph-node'+(item.id===graphSelected?' selected':''));button.dataset.id=item.id;button.dataset.kind=item.kind||'session';button.style.left=item.x+'px';button.style.top=item.y+'px';button.setAttribute('aria-label',(current?'Select thought: ':'Select record: ')+item.title);
   const type=graphEl('span','node-type',current?graphTypes[item.kind]:item.category);if(!current&&item.demo)type.append(graphEl('span','demo-chip','EXAMPLE'));
   button.append(type,graphEl('strong','',item.title));
   if(current)button.append(graphEl('span','node-preview',item.content||'A little room for your next idea.'));
   else button.append(graphEl('small','',item.nodes.length+' thoughts · '+item.edges.length+' connections'));
-  button.onclick=()=>{if(graphDrag?.moved)return;selectGraphItem(item.id);};button.ondblclick=()=>{if(!current)openSessionMap(item.id);};
+  button.onclick=()=>{if(graphDrag?.moved)return;if(current)selectGraphItem(item.id);else openSessionMap(item.id);};
   button.onpointerdown=event=>{if(event.button!==0)return;event.stopPropagation();graphDrag={id:item.id,clientX:event.clientX,clientY:event.clientY,x:item.x,y:item.y,moved:false};button.setPointerCapture(event.pointerId);};
   button.onpointermove=event=>{if(graphDrag?.id!==item.id)return;const dx=(event.clientX-graphDrag.clientX)/graphScale,dy=(event.clientY-graphDrag.clientY)/graphScale;if(Math.abs(dx)+Math.abs(dy)>4)graphDrag.moved=true;if(!graphDrag.moved)return;item.x=Math.max(0,Math.min(1700,graphDrag.x+dx));item.y=Math.max(0,Math.min(1200,graphDrag.y+dy));button.style.left=item.x+'px';button.style.top=item.y+'px';drawGraphEdges();};
   button.onpointerup=()=>{if(graphDrag?.id!==item.id)return;if(graphDrag.moved){persistWorkspace();setTimeout(()=>{graphDrag=null;},0);}else graphDrag=null;};
   button.onpointercancel=()=>{if(graphDrag?.moved)persistWorkspace();graphDrag=null;};return button;
  }));
- $('graph-clusters').replaceChildren();drawGraphEdges();
+ $('graph-clusters').replaceChildren();
+ if(!current){for(const category of [...new Set(items.map(n=>n.category))]){
+  const members=items.filter(n=>n.category===category);const label=graphEl('span','graph-cluster',category);label.style.left=Math.min(...members.map(n=>n.x))+'px';label.style.top=Math.max(0,Math.min(...members.map(n=>n.y))-24)+'px';$('graph-clusters').append(label);
+ }}drawGraphEdges();
  $('graph-empty').hidden=!!items.length;$('graph-empty').querySelector('h2').textContent=$('graph-search').value?'No matching thoughts.':'A thought starts with your voice.';
  $('graph-list').replaceChildren(...items.map(item=>{const button=graphEl('button','graph-row');button.append(graphEl('strong','',item.title),graphEl('small','',current?graphTypes[item.kind]:item.category));button.onclick=()=>current?selectGraphItem(item.id):openSessionMap(item.id);return button;}));
  $('graph-canvas').hidden=graphListMode;$('graph-list').hidden=!graphListMode;
  $('graph-map-toggle').classList.toggle('selected',!graphListMode);$('graph-list-toggle').classList.toggle('selected',graphListMode);
- $('graph-counts').textContent=items.length+(current?' thoughts':' records')+' · '+graphLinks().filter(e=>e.every(id=>items.some(n=>n.id===id))).length+' connections';
+ const linked=new Set(graphLinks().filter(e=>e.includes(graphSelected)).flat());
+ for(const node of $('graph-nodes').children)node.classList.toggle('muted-node',!!graphSelected&&graphSelected!==graphSession&&node.dataset.id!==graphSelected&&!linked.has(node.dataset.id));
+ $('graph-counts').textContent=items.length+(current?' thoughts':' topics')+' · '+graphLinks().filter(e=>e.every(id=>items.some(n=>n.id===id))).length+' connections';
  renderGraphInspector();
 }
-function selectGraphItem(id){if(graphSelected===id||!graphCanLeave())return;graphFormDirty=false;graphSelected=id;for(const node of document.querySelectorAll('.graph-node'))node.classList.toggle('selected',node.dataset.id===id);renderGraphInspector();}
+function selectGraphItem(id){if(graphSelected===id||!graphCanLeave())return;graphFormDirty=false;graphSelected=id;renderGraph();}
 function renderGraphInspector(){
- const item=selectedGraphItem(),current=selectedGraphSession();$('graph-inspector-empty').hidden=!!item;$('graph-editor').hidden=!item;if(!item)return;
- $('graph-selection-kind').textContent=current?(graphTypes[item.kind]||'Thought').toUpperCase():'RECORD';$('graph-edit-title').value=item.title;
- $('graph-category-label').hidden=!!current;$('graph-kind-label').hidden=!current||item.kind==='voice';$('graph-content-label').hidden=!current;
+ const current=selectedGraphSession(),item=graphSelected===graphSession?current:selectedGraphItem();$('graph-workspace').classList.toggle('has-selection',!!item);$('graph-inspector-empty').hidden=!!item;$('graph-editor').hidden=!item;if(!item)return;
+ const editingTopic=item===current;const nodeContext=current&&!editingTopic;
+ $('graph-selection-kind').textContent=nodeContext?(graphTypes[item.kind]||'Thought').toUpperCase():'TOPIC';$('graph-edit-title').value=item.title;
+ $('graph-category-label').hidden=!!nodeContext;$('graph-kind-label').hidden=!nodeContext||item.kind==='voice';$('graph-content-label').hidden=!nodeContext;
  $('graph-edit-category').replaceChildren(...workspaceData.categories.map(c=>new Option(c,c)));$('graph-edit-category').value=item.category||current?.category;
  $('graph-edit-kind').value=item.kind||'idea';$('graph-edit-content').value=item.content||'';
  $('graph-open-session').hidden=!!current;$('graph-source').hidden=!item.source;
  $('graph-provenance').textContent=item.source?'Edited notes are separate from the original source.':!current&&item.demo?'Example content for exploring the product. No model calls were made.':current?'Map edits organize this record. Voice resumes its spoken branch context; these edits are not added to model memory.':'A record can grow across conversations. Topic filing is manual in this preview.';
- const others=graphItems().filter(n=>n.id!==item.id);$('graph-connect-target').replaceChildren(...others.map(n=>new Option(n.title,n.id)));$('graph-connect').disabled=!others.length;
- $('graph-connections').replaceChildren(...graphLinks().filter(e=>e.includes(item.id)).map(edge=>{const other=graphItems().find(n=>n.id===edge.find(id=>id!==item.id));const b=graphEl('button','','↔ '+(other?.title||'Hidden node')+' ×');b.type='button';b.title='Remove connection';b.onclick=()=>{const links=graphLinks();links.splice(links.indexOf(edge),1);persistWorkspace();renderGraph();};return b;}));
+ const candidates=editingTopic?workspaceData.sessions:graphItems();const others=candidates.filter(n=>n.id!==item.id);$('graph-connect-target').closest('.inspector-connections').hidden=false;$('graph-connect-target').replaceChildren(...others.map(n=>new Option(n.title,n.id)));$('graph-connect').disabled=!others.length;
+ $('graph-connections').replaceChildren(...inspectorLinks().filter(e=>e.includes(item.id)).map(edge=>{const other=candidates.find(n=>n.id===edge.find(id=>id!==item.id));const b=graphEl('button','','↔ '+(other?.title||'Hidden node')+' ×');b.type='button';b.title='Remove connection';b.onclick=()=>{const links=inspectorLinks();links.splice(links.indexOf(edge),1);persistWorkspace();renderGraph();};return b;}));
 }
 function graphHash(){history.replaceState(null,'','#library'+(graphSession?'/'+encodeURIComponent(graphSession):''));}
 async function enterGraph(id=null){
@@ -151,19 +162,20 @@ $('graph-name-form').onsubmit=async event=>{
  $('graph-name-dialog').close();await persistWorkspace();renderGraph();graphReset();graphHash();}
  catch(error){graphNotice(error.message,true);}
 };
-$('graph-editor').oninput=()=>{graphFormDirty=true;graphNotice('Unsaved node edits · save changes to keep them.');};
-$('graph-editor').onsubmit=event=>{event.preventDefault();const item=selectedGraphItem();if(!item)return;item.title=$('graph-edit-title').value.trim()||item.title;if(graphSession){item.content=$('graph-edit-content').value;if(item.kind!=='voice')item.kind=$('graph-edit-kind').value;}else item.category=$('graph-edit-category').value;graphFormDirty=false;persistWorkspace();renderGraph();};
-$('graph-connect').onclick=()=>{const target=$('graph-connect-target').value;if(!target||!graphSelected||!graphCanLeave())return;const links=graphLinks();if(!links.some(e=>e.includes(target)&&e.includes(graphSelected)))links.push([graphSelected,target]);graphFormDirty=false;persistWorkspace();renderGraph();};
+$('graph-editor').oninput=event=>{if(event.target.id==='graph-connect-target')return;graphFormDirty=true;graphNotice('Unsaved node edits · save changes to keep them.');};
+$('graph-editor').onsubmit=event=>{event.preventDefault();const item=selectedGraphItem();if(!item)return;item.title=$('graph-edit-title').value.trim()||item.title;if(graphSession&&item.id!==graphSession){item.content=$('graph-edit-content').value;if(item.kind!=='voice')item.kind=$('graph-edit-kind').value;}else item.category=$('graph-edit-category').value;graphFormDirty=false;persistWorkspace();renderGraph();};
+$('graph-connect').onclick=()=>{const target=$('graph-connect-target').value;if(!target||!graphSelected||!graphCanLeave())return;const links=inspectorLinks();if(!links.some(e=>e.includes(target)&&e.includes(graphSelected)))links.push([graphSelected,target]);graphFormDirty=false;persistWorkspace();renderGraph();};
 $('graph-close-selection').onclick=()=>{if(!graphCanLeave())return;graphFormDirty=false;graphSelected=null;renderGraph();};
 $('graph-open-session').onclick=()=>openSessionMap(graphSelected);
 const graphDelete=graphEl('button','','Remove from map');graphDelete.type='button';$('graph-editor').append(graphDelete);
 graphDelete.onclick=()=>{const item=selectedGraphItem();if(!item||!window.confirm('Remove this '+(graphSession?'node':'record')+' from the map? Original voice notes and documents will be kept.'))return;
- if(graphSession){const s=selectedGraphSession();s.nodes=s.nodes.filter(n=>n.id!==item.id);s.edges=s.edges.filter(e=>!e.includes(item.id));}
+ if(graphSession&&item.id!==graphSession){const s=selectedGraphSession();s.nodes=s.nodes.filter(n=>n.id!==item.id);s.edges=s.edges.filter(e=>!e.includes(item.id));}
  else{workspaceData.sessions=workspaceData.sessions.filter(s=>s.id!==item.id);workspaceData.links=workspaceData.links.filter(e=>!e.includes(item.id));if(activeProductSession===item.id){activeProductSession=null;try{localStorage.removeItem('voiceline-active-product-session');}catch{}}}
- graphFormDirty=false;graphSelected=null;persistWorkspace();renderGraph();};
+ graphFormDirty=false;graphSelected=null;if(!selectedGraphSession())graphSession=null;persistWorkspace();renderGraph();graphHash();};
 $('graph-source').onclick=()=>{const source=selectedGraphItem()?.source;if(source&&graphCanLeave()){graphFormDirty=false;showDocuments(source);}};
 function showGraph(id=null){return navigate('workspace',id);}
 registerView('workspace',enterGraph);addNavigationGuard(graphCanLeave);onNavigation(name=>{if(name!=='workspace')graphFormDirty=false;});
+$('graph-topic-settings').onclick=()=>selectGraphItem(graphSession);
 $('graph-back').onclick=()=>showGraph();$('nav-workspace').onclick=()=>showGraph();$('library-records').onclick=()=>showGraph();
 $('graph-new-session').onclick=()=>graphNameDialog('session');$('graph-empty-new').onclick=()=>graphSession?graphNameDialog('node'):showThoughts();$('graph-add-category').onclick=()=>graphNameDialog('category');$('graph-add-node').onclick=()=>graphNameDialog('node');
 $('graph-search').oninput=()=>{if(!graphCanLeave()){$('graph-search').value='';return;}graphFormDirty=false;graphSelected=null;renderGraph();};

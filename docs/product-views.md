@@ -27,3 +27,10 @@ Talk now offers recent non-example topics without requiring an upfront session. 
 Finish & review pauses capture, collects durable source documents using the existing version-checked workspace write, then opens a review dialog with source excerpts. It does not invent summaries, plans, or decisions. Source voice notes remain intact; record-node edits are separate. Empty conversations create no record. Dialog dismissal leaves the saved record available.
 
 Reproduce in demo: submit a typed thought, Finish & review, inspect the source excerpt, Continue talking, submit another thought, finish again, review the record, return to Talk and clear focus, then use the recent-topic card to resume. Demo still uses fixed replies and silent audio. Real hands-free commands, spoken finish recaps, automatic summary/plan generation, offline capture and mobile background audio remain unimplemented. Live capture retains its existing two-minute limit; this iteration does not establish commute readiness.
+
+
+## Graph-first Workspace
+
+Workspace opens directly into the global topic map. The continuity cards remain only in Talk. One click enters a topic; the left topic tree exposes its individual thoughts for quick selection. The inspector is hidden until a node or Topic details is selected, and can be dismissed without leaving the map. Topic details supports renaming, category changes and explicit cross-topic links; thought editing and original-source access remain unchanged. Selected thoughts emphasize their stored neighbors. No inferred or automatic connections are shown. Category labels identify spaces without changing saved node positions. Search/category filters, map/list mode, pan/zoom, export and version-checked persistence remain available.
+
+Browser validation includes global → topic navigation, source-node editing, neighbor emphasis, inspector dismissal, sidebar selection, topic renaming and desktop/mobile visual inspection. Examples remain labeled and separate from real notes. The underlying records still reference runtime branches; automatic assignment of one conversation to multiple topics is future work.
