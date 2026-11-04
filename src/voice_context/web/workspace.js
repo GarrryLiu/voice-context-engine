@@ -19,14 +19,28 @@ async function graphRequest(data){
 }
 async function loadWorkspace(){
  if(workspaceLoaded)return;if(workspaceLoading)return workspaceLoading;
- workspaceLoading=(async()=>{const result=await graphRequest();workspaceData=result.data;workspaceVersion=result.version;workspaceLoaded=true;updateSessionStrip();})();
+ workspaceLoading=(async()=>{const result=await graphRequest();workspaceData=result.data;workspaceVersion=result.version;workspaceLoaded=true;recoverWorkspace();updateSessionStrip();})();
  try{await workspaceLoading;}finally{workspaceLoading=null;}
 }
+const draftKey='voiceline-workspace-draft:'+document.body.dataset.mode;
+function rememberWorkspace(){
+ try{sessionStorage.setItem(draftKey,JSON.stringify({version:workspaceVersion,data:workspaceData}));}
+ catch{graphNotice('Browser draft storage is unavailable. Export your map before closing this tab.',true);}
+}
+function forgetWorkspace(){try{sessionStorage.removeItem(draftKey);}catch{}}
+function recoverWorkspace(){
+ try{const draft=JSON.parse(sessionStorage.getItem(draftKey)||'null');
+  if(!draft||!Number.isInteger(draft.version)||!draft.data||!Array.isArray(draft.data.sessions))return;
+  if(JSON.stringify(draft.data)===JSON.stringify(workspaceData)){forgetWorkspace();return;}
+  workspaceData=draft.data;workspaceVersion=draft.version;workspacePending=true;workspaceBlocked=true;
+  graphNotice('Recovered unsaved map changes from this tab. Retry save, or export them before reloading the saved workspace.',true);
+ }catch{graphNotice('Could not recover the browser draft. The saved workspace is unchanged.',true);}
+}
 function persistWorkspace(){
- workspacePending=true;if(workspaceBlocked)return Promise.resolve(false);if(workspaceSaving)return workspaceSavePromise;
+ workspacePending=true;rememberWorkspace();if(workspaceBlocked)return Promise.resolve(false);if(workspaceSaving)return workspaceSavePromise;
  workspaceSaving=true;graphNotice('Saving workspace…');
  workspaceSavePromise=(async()=>{
-  try{while(workspacePending){workspacePending=false;const data=structuredClone(workspaceData);const result=await graphRequest({version:workspaceVersion,data});workspaceVersion=result.version;graphNotice('Saved locally · workspace v'+workspaceVersion);}return true;}
+  try{while(workspacePending){workspacePending=false;const data=structuredClone(workspaceData);const result=await graphRequest({version:workspaceVersion,data});workspaceVersion=result.version;if(workspacePending)rememberWorkspace();else forgetWorkspace();graphNotice('Saved locally · workspace v'+workspaceVersion);}return true;}
   catch(error){workspacePending=true;workspaceBlocked=true;graphNotice(error.message,true);return false;}
   finally{workspaceSaving=false;updateSessionStrip();}
  })();return workspaceSavePromise;
@@ -271,9 +285,9 @@ $('graph-demo').onclick=async()=>{
 };
 window.addEventListener('beforeunload',event=>{if(graphFormDirty||workspacePending||workspaceSaving){event.preventDefault();event.returnValue='';}});
 const graphTools=graphEl('div','graph-data-tools');
-for(const [label,fn] of [['Export map',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(workspaceData,null,2)],{type:'application/json'}));const a=graphEl('a');a.href=url;a.download='voiceline-workspace.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}],['Reload',async()=>{if(!graphCanLeave()||((workspacePending||workspaceBlocked)&&!window.confirm('Reload the saved workspace? Export first to keep unsaved map changes.')))return;workspaceLoaded=false;try{await loadWorkspace();workspacePending=false;workspaceBlocked=false;graphSelected=null;graphFormDirty=false;if(!selectedGraphSession())graphSession=null;renderGraph();graphNotice('Loaded the latest saved workspace.');}catch{graphNotice('Could not reload the workspace.',true);}}]]){const b=graphEl('button','',label);b.onclick=fn;graphTools.append(b);}
+for(const [label,fn] of [['Export map',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(workspaceData,null,2)],{type:'application/json'}));const a=graphEl('a');a.href=url;a.download='voiceline-workspace.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}],['Retry save',async()=>{if(!workspacePending)return;workspaceBlocked=false;await persistWorkspace();}],['Reload',async()=>{if(workspaceSaving||mapWorking){graphNotice('Wait for the current save to finish before reloading.');return;}if(!graphCanLeave()||((workspacePending||workspaceBlocked)&&!window.confirm('Reload the saved workspace? Export first to keep unsaved map changes.')))return;workspaceLoaded=false;try{const result=await graphRequest();forgetWorkspace();workspaceData=result.data;workspaceVersion=result.version;workspaceLoaded=true;updateSessionStrip();workspacePending=false;workspaceBlocked=false;graphSelected=null;graphFormDirty=false;if(!selectedGraphSession())graphSession=null;renderGraph();graphNotice('Loaded the latest saved workspace.');}catch{graphNotice('Could not reload the workspace.',true);}}]]){const b=graphEl('button','',label);b.onclick=fn;graphTools.append(b);}
 document.querySelector('.graph-heading-actions').append(graphTools);
-loadWorkspace().catch(()=>{});
+loadWorkspace().catch(()=>graphNotice('Could not load your workspace. Check the local server, then use Reload.',true));
 
 
 const graphResizeObserver=new ResizeObserver(()=>{if(document.body.dataset.view==='workspace'){graphReset();drawGraphEdges();}});graphResizeObserver.observe($('graph-canvas'));window.addEventListener('pagehide',()=>graphResizeObserver.disconnect());
@@ -285,7 +299,8 @@ function mapConnections(edges,titles,label='Suggested connections'){
  return details;
 }
 async function generateMap(branch){
- if(mapWorking||!graphCanLeave()||workspaceBlocked)return;
+ if(mapWorking||!graphCanLeave())return;
+ if(workspaceBlocked){graphNotice('Save or export your pending map changes before organizing another conversation.',true);return;}
  if(workspaceSaving&&!await workspaceSavePromise)return;
  mapWorking=true;mapProposal=null;$('map-proposal-topics').replaceChildren();
  $('map-proposal-title').textContent='Organizing your conversation…';$('map-proposal-notice').textContent='Reading saved voice notes. This calls your configured text model.';

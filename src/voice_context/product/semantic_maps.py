@@ -145,8 +145,8 @@ class SemanticMaps:
         try:
             with self.access.open(session) as stores:
                 self.table(stores);sources,digest=self.snapshot(stores,branch);version=stores.workspace.get()['version']
-                applied=stores.workspace.db.execute('SELECT id,payload FROM map_proposals WHERE fingerprint=? AND applied=1 ORDER BY rowid DESC LIMIT 1',(digest,)).fetchone()
-                if applied:return {'id':applied['id'],'proposal':json.loads(applied['payload']),'sources':sources,'cached':True,'already_applied':True}
+                applied=stores.workspace.db.execute('SELECT id,payload,node_ids FROM map_proposals WHERE fingerprint=? AND applied=1 ORDER BY rowid DESC LIMIT 1',(digest,)).fetchone()
+                if applied and set(json.loads(applied['node_ids']).get('topics',{}).values()) & {t['id'] for t in stores.workspace.get()['data']['sessions']}:return {'id':applied['id'],'proposal':json.loads(applied['payload']),'sources':sources,'cached':True,'already_applied':True}
                 cached=stores.workspace.db.execute('SELECT id,payload FROM map_proposals WHERE fingerprint=? AND workspace_version=? AND applied=0 ORDER BY rowid DESC LIMIT 1',(digest,version)).fetchone()
                 if cached:return {'id':cached['id'],'proposal':json.loads(cached['payload']),'sources':sources,'cached':True}
             # Do not keep the runtime/store lock while a model is executing.
@@ -161,6 +161,7 @@ class SemanticMaps:
         finally:self.gate.release()
 
     def apply(self,session,identifier):
+        if not isinstance(identifier,str) or not identifier or len(identifier)>80:raise ValueError('invalid proposal id')
         with self.access.open(session) as stores:
             self.table(stores);db=stores.workspace.db
             with db:

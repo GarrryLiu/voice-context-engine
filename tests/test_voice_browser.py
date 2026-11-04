@@ -48,7 +48,9 @@ class VoiceBrowserTests(unittest.TestCase):
                     for i in range(0,len(pcm),4096):yield pcm[i:i+4096]
             service=VoiceService(str(root/'state.db'),factory=lambda filename,partial:(STT(),Text(),TTS(),None,None))
             listener=socket.socket();listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
-            server=uvicorn.Server(uvicorn.Config(create_app(service=service),log_level='error'))
+            app=create_app(service=service)
+            app.state.maps.provider=None # This fixture tests raw-note collection without paid model calls.
+            server=uvicorn.Server(uvicorn.Config(app,log_level='error'))
             thread=threading.Thread(target=lambda:server.run(sockets=[listener]),daemon=True);thread.start()
             deadline=time.monotonic()+10
             while not server.started:
@@ -66,7 +68,7 @@ class VoiceBrowserTests(unittest.TestCase):
                     page.goto(f'http://127.0.0.1:{port}'+route)
                     expect(page.locator('#record')).to_be_enabled()
                     if route=='/product':
-                        expect(page.locator('#welcome h1')).to_contain_text('find their voice')
+                        expect(page.locator('#welcome h1')).to_contain_text('think out loud')
                         if os.environ.get('VOICE_PRODUCT_SCREENSHOT'):page.screenshot(path=os.environ['VOICE_PRODUCT_SCREENSHOT'],full_page=True)
                         page.click('#help');expect(page.locator('#help-dialog')).to_be_visible();page.click('#close-help')
                         expect(page.locator('.workspace-nav button')).to_have_count(2)
@@ -99,21 +101,21 @@ class VoiceBrowserTests(unittest.TestCase):
                         expect(page.locator('a[href="/lab"]').first).to_be_visible()
                     if graph:
                         page.set_viewport_size({'width':1500,'height':960})
-                        page.click('#finish-session');expect(page.locator('#graph-workspace')).to_be_visible()
+                        page.click('#finish-session');expect(page.locator('#talk-outcome')).to_be_visible();page.click('#outcome-open');expect(page.locator('#graph-workspace')).to_be_visible()
                         expect(page.locator('.graph-node')).to_have_count(2)
                         expect(page.locator('#graph-title')).to_have_text('Browser fixture.')
                         page.locator('.graph-node').first.click()
                         expect(page.locator('#graph-edit-content')).to_have_value('Browser fixture.')
                         page.fill('#graph-edit-title','A saved voice idea');page.locator('#graph-editor button[type=submit]').click()
                         expect(page.locator('.graph-node').first).to_contain_text('A saved voice idea')
-                        page.click('#graph-back');page.locator('.graph-node').first.dblclick();expect(page.locator('.graph-node')).to_have_count(2)
+                        page.click('#graph-back');page.locator('.graph-node').first.click();expect(page.locator('.graph-node')).to_have_count(2)
                         page.click('#graph-back');page.click('#graph-demo')
                         expect(page.locator('.graph-node')).to_have_count(5)
                         expect(page.locator('#graph-notice')).to_contain_text('Example workspace')
                         if os.environ.get('VOICE_GRAPH_SCREENSHOT'):
                             page.screenshot(path=os.environ['VOICE_GRAPH_SCREENSHOT'],full_page=True)
                         page.get_by_role('button',name='Select record: A voice-first thinking space',exact=True).click()
-                        page.click('#graph-open-session');expect(page.locator('.graph-node')).to_have_count(4)
+                        expect(page.locator('.graph-node')).to_have_count(4)
                         page.get_by_role('button',name='Select thought: Thinking out loud',exact=True).click()
                         page.fill('#graph-edit-content','My edited thinking map.');page.get_by_role('button',name='Select thought: Thinking out loud',exact=True).click()
                         expect(page.locator('#graph-edit-content')).to_have_value('My edited thinking map.')
@@ -136,7 +138,7 @@ class VoiceBrowserTests(unittest.TestCase):
                         expect(page.locator('#active-session-name')).to_contain_text('A voice-first thinking space')
                         page.set_input_files('#file',str(fixture))
                         expect(page.locator('#status')).to_have_text('Reply finished. Ready when you are.',timeout=15000)
-                        page.click('#finish-session');expect(page.locator('.graph-node')).to_have_count(6)
+                        page.click('#finish-session');expect(page.locator('#talk-outcome')).to_be_visible();page.click('#outcome-open');expect(page.locator('.graph-node')).to_have_count(6)
                         page.wait_for_function("()=>document.getElementById('graph-notice').textContent.startsWith('Saved locally')||document.getElementById('graph-notice').textContent.startsWith('Notes collected')")
                     if documents:
                         page.click('#save-reply')

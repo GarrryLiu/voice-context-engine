@@ -89,3 +89,17 @@ class SemanticMapsTests(unittest.TestCase):
             result=client.post('/api/maps/apply',headers=headers,json={'id':proposal.json()['id']})
             self.assertEqual(result.status_code,200)
             self.assertEqual(len(result.json()['workspace']['data']['sessions']),2)
+
+    def test_deleted_map_can_be_generated_again_without_resurrecting_edits(self):
+        proposal=self.maps.propose('test','main');result=self.maps.apply('test',proposal['id'])
+        workspace=result['workspace'];workspace['data']['sessions']=[];workspace['data']['links']=[]
+        self.service.product.workspace('test',workspace)
+        replacement=self.maps.propose('test','main')
+        self.assertNotEqual(replacement['id'],proposal['id'])
+        self.assertNotIn('already_applied',replacement)
+        self.assertEqual(self.service.product.workspace('test')['data']['sessions'],[])
+        self.assertEqual(len(self.maps.apply('test',replacement['id'])['workspace']['data']['sessions']),2)
+
+    def test_invalid_apply_identifier_is_rejected(self):
+        for identifier in [None,{},[],1,'', 'x'*81]:
+            with self.subTest(identifier=identifier),self.assertRaises(ValueError):self.maps.apply('test',identifier)

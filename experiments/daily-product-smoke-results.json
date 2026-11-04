@@ -1,0 +1,32 @@
+{
+  "protocol": "Synthetic speech upload; real STT, text, TTS and map model; headless WebAudio ended ACK; temporary database. Not a hardware microphone/speaker or commute evaluation.",
+  "checks": {
+    "speech_transcribed": true,
+    "model_replied": true,
+    "map_saved": true,
+    "no_browser_errors": true
+  },
+  "passed": true,
+  "topics": 1,
+  "nodes_in_first_topic": 3,
+  "seconds": 17.21,
+  "map_call": {
+    "model": "gpt-6-luna",
+    "elapsed_seconds": 2.58,
+    "usage": {
+      "input_tokens": 709,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 218,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 927
+    }
+  },
+  "transcript": "My project code name is Cedar. Tomorrow I will review the prototype at nine. Offline mode is still undecided. Please briefly repeat the code name and the plan.",
+  "answer": "The project code name is Cedar. You’ll review the prototype tomorrow at nine.",
+  "browser_errors": []
+}

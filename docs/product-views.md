@@ -54,3 +54,65 @@ Current scope: create new topic maps from a conversation. Incremental semantic m
 Offline verification: `python scripts/check.py contracts --strict` and `python scripts/check.py product --browser --strict`. The regression browser uses an injected fixture provider, tests preview/cancel/apply/source access and never contacts a model. Real-model experiment: `PYTHONPATH=src python experiments/semantic_map_poc.py --env-file /absolute/path/to/private/.env`; synthetic sources and temporary database only. The experiment saves a real model response first, then replays that exact response through the proposal API and browser, so repeated UI checks do not pay for another generation. Use `--refresh-model` for a new model call. Review its recorded results separately from deterministic test pass counts. Known cross-topic node references are normalized into the existing topic-level graph; unknown/ambiguous references are rejected.
 
 The two recorded model iterations exposed missing uncertainty coverage and incorrect revision typing in the first prompt. The second run produced four topics, 23 concepts, one internal revision edge and two cross-topic edges. It preserved the explicit open choices and the tentative status of the superseded plan. See `experiments/semantic-map-poc-results.json` for source checks, usage and manual review; this is one synthetic scenario, not a production quality claim.
+
+## Local daily-use build
+
+This is a single-user, loopback-only local beta. It does not offer account isolation,
+remote/mobile hosting, cross-conversation automatic merging, or topic-isolated
+model context. The connected build supports real provider calls, but automated
+microphone tests use synthetic audio/providers; they do not establish live speech
+accuracy or commute reliability.
+
+From the product checkout (with voice dependencies installed):
+
+```sh
+.venv/bin/python scripts/build_runtime.py
+.venv/bin/python scripts/dev.py daily --env-file /absolute/path/to/private/.env
+```
+
+Open `http://127.0.0.1:8768/product`. This uses a separate
+`.local/daily/workspace.db`; the typed demo at 8766 keeps its existing database.
+Real model/audio requests incur the configured provider's charges only when used.
+Each daily-profile restart validates configuration and creates a verified SQLite
+snapshot of an existing database under `.local/daily/backups/` before startup.
+Backups include conversation sources, document history, graphs, and proposal
+provenance. They are private local files and should be retained with the same care
+as the original notes. No backups are automatically deleted.
+
+### Recovering from failed saves
+
+Map changes submitted for saving are also stored in this browser tab's session
+storage. After a failed save, refresh in the same tab recovers that draft. Use
+**Retry save** after connectivity returns. A version conflict never overwrites a
+newer workspace: export the local map, then **Reload** to explicitly discard the
+local draft and load the saved version. Unsaved inspector form fields still require
+Save changes; session storage is not a durable backup and closing the tab may lose
+it. Document edits retain their existing explicit save/version conflict behavior.
+
+**Export map** exports graph structure only. For a complete backup, including
+original notes and evidence, run:
+
+```sh
+PYTHONPATH=src .venv/bin/python -m voice_context.product.backup \
+  .local/daily/workspace.db .local/daily/backups/manual-copy.db
+```
+
+To restore, stop the daily server, snapshot the backup to a **new** database path,
+then start `scripts/dev.py daily --db /absolute/path/to/restored.db --env-file ...`.
+The snapshot command never overwrites an existing destination. It checks SQLite
+integrity and captures committed WAL data, including when the source is live.
+
+### Verification for the local-beta hardening
+
+- Product strict browser profile: 24 tests (includes failed-save refresh/retry,
+  conflict rejection, explicit reload, backups and source-preserving restore).
+- Contract strict profile: 4 tests.
+- Connected voice HTTP/browser/fault scenarios: 31 tests; streaming STT: 6 tests.
+  Three stale UI expectations were updated to the current Talk/outcome/single-click
+  flow and rerun successfully. No external Kafka/PostgreSQL/Redis services were
+  tested in this iteration.
+- `experiments/daily_product_smoke.py` performs an explicitly paid, isolated real
+  API smoke with a supplied fixed WAV. The recorded result is in
+  `experiments/daily-product-smoke-results.json`: real speech transcription,
+  reply audio, reviewed map save, evidence view and reload passed. The input was
+  synthetic speech; this is a functional smoke, not a quality or latency benchmark.
