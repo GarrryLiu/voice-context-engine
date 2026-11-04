@@ -1,0 +1,149 @@
+{
+  "description": "Synthetic interleaved commute, voice-product, GPU experiment and paper-learning conversation. No real user data.",
+  "turns": [
+    {
+      "id": "turn-01",
+      "expected_topic": "commute",
+      "text": "我先想一下通勤规划。我周一和周三去学校，单程大约四十分钟。希望路上能回顾当天目标，不能一直盯屏幕。早上先安排重要任务，晚上再复盘，不要把所有空余时间都塞满。"
+    },
+    {
+      "id": "turn-02",
+      "expected_topic": "voice",
+      "text": "再聊语音产品。我想做一个能长期接着思考的工具，入口只有 Talk 和 Workspace。用户直接说话，不用先新建 session，后台以后再判断应该关联哪些主题。"
+    },
+    {
+      "id": "turn-03",
+      "expected_topic": "gpu",
+      "text": "换个话题，GPU 法律文档摘要项目要单独保存。我想先做推理优化，不是训练模型。数据是公开法律文档，比较相同模型下不同批处理策略的吞吐和延迟。"
+    },
+    {
+      "id": "turn-04",
+      "expected_topic": "paper",
+      "text": "现在讲论文学习。我读到 KV cache，说它能避免自回归生成时反复计算之前 token 的 key 和 value。我还不太清楚它和文档长度分桶有什么关系，想单独保留学习笔记。"
+    },
+    {
+      "id": "turn-05",
+      "expected_topic": "commute",
+      "text": "早上最重要的是准备研究讨论。我的初步想法是每天六点半起床，七点出门，但这个时间还没定。路上只聊一个主要问题，到了之后再看详细记录。"
+    },
+    {
+      "id": "turn-06",
+      "expected_topic": "voice",
+      "text": "Workspace 要有一张大的知识地图。主题之间有连线，点进去看到想法和问题，旁边能编辑内容。不要做成大量卡片列表，不要用绿色，界面用英文，主按钮深色。"
+    },
+    {
+      "id": "turn-07",
+      "expected_topic": "gpu",
+      "text": "基线先用原来的按到达顺序 batching，再比较按长度分桶。文档长度从一千到两万四千 token。要固定输出长度和 batch size，否则不能说吞吐提升来自调度。"
+    },
+    {
+      "id": "turn-08",
+      "expected_topic": "paper",
+      "text": "我目前理解是 KV cache 主要影响生成过程的重复计算，而长度分桶会影响 padding 和批处理效率。这个理解请先作为待验证笔记，之后找原文确认，不要作为实验结论。"
+    },
+    {
+      "id": "turn-09",
+      "expected_topic": "commute",
+      "text": "刚才起床时间需要修改。六点半太早，改成七点起床，七点四十五出门，这是我确定的安排。周一早上讨论实验，周三路上学习论文，不要把旧的六点半当作最终决定。"
+    },
+    {
+      "id": "turn-10",
+      "expected_topic": "voice",
+      "text": "关于总结，我希望原始发言永远保留，AI 总结要能指出来源。如果我后来改主意，旧决定应该标为被修订，不能默默覆盖，也不能把 AI 提议记成我确认的决定。"
+    },
+    {
+      "id": "turn-11",
+      "expected_topic": "gpu",
+      "text": "我刚说固定 batch size 还不够，如果改用 token budget batching，应该作为另一项实验单独比较。先报告相同 batch size 的结果，再报告相同显存预算的结果，两者不能混在一起。"
+    },
+    {
+      "id": "turn-12",
+      "expected_topic": "paper",
+      "text": "还需要理解 prefill 和 decode 的差别。我的问题是长法律文档是否让 prefill 成为主要成本，还是输出足够长时 decode 更重要，这个应该用测量回答。"
+    },
+    {
+      "id": "turn-13",
+      "expected_topic": "commute",
+      "text": "通勤时 AI 回复应该短一点，我会说继续才深入。到站以后要自动保存，能随时被打断。是否需要下载资料离线听，我还没有决定，先作为开放问题保留。"
+    },
+    {
+      "id": "turn-14",
+      "expected_topic": "voice",
+      "text": "第一版先做我自己的通勤体验，不做 Slack 集成，不做团队权限。团队服务只是未来可能方向。现在确定优先解决打断、恢复上下文和结束后的成果整理。"
+    },
+    {
+      "id": "turn-15",
+      "expected_topic": "gpu",
+      "text": "学校服务器上要先看 GPU 型号、可用显存和 CUDA 环境，不能假定有 A100。没有测过的百分之二十五提升不能写进结果，也不要把本地模拟时间当作 GPU 实测。"
+    },
+    {
+      "id": "turn-16",
+      "expected_topic": "paper",
+      "text": "论文学习和 GPU 项目有关，但不是同一个东西。学习记录保留术语解释和开放问题，实验项目保留假设、基线和测量结果，它们之间可以建立连接。"
+    },
+    {
+      "id": "turn-17",
+      "expected_topic": "commute",
+      "text": "最终通勤计划就是周一和周三去学校，七点起床，七点四十五出门。周一思考实验，周三学习论文。接下来先试一周再判断是否合理，不要把离线模式记成已经确定要做。"
+    },
+    {
+      "id": "turn-18",
+      "expected_topic": "voice",
+      "text": "这里有两个未解决问题：主题边界是否由用户确认，以及连续多个话题要不要拆分成不同记录。我的倾向是 AI 建议、用户确认，但暂时还没有最终定下来。"
+    },
+    {
+      "id": "turn-19",
+      "expected_topic": "gpu",
+      "text": "法律摘要质量要检查关键事实、日期、金额和裁判结论。先选二十篇做 smoke test，再扩大到四百篇。四百篇只是目标，现在不代表已经跑完。"
+    },
+    {
+      "id": "turn-20",
+      "expected_topic": "paper",
+      "text": "下周阅读计划是先找 KV cache 和推理调度的原始论文，再读一个系统实现。暂时不确定要不要做量化，不能把量化写成已经选定的实验路线。"
+    },
+    {
+      "id": "turn-21",
+      "expected_topic": "commute",
+      "text": "再补充通勤和产品的关联：我自己上下学就是语音产品的第一批真实测试，但这个日程属于个人规划，不应该被混进产品需求文档。可以保留两者之间的来源关联。"
+    },
+    {
+      "id": "turn-22",
+      "expected_topic": "voice",
+      "text": "产品的下一步行动是整理一个测试清单，录一段包含话题切换和修改意见的对话。成功条件是恢复正确主题、保留原始来源，而且总结中不把猜想写成决定。"
+    },
+    {
+      "id": "turn-23",
+      "expected_topic": "gpu",
+      "text": "GPU 下一步行动是确认学校机器登录，再跑按到达顺序的基线。自写 CUDA kernel 是后续探索，先看 profiler 确认瓶颈，不能直接认定 attention kernel 最值得优化。"
+    },
+    {
+      "id": "turn-24",
+      "expected_topic": "paper",
+      "text": "最后把学习相关待办归纳一下：确认 KV cache 的适用阶段，理解 prefill 和 decode，并把这些问题对应到 GPU profiling 的指标。所有解释都要能回到材料和原始发言。"
+    }
+  ],
+  "expected": {
+    "topics": [
+      "commute",
+      "voice",
+      "gpu",
+      "paper"
+    ],
+    "revision": "06:30 superseded by 07:00",
+    "unconfirmed": [
+      "offline mode",
+      "topic confirmation policy",
+      "quantization"
+    ],
+    "cross_topic_relationships": [
+      [
+        "commute",
+        "voice"
+      ],
+      [
+        "gpu",
+        "paper"
+      ]
+    ]
+  }
+}

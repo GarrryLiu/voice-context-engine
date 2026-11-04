@@ -4,7 +4,7 @@ window.voiceUI=text=>{
  const strings={
  '准备就绪':'Ready when you are','正在连接…':'Connecting…','本地服务已连接':'Connected to local workspace','连接失败':'Connection failed',
  '等待录音…':'Ready to listen…','开始一次对话。':'Start a conversation.','已确认发言，正在生成回复…':'Thought saved. Preparing a reply…',
- '开始连续对话':'Start conversation','结束连续对话':'End conversation','连续对话已结束':'Conversation ended',
+ '开始连续对话':'Start talking','结束连续对话':'Pause microphone','连续对话已结束':'Microphone paused',
  '正在连接实时转写…':'Connecting your microphone…','连续对话中，可以开始说话':'Listening. Go ahead.',
  '正在听…':'Listening…','正在录音…':'Recording…','正在上传录音…':'Uploading audio…','正在转写':'Transcribing…','正在思考…':'Thinking…','正在播放':'Speaking…',
  '已停止':'Stopped','回复结束，可以继续说':'Reply finished. Ready when you are.',

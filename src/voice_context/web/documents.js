@@ -28,7 +28,7 @@ function documentEditorState(){
 }
 function thoughtOptions(select,includeAll=false){
  const selected=select.value;
- select.replaceChildren(...(includeAll?[new Option('All thoughts','')]:[]),...Array.from($('branch').options,o=>new Option(topicName(o.value),o.value)));
+ select.replaceChildren(...(includeAll?[new Option('All conversations','')]:[]),...Array.from($('branch').options,o=>new Option(topicName(o.value),o.value)));
  if(Array.from(select.options).some(o=>o.value===selected))select.value=selected;
 }
 function displayDocument(doc){
@@ -40,7 +40,7 @@ function displayDocument(doc){
  $('document-source-meta').textContent=(doc.filename?'Imported from '+doc.filename:'Spoken in '+topicName(doc.source_branch))+(doc.source_transcript?' · '+doc.source_transcript:'');
  $('document-source-text').textContent=doc.source_text;
  documentEditorState();renderDocumentRows();
- if(document.body.dataset.view==='documents')history.replaceState(null,'','#documents/'+encodeURIComponent(doc.id));
+ if(document.body.dataset.view==='documents')history.replaceState(null,'','#library/documents/'+encodeURIComponent(doc.id));
 }
 async function saveDocument(extra={}){
  if(!currentDocument||documentWriting)return false;
@@ -93,8 +93,8 @@ async function loadDocuments(append=false){
 async function enterDocuments(identifier=null){
  if(!$('branch').options.length)await refresh();
  document.body.dataset.view='documents';$('documents-workspace').hidden=false;
- $('nav-documents').classList.add('selected');$('nav-thoughts').classList.remove('selected');$('topic-title').textContent='Documents';
- thoughtOptions($('document-thought-filter'),true);history.replaceState(null,'','#documents'+(identifier?'/'+encodeURIComponent(identifier):''));
+ $('nav-documents').classList.add('selected');$('nav-thoughts').classList.remove('selected');$('topic-title').textContent='Workspace / Documents';
+ thoughtOptions($('document-thought-filter'),true);history.replaceState(null,'','#library/documents'+(identifier?'/'+encodeURIComponent(identifier):''));
  await loadDocuments();if(identifier)await selectDocument(identifier);
 }
 async function enterThoughts(){
@@ -105,11 +105,6 @@ export function showDocuments(id=null){return navigate('documents',id);}
 export function showThoughts(){return navigate('thoughts');}
 registerView('documents',enterDocuments);registerView('thoughts',enterThoughts);addNavigationGuard(canLeaveDocument);
 $('nav-documents').onclick=()=>showDocuments();$('nav-thoughts').onclick=()=>showThoughts();
-for(const id of ['new-topic','topics'])$(id).addEventListener('click',async event=>{
- if(!['documents','workspace'].includes(document.body.dataset.view))return;
- const target=id==='topics'?event.target.closest('button'):$(id);if(!target||target.disabled)return;
- event.preventDefault();event.stopImmediatePropagation();if(await showThoughts())target.click();
-},true);
 for(const id of ['document-title','document-content','document-collection','document-branch'])$(id).addEventListener('input',documentEditorState);
 $('document-editor').onsubmit=event=>{event.preventDefault();saveDocument();};
 $('archive-document').onclick=()=>saveDocument({status:currentDocument.status==='archived'?'active':'archived'});

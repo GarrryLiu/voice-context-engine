@@ -18,24 +18,42 @@ class WorkspaceShape:
         if not isinstance(sessions,list) or len(sessions)>200:raise ValueError('too many sessions')
         ids=set()
         for session in sessions:
-            if not isinstance(session,dict) or set(session)!={'id','title','category','branch','demo','x','y','nodes','edges'}:raise ValueError('invalid session')
+            if not isinstance(session,dict) or not {'id','title','category','branch','demo','x','y','nodes','edges'} <= set(session) or set(session)-{'id','title','category','branch','demo','x','y','nodes','edges','kind','content','source','document_id'}:raise ValueError('invalid session')
             for key in ['id','title','category']:text(session[key])
             if session['id'] in ids or session['category'] not in categories:raise ValueError('invalid session identity')
             ids.add(session['id'])
             if session['branch'] is not None:text(session['branch'],80)
             if not isinstance(session['demo'],bool):raise ValueError('invalid demo flag')
             for key in ['x','y']:point(session[key])
-            if not isinstance(session['nodes'],list) or len(session['nodes'])>300:raise ValueError('too many nodes')
-            node_ids=set()
-            for node in session['nodes']:
-                if not isinstance(node,dict) or set(node)!={'id','title','content','kind','x','y','source'}:raise ValueError('invalid node')
-                text(node['id']);text(node['title'])
-                if node['id'] in node_ids or node['kind'] not in {'idea','question','decision','document','voice'}:raise ValueError('invalid node identity')
-                node_ids.add(node['id'])
-                if not isinstance(node['content'],str) or len(node['content'])>131072 or '\0' in node['content']:raise ValueError('invalid content')
-                if node['source'] is not None:text(node['source'])
-                for key in ['x','y']:point(node[key])
-            WorkspaceShape.edges(session['edges'],node_ids)
+            if session.get('kind','session') not in {'session','document'}:raise ValueError('invalid root kind')
+            if session.get('kind')=='document' and (session['nodes'] or session['edges']):raise ValueError('document cannot contain nodes')
+            for key in ['content']:
+                if key in session and (not isinstance(session[key],str) or len(session[key])>131072):raise ValueError('invalid content')
+            for key in ['source','document_id']:
+                if session.get(key) is not None:text(session[key])
+            count=[0]
+            def children(container,depth,ancestors):
+                if depth>32:raise ValueError('hierarchy exceeds safety limit')
+                nodes=container['nodes']
+                if not isinstance(nodes,list) or len(nodes)>300:raise ValueError('too many nodes')
+                node_ids=set()
+                for node in nodes:
+                    required={'id','title','content','kind','x','y','source'}
+                    if not isinstance(node,dict) or not required<=set(node) or set(node)-required-{'nodes','edges','document_id'}:raise ValueError('invalid node')
+                    text(node['id']);text(node['title'])
+                    if node['id'] in node_ids or node['id'] in ancestors or node['kind'] not in {'idea','question','decision','document','voice','session'}:raise ValueError('invalid node identity')
+                    node_ids.add(node['id']);count[0]+=1
+                    if count[0]>2000:raise ValueError('too many nested nodes')
+                    if not isinstance(node['content'],str) or len(node['content'])>131072 or '\0' in node['content']:raise ValueError('invalid content')
+                    for key in ['source','document_id']:
+                        if node.get(key) is not None:text(node[key])
+                    for key in ['x','y']:point(node[key])
+                    if node['kind']=='session':
+                        if 'nodes' not in node or 'edges' not in node:raise ValueError('container requires child graph')
+                        children(node,depth+1,ancestors|{node['id']})
+                    elif 'nodes' in node or 'edges' in node:raise ValueError('leaf cannot contain graph')
+                WorkspaceShape.edges(container['edges'],node_ids)
+            children(session,0,{session['id']})
         WorkspaceShape.edges(links,ids)
         return json.dumps(data,ensure_ascii=False,allow_nan=False)
 
