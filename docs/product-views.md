@@ -1,35 +1,18 @@
-# 本地双界面
+# Talk and Library product entry
 
-同一个服务提供两个入口，共用 API、会话、分支和工作区数据库：
+`/product` opens Talk. Users can speak immediately in connected mode, or submit labeled typed examples in demo mode. No title, category or product-session creation dialog precedes a conversation. The lab remains at `/` and `/lab`.
 
-- `/` 或 `/lab`：保留功能实验台，支持连续语音、手动录音、固定文件上传、延迟指标和分支选择。
-- `/product`：产品体验版，暂名 **Voiceline**。侧栏管理思路，中央展示当前一轮对话，底部发起语音。
-  录音上传、连续 STT、文本 LLM、分段 TTS、取消和播放确认仍使用原来的真实链路。
+The sidebar has two primary destinations:
 
-实验台顶部可切换到产品版；产品版桌面侧栏和手机顶部可返回实验台。无需复制数据库。
-首次打开产品页会恢复当前分支的最近发言与已确认播放回复。
+- **Talk**: current conversation, microphone controls, playback and Review notes.
+- **Library**: Records and Documents subviews, including record maps, categories, source documents and editing/version history.
 
-产品版支持中文思路名称：创建时生成稳定分支 ID，调用真实 fork/switch 接口。
-显示名称保存在当前浏览器 localStorage，后台仍以分支 ID 为准；名称尚未跨设备同步。
-创建或切换前需结束连续对话。当前显示最近一轮，不宣称已实现完整聊天历史、全局系统听写、
-账户体系或云同步。不是豆包或 Wispr Flow 的集成，也不提供它们的系统级功能。
+Recent records open their content in Library. They do not silently switch the spoken context. **Continue in Talk** explicitly restores that record's branch. The optional **Clear focus** action then returns to a new independent context without a naming dialog or empty Library record; previous content stays saved.
 
-页面不展示模型调度与延迟细节，实验台仍保留相关观测入口。帮助说明、麦克风连接状态、
-连续对话计时、播放中可打断状态、中文思路弹窗和响应式布局均在本地实现；无第三方资源请求。
+Confirmed speech is saved as voice-note documents immediately. Stopping the microphone pauses capture, not the user's thought. **Review notes** pauses active playback/capture and manually collects the current branch's active source documents into a record for review. Repeated review deduplicates source documents and preserves edited graph nodes. Reviewing before any confirmed content opens Documents without creating an empty record.
 
-## 本轮验证
+This iteration changes the entrance and review workflow, not semantic organization. It does not automatically detect topics, route passages to multiple records, merge ideas, or inject edited graph content into model memory. The interface states that topic filing is manual. Records use the existing product-session storage shape internally so old workspace data and APIs remain compatible.
 
-服务路由与鉴权测试 11 项，浏览器手动语音及双界面测试 2 项，实时语音测试 6 项通过。
-测试使用隔离临时数据库与 fake 模型，无付费调用、无真实麦克风采集。
-产品版验证了中文思路创建、实际分支切换、音频上传/手动录音、播放 ACK、刷新恢复、
-390px 手机布局以及连续采集和开口打断。桌面与手机截图已在本地目视检查。
+Canonical links are `/product#library`, `/product#library/<record-id>` and `/product#library/documents/<document-id>`. Existing `#workspace` and `#documents` links still resolve. New record creation is a Library management action, not a prerequisite to talking.
 
-新页面重用已有 `app.js` / `live.js`，`product.js` 负责展示和思路命名；没有复制供应商实现。
-新增 HTML/CSS/JS 作为包资源随原有 web 目录分发。更新后重启服务：
-
-```sh
-PYTHONPATH=src VOICE_RUNTIME_LIBRARY="$PWD/build/libvoice_runtime.so" \
-  .venv/bin/python -m voice_context.voice_server --db voice-workspace.db --port 8765
-```
-
-本地入口：<http://127.0.0.1:8765/lab>、<http://127.0.0.1:8765/product>。
+Validation covers the two-item sidebar, direct conversation, immediate access to confirmed documents, no empty records, source editing and recovery, record continuation, clearing focus, microphone pause, mobile layouts and preservation of the lab flow. Product tests use isolated demo data; connected integration tests use fixture providers. No paid model calls are needed.

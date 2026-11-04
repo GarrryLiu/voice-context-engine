@@ -1,0 +1,35 @@
+{
+  "scope": "Talk/Library entrance change; manual review only, no automatic semantic filing",
+  "product": {
+    "tests": 13,
+    "passed": 13,
+    "seconds": 5.535,
+    "log": "/tmp/talk-library-product-final.log"
+  },
+  "contracts": {
+    "tests": 4,
+    "passed": 4,
+    "log": "/tmp/talk-library-contract-tests.log"
+  },
+  "integration": {
+    "tests": 48,
+    "passed": 48,
+    "seconds": 72.719,
+    "log": "/tmp/talk-library-integration-final.log"
+  },
+  "visual_review": [
+    "desktop Talk",
+    "desktop Library record map",
+    "mobile Talk"
+  ],
+  "models": "Fixtures only; no paid calls",
+  "source_sha256": {
+    "src/voice_context/web/product.html": "89ea8a1d61d18dd299a6d714708cfdc77ab9dbd79b17b642c5918dda69a0e21a",
+    "src/voice_context/web/product.js": "19a5bd9c853dc21f2c3ec1c06795025bc229f33f323b5a541e6041dab8a7aed6",
+    "src/voice_context/web/workspace.js": "54dbc9dee39dd75a81a6409eda27cb8ddca6663f2eedc35272e0fb0dd4678226",
+    "src/voice_context/web/documents.js": "b1197dfbe247085f21b69d9f55e81382d9bdbfaa1ef3edacd281f2a08a53a177",
+    "src/voice_context/web/client/navigation.js": "98d45ca1fc1ff9107b9319b81a06920f5a29825e7ac1067475f44c37734c77c9",
+    "tests/product/test_demo_browser.py": "14065cc1d50b8d75b819bc6aa644ab1eb2a000c9828563d49e17f9826b3f2ec9"
+  },
+  "environment_note": "Initial integration launch used product-only dependencies and failed readiness import; rerun used the infra environment against this product checkout."
+}

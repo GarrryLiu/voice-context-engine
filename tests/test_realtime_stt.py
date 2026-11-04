@@ -157,7 +157,7 @@ class LiveTests(unittest.TestCase):
                     state=self.service.state(sid)
                     self.assertEqual(len(state['recent']),2);self.assertTrue(state['responses'])
                     expect(page.locator('#record')).to_be_disabled()
-                    page.click('#live');expect(page.locator('#status')).to_have_text('Conversation ended' if route=='/product' else '连续对话已结束')
+                    page.click('#live');expect(page.locator('#status')).to_have_text('Microphone paused' if route=='/product' else '连续对话已结束')
                     expect(page.locator('#record')).to_be_enabled();self.assertEqual(errors,[])
                     page.evaluate('()=>testMic.ctx.close()')
                 finally:browser.close()

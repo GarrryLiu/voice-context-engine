@@ -15,7 +15,12 @@ export async function navigate(name,id=null){
   await enter(id);
   document.body.dataset.view=name;
   for(const [view,panel] of [['documents','documents-workspace'],['workspace','graph-workspace']])document.getElementById(panel).hidden=view!==name;
-  for(const [view,nav] of [['thoughts','nav-thoughts'],['documents','nav-documents'],['workspace','nav-workspace']])document.getElementById(nav).classList.toggle('selected',name===view);
+  const library=name==='workspace'||name==='documents';
+  document.getElementById('nav-thoughts').classList.toggle('selected',name==='thoughts');
+  document.getElementById('nav-workspace').classList.toggle('selected',library);
+  document.getElementById('library-sections').hidden=!library;
+  document.getElementById('library-records').classList.toggle('selected',name==='workspace');
+  document.getElementById('nav-documents').classList.toggle('selected',name==='documents');
   for(const listener of listeners)listener(name);
   return true;
  }catch{runtime.status('Could not change views. Check the local service and try again.');return false;}finally{navigating=false;}
