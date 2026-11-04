@@ -93,7 +93,7 @@ async function loadDocuments(append=false){
 async function enterDocuments(identifier=null){
  if(!$('branch').options.length)await refresh();
  document.body.dataset.view='documents';$('documents-workspace').hidden=false;
- $('nav-documents').classList.add('selected');$('nav-thoughts').classList.remove('selected');$('topic-title').textContent='Library / Documents';
+ $('nav-documents').classList.add('selected');$('nav-thoughts').classList.remove('selected');$('topic-title').textContent='Workspace / Documents';
  thoughtOptions($('document-thought-filter'),true);history.replaceState(null,'','#library/documents'+(identifier?'/'+encodeURIComponent(identifier):''));
  await loadDocuments();if(identifier)await selectDocument(identifier);
 }

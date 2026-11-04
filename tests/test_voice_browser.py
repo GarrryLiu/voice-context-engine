@@ -71,7 +71,7 @@ class VoiceBrowserTests(unittest.TestCase):
                         page.click('#help');expect(page.locator('#help-dialog')).to_be_visible();page.click('#close-help')
                         expect(page.locator('.workspace-nav button')).to_have_count(2)
                         expect(page.locator('#nav-thoughts')).to_contain_text('Talk')
-                        expect(page.locator('#nav-workspace')).to_contain_text('Library')
+                        expect(page.locator('#nav-workspace')).to_contain_text('Workspace')
                         expect(page.locator('#new-topic')).to_have_count(0)
                         expect(page.locator('#library-sections')).not_to_be_visible()
                     branch='main'

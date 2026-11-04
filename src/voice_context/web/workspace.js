@@ -117,7 +117,7 @@ function renderGraphInspector(){
 }
 function graphHash(){history.replaceState(null,'','#library'+(graphSession?'/'+encodeURIComponent(graphSession):''));}
 async function enterGraph(id=null){
- try{await loadWorkspace();graphFormDirty=false;document.body.dataset.view='workspace';$('documents-workspace').hidden=true;$('graph-workspace').hidden=false;for(const id of ['nav-thoughts','nav-documents'])$(id).classList.remove('selected');$('nav-workspace').classList.add('selected');graphSession=workspaceData.sessions.some(s=>s.id===id)?id:null;graphSelected=null;$('topic-title').textContent='Library';$('graph-search').value='';graphReset();renderGraph();graphHash();}
+ try{await loadWorkspace();graphFormDirty=false;document.body.dataset.view='workspace';$('documents-workspace').hidden=true;$('graph-workspace').hidden=false;for(const id of ['nav-thoughts','nav-documents'])$(id).classList.remove('selected');$('nav-workspace').classList.add('selected');graphSession=workspaceData.sessions.some(s=>s.id===id)?id:null;graphSelected=null;$('topic-title').textContent='Workspace';$('graph-search').value='';graphReset();renderGraph();graphHash();}
  catch(error){status('Could not load the workspace. Check the local server.');throw error;}
 }
 function openSessionMap(id){if(!graphCanLeave())return;graphFormDirty=false;graphSession=id;graphSelected=null;$('graph-search').value='';graphReset();renderGraph();graphHash();}
@@ -183,7 +183,7 @@ async function finishProductSession(){
   activeProductSession=item.id;try{localStorage.setItem('voiceline-active-product-session',item.id);}catch{}
   updateSessionStrip();await showGraph(item.id);
   graphNotice('Notes collected for review. Original sources are preserved. Topic filing is manual in this preview.');
- }catch{status('Could not collect these notes. Confirmed words are still saved in Library → Documents.');}
+ }catch{status('Could not collect these notes. Confirmed words are still saved in Workspace → Documents.');}
  finally{graphFinishing=false;$('finish-session').disabled=false;}
 }
 $('finish-session').onclick=finishProductSession;
@@ -195,7 +195,7 @@ $('clear-talk-focus').onclick=async()=>{
   const branch='talk-'+crypto.randomUUID().slice(0,16);
   await api('/api/control',{action:'new_branch',branch});await api('/api/control',{action:'switch',branch});
   activeProductSession=null;try{localStorage.removeItem('voiceline-active-product-session');}catch{}
-  await refresh();updateSessionStrip();status('Ready to talk freely. Your previous record is kept in Library.');
+  await refresh();updateSessionStrip();status('Ready to talk freely. Your previous record is kept in Workspace.');
  }catch{status('Could not clear focus. Your saved notes are kept.');}
  finally{runtime.setSwitching(false);$('clear-talk-focus').disabled=false;}
 };
