@@ -18,6 +18,50 @@ automatic playback barge-in and bounded overlapping provider calls. The
 streaming LLM, C++ segmentation/queues and real PCM TTS with browser playback ACK.
 Physical microphone/speaker latency and billed-cost savings remain unmeasured.
 
+## Launch the web product with one command
+
+The web release currently lives on `feat/talk-library-entry`:
+
+```sh
+git clone --branch feat/talk-library-entry https://github.com/GarrryLiu/voice-context-engine.git
+cd voice-context-engine
+python3 run.py
+```
+
+After cloning, `python3 run.py` is the only startup command.
+
+Requires **Python 3.11+**, macOS or Linux (Windows: WSL), and internet on the first
+launch. The launcher creates its own virtual environment, installs dependencies,
+selects an available localhost port and opens `/product`. Later launches reuse the
+environment. Stop with Ctrl+C. No Docker or cloud account is needed.
+
+Without credentials, this starts the labeled **demo**: typed conversation, fixed
+responses, documents and editable recursive workspace graphs. Microphone
+transcription, synthesized replies and AI-generated maps require connected mode.
+
+For the complete voice/AI experience, copy `.env.example` to `.env` and privately
+fill in `LLM_API_KEY` and `LLM_MODEL` for your API account. Then run the same command.
+The launcher validates configuration and automatically builds the C++ runtime.
+Connected mode also requires a C++17 compiler: Xcode command-line tools on macOS,
+or `g++` on Linux. API usage is billed by your provider; no key is bundled.
+
+```sh
+python3 run.py --mode demo                    # Always use the credential-free demo
+python3 run.py --mode connected               # Require real provider configuration
+python3 run.py --env-file /path/to/private.env # Use an existing private config
+python3 run.py --port 8780 --no-browser        # Explicit port / manual browser opening
+python3 run.py --refresh                      # Reinstall Python dependencies
+```
+
+Your data lives in `.local/quickstart/demo.db` or `connected.db`, separately from
+other development profiles, and survives restarts. Connected startup creates a
+verified backup of an existing database in `.local/daily/backups/`. Keep `.local/`
+and `.env` private; deleting them deletes your local environment/data/configuration.
+The service is local and single-user, not exposed to the internet.
+
+Cloud hosting, PostgreSQL product persistence and accounts are tracked in the
+[full deployment backlog](docs/deployment-backlog.md).
+
 ## Two local views
 
 The [product preview](docs/product-views.md) at `/product` offers a voice-first workspace
