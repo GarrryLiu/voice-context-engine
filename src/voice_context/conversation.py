@@ -1,4 +1,5 @@
 """Single-owner staged adapter coordinator; no vendor SDK or physical audio I/O."""
+import codecs
 import threading
 from collections import deque
 import time
@@ -7,6 +8,7 @@ import math
 from .gateway import Pipeline
 from .native import NativeRuntime
 from .text_prefetch import TextPrefetch
+from .chunk_scheduler import TextChunkScheduler
 from .sessions import StaleInteraction
 from .providers import Transcript,STTProvider,TextProvider,TTSProvider
 
@@ -173,25 +175,37 @@ class Conversation:
         if status==2:raise Backpressure('bounded queue full; caller must drain or pause generation')
         if status!=1:raise ValueError('invalid or out-of-order provider output')
 
-    def respond(self,request_id,text_provider:TextProvider,tts_provider:TTSProvider,reason_cost=1,tts_cost=1,context_budget=4096,expected_epoch=None):
+    def respond(self,request_id,text_provider:TextProvider,tts_provider:TTSProvider,reason_cost=1,tts_cost=1,context_budget=4096,expected_epoch=None,chunk_strategy=None,playback_state=None):
+        scheduler=TextChunkScheduler(chunk_strategy) if chunk_strategy else None
+        decoder=codecs.getincrementaldecoder('utf-8')()
+        chunk_sequence=0
         ticket=self.begin(request_id,context_budget,expected_epoch);cancel=self.cancelled[ticket['request_id']]
         reason_id=request_id+':reason';tick=time.perf_counter();audio_seq=0;first_audio=None;audio_bytes=0;text_bytes=0
         deadline=time.monotonic()+self.deadline_seconds
         if not self._admit(ticket,reason_id,'reason',reason_cost,getattr(text_provider,'name',type(text_provider).__name__)):return {'status':'duplicate','ticket':ticket}
-        def synthesize_segments():
-            nonlocal audio_seq,first_audio,audio_bytes
+        def synthesize_segments(explicit=None):
+            nonlocal audio_seq,first_audio,audio_bytes,chunk_sequence
+            chunks=iter(explicit) if explicit is not None else None
             while True:
                 with self.lock,self.pipeline.engine.db:
                     self.pipeline.engine.db.execute('BEGIN IMMEDIATE')
                     if not self._check(ticket):raise StaleInteraction('response cancelled')
-                    segment=self.native.pop(1)
+                    if chunks is None:segment=self.native.pop(1)
+                    else:
+                        text=next(chunks,None)
+                        if text is None:return
+                        if not text.strip():continue
+                        segment={'sequence':chunk_sequence,'data':text.encode('utf-8')}
+                        chunk_sequence+=1
                 if segment is None:return
                 with self.lock:self.pipeline.sessions.segment(ticket,segment['sequence'],segment['data'].decode('utf-8'))
-                call_id=request_id+':tts:'+str(segment['sequence']);started=time.perf_counter()
+                call_id=request_id+':tts:'+str(segment['sequence']);started=time.perf_counter();observed=False
                 if not self._reserve(ticket,call_id,'tts',tts_cost,getattr(tts_provider,'name',type(tts_provider).__name__)):raise ValueError('segment already admitted')
                 try:
                     for pcm in tts_provider.stream(segment['data'].decode('utf-8'),cancel,call_id):
                         if time.monotonic()>deadline:raise TimeoutError('response deadline exceeded')
+                        if scheduler and not observed:
+                            scheduler.observe_tts(time.perf_counter()-started);observed=True
                         audio_bytes+=len(pcm)
                         if audio_bytes>self.max_audio_bytes:raise ValueError('response audio byte cap exceeded')
                         self._audio(ticket,audio_seq,pcm,segment['sequence']);audio_seq+=1
@@ -203,21 +217,29 @@ class Conversation:
         reason_active=0.
         try:
             active=time.perf_counter()
-            if self.overlap_text:
+            if self.overlap_text or scheduler:
                 stream=TextPrefetch(lambda: text_provider.stream(ticket['context'],cancel,reason_id),
                                     cancel,deadline,self.max_text_bytes)
             else:stream=iter(text_provider.stream(ticket['context'],cancel,reason_id))
             reason_active+=time.perf_counter()-active
             while True:
                 active=time.perf_counter()
-                try:text=next(stream)
+                try:text=stream.poll(.02) if scheduler else next(stream)
                 except StopIteration:break
                 finally:reason_active+=time.perf_counter()-active
                 if time.monotonic()>deadline:raise TimeoutError('response deadline exceeded')
+                if text is None:
+                    if playback_state:scheduler.update_playback(playback_state(ticket),ticket['epoch'])
+                    synthesize_segments(scheduler.feed());continue
                 text_bytes+=len(text.encode('utf-8') if isinstance(text,str) else text)
                 if text_bytes>self.max_text_bytes:raise ValueError('response text byte cap exceeded')
-                self._accepted(self.receive_text(ticket,text));synthesize_segments()
-            self._accepted(self.receive_text(ticket,b'',finish=True));synthesize_segments()
+                if scheduler:
+                    decoded=decoder.decode(text.encode('utf-8') if isinstance(text,str) else text)
+                    if playback_state:scheduler.update_playback(playback_state(ticket),ticket['epoch'])
+                    synthesize_segments(scheduler.feed(decoded))
+                else:self._accepted(self.receive_text(ticket,text));synthesize_segments()
+            if scheduler:synthesize_segments(scheduler.feed(decoder.decode(b'',final=True),final=True))
+            else:self._accepted(self.receive_text(ticket,b'',finish=True));synthesize_segments()
             with self.lock:
                 if not self.pipeline.sessions.seal(ticket):raise StaleInteraction('response ended after cancellation')
         except Exception:

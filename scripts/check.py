@@ -8,7 +8,7 @@ import sys
 import unittest
 
 ROOT=Path(__file__).resolve().parents[1]
-INFRA={'test_text_overlap.py','test_capture_worklet.py','test_conversation.py','test_engine.py','test_merge.py',
+INFRA={'test_chunk_scheduler.py','test_text_overlap.py','test_capture_worklet.py','test_conversation.py','test_engine.py','test_merge.py',
        'test_models.py','test_native.py','test_openai_provider.py','test_pipeline.py',
        'test_retrieval.py','test_routing.py','test_sessions.py','test_tasks.py','test_transcripts.py'}
 PRODUCT={'test_documents.py','test_product_workspace.py'}

@@ -60,12 +60,18 @@ class TextPrefetch:
     def __iter__(self):return self
 
     def __next__(self):
+        return self.poll()
+
+    def poll(self, wait=None):
+        until = None if wait is None else time.monotonic()+wait
         while True:
             if self.cancelled.is_set() or self.stop.is_set():
                 raise StaleInteraction('response cancelled')
             if time.monotonic() >= self.deadline:raise TimeoutError('response deadline exceeded')
             try:kind, item = self.queue.get(timeout=.01)
-            except queue.Empty:continue
+            except queue.Empty:
+                if until is not None and time.monotonic() >= until:return None
+                continue
             if kind == 'end':raise StopIteration
             if kind == 'error':raise item
             return item
