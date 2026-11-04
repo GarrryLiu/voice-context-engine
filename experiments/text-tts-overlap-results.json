@@ -1,0 +1,1245 @@
+{
+  "created_utc": "2026-11-04T05:59:32.882459+00:00",
+  "python": "3.14.7",
+  "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
+  "provider": "synthetic delayed text and UTF-8 bytes, not speech",
+  "configuration": {
+    "text_delay_seconds": 0.04,
+    "tts_delay_seconds": 0.08,
+    "queue_capacity": 4,
+    "repeats": 3
+  },
+  "fixtures": [
+    [
+      "First sentence.",
+      "Second sentence.",
+      "Final sentence."
+    ],
+    [
+      "先讨论规划。",
+      "然后记录决定。",
+      "最后继续学习。"
+    ],
+    [
+      "A short answer."
+    ],
+    [
+      "The value is 42.",
+      "Keep the remaining text"
+    ]
+  ],
+  "source_sha256": {
+    "src/voice_context/conversation.py": "b087e1f97e7814acb555a16e8676ee1bb5e31d8d19838fca53d13b5a4c8435f1",
+    "src/voice_context/text_prefetch.py": "80e1c96ce56eb243c2b2e71d8f8b8b85844827380af08ba37bc7fbb8d662e521",
+    "native/runtime.cpp": "b73d78b7a1ada26f7accf5c2a1b273d126c319b1c628b2d94cf7d7a06e083cbe",
+    "experiments/text_tts_overlap.py": "7a91ad90f3479df1b5c74e55240aff6cbd7dc8893f3918f5d9078cfca01c89f4"
+  },
+  "summary": {
+    "baseline": {
+      "median_first_audio_seconds": 0.13208720844704658,
+      "median_completion_seconds": 0.3276800001040101,
+      "total_tts_requests": 27
+    },
+    "overlap": {
+      "median_first_audio_seconds": 0.13144031236879528,
+      "median_completion_seconds": 0.2647425419418141,
+      "total_tts_requests": 27
+    }
+  },
+  "samples": [
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.1348695419728756,
+      "completion_seconds": 0.3936412089969963,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.12863270798698068,
+        0.12842929200269282
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04908204195089638,
+          "text": "First sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04984720889478922,
+          "text": "First sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.1348695419728756
+        },
+        {
+          "event": "text",
+          "seconds": 0.17686404194682837,
+          "text": "Second sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.1784860419575125,
+          "text": "Second sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.26350224995985627
+        },
+        {
+          "event": "text",
+          "seconds": 0.30611674999818206,
+          "text": "Final sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.30691904202103615,
+          "text": "Final sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.3919315419625491
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.39287620899267495
+        }
+      ],
+      "fixture": 0,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.13186329184100032,
+      "completion_seconds": 0.3025250418577343,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.08242008299566805,
+        0.08663258305750787
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.045928207924589515,
+          "text": "First sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.046856666915118694,
+          "text": "First sentence."
+        },
+        {
+          "event": "text",
+          "seconds": 0.08920287503860891,
+          "text": "Second sentence."
+        },
+        {
+          "event": "text",
+          "seconds": 0.13085908303037286,
+          "text": "Final sentence."
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.13089137501083314
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13186329184100032
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.13373129186220467,
+          "text": "Second sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.21428337483666837
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.21588462498039007,
+          "text": "Final sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.30091595789417624
+        }
+      ],
+      "fixture": 0,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.13189312489703298,
+      "completion_seconds": 0.30460016685537994,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.08350425004027784,
+        0.08691366692073643
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.046028624987229705,
+          "text": "First sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04687758395448327,
+          "text": "First sentence."
+        },
+        {
+          "event": "text",
+          "seconds": 0.09107345901429653,
+          "text": "Second sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13189312489703298
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.1334002499934286,
+          "text": "Second sentence."
+        },
+        {
+          "event": "text",
+          "seconds": 0.1361233340576291,
+          "text": "Final sentence."
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.13612945890054107
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.21539737493731081
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.21729975007474422,
+          "text": "Final sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.30231104185804725
+        }
+      ],
+      "fixture": 0,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.14870804199017584,
+      "completion_seconds": 0.4069408751092851,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.12917387508787215,
+        0.12765362509526312
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04992458317428827,
+          "text": "First sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.0636880830861628,
+          "text": "First sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.14870804199017584
+        },
+        {
+          "event": "text",
+          "seconds": 0.1946440830361098,
+          "text": "Second sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.19571866700425744,
+          "text": "Second sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.277881917078048
+        },
+        {
+          "event": "text",
+          "seconds": 0.3208603330422193,
+          "text": "Final sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.3231891670729965,
+          "text": "Final sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.4055355421733111
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.40638433303683996
+        }
+      ],
+      "fixture": 0,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.13150062505155802,
+      "completion_seconds": 0.3911787502001971,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.12753499997779727,
+        0.12987975007854402
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04588237497955561,
+          "text": "First sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04688479215838015,
+          "text": "First sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13150062505155802
+        },
+        {
+          "event": "text",
+          "seconds": 0.17741933302022517,
+          "text": "Second sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.17867791699245572,
+          "text": "Second sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.2590356250293553
+        },
+        {
+          "event": "text",
+          "seconds": 0.3030881250742823,
+          "text": "Final sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.3041790830902755,
+          "text": "Final sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.3889153751078993
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.3902233331464231
+        }
+      ],
+      "fixture": 0,
+      "repeat": 2
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.1322277500294149,
+      "completion_seconds": 0.3224110829178244,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.08688137494027615,
+        0.09111550007946789
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04579504090361297,
+          "text": "First sentence."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.047211790923029184,
+          "text": "First sentence."
+        },
+        {
+          "event": "text",
+          "seconds": 0.09085987485013902,
+          "text": "Second sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.1322277500294149
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.13405608292669058,
+          "text": "Second sentence."
+        },
+        {
+          "event": "text",
+          "seconds": 0.1358849999960512,
+          "text": "Final sentence."
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.13589258305728436
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.21910912496969104
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.22680658288300037,
+          "text": "Final sentence."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.31022462504915893
+        }
+      ],
+      "fixture": 0,
+      "repeat": 2
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.13040912500582635,
+      "completion_seconds": 0.39723212481476367,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.13062524981796741,
+        0.13298983313143253
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04419224988669157,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.045393083011731505,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13040912500582635
+        },
+        {
+          "event": "text",
+          "seconds": 0.1764429158065468,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.17746537481434643,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.26103437482379377
+        },
+        {
+          "event": "text",
+          "seconds": 0.30755337490700185,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.3091363748535514,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.3940242079552263
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.39578333287499845
+        }
+      ],
+      "fixture": 1,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.13331479206681252,
+      "completion_seconds": 0.3163926671259105,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.0934777909424156,
+        0.08735412498936057
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04653608310036361,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04818929196335375,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "text",
+          "seconds": 0.09161020815372467,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "text",
+          "seconds": 0.133157208096236,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.13321279198862612
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13331479206681252
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.14176483312621713,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.2267925830092281
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.22913162503391504,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.3141467079985887
+        }
+      ],
+      "fixture": 1,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.12944091693498194,
+      "completion_seconds": 0.3146749169100076,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.08761695795692503,
+        0.0881864579860121
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04362150002270937,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.044745707884430885,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "text",
+          "seconds": 0.08825216698460281,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "text",
+          "seconds": 0.1293842918239534,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.12940749991685152
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12944091693498194
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.13202070794068277,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.21705787489190698
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.22020091698504984,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.3052443328779191
+        }
+      ],
+      "fixture": 1,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.13360145804472268,
+      "completion_seconds": 0.4000353750307113,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.13185741705819964,
+        0.13063095789402723
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04656004114076495,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04858637508004904,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13360145804472268
+        },
+        {
+          "event": "text",
+          "seconds": 0.17945387517102063,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.1804280411452055,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.2654588751029223
+        },
+        {
+          "event": "text",
+          "seconds": 0.30976166599430144,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.3110761661082506,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.39608983299694955
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.39853441598825157
+        }
+      ],
+      "fixture": 1,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.13256375002674758,
+      "completion_seconds": 0.408624375006184,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.13664804212749004,
+        0.13792383298277855
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04578449996188283,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.047529875067994,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13256375002674758
+        },
+        {
+          "event": "text",
+          "seconds": 0.18174641695804894,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.18529391707852483,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.26921179215423763
+        },
+        {
+          "event": "text",
+          "seconds": 0.3170019171666354,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.3245703331194818,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.4071356251370162
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.4079709581565112
+        }
+      ],
+      "fixture": 1,
+      "repeat": 2
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.13192454096861184,
+      "completion_seconds": 0.31894499994814396,
+      "tts_requests": 3,
+      "audio_arrival_intervals_seconds": [
+        0.09170866687782109,
+        0.0883796252310276
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.046134958043694496,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04735583299770951,
+          "text": "先讨论规划。"
+        },
+        {
+          "event": "text",
+          "seconds": 0.08740929095074534,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13192454096861184
+        },
+        {
+          "event": "text",
+          "seconds": 0.13195191603153944,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.1319707080256194
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.1408835828769952,
+          "text": "然后记录决定。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.22363320784643292
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.22699079103767872,
+          "text": "最后继续学习。"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.3120128330774605
+        }
+      ],
+      "fixture": 1,
+      "repeat": 2
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.12988633383065462,
+      "completion_seconds": 0.1316694999113679,
+      "tts_requests": 1,
+      "audio_arrival_intervals_seconds": [],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.044801958836615086,
+          "text": "A short answer."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.0459242919459939,
+          "text": "A short answer."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12988633383065462
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.1309652088675648
+        }
+      ],
+      "fixture": 2,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.12947358284145594,
+      "completion_seconds": 0.1316091250628233,
+      "tts_requests": 1,
+      "audio_arrival_intervals_seconds": [],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04602283285930753,
+          "text": "A short answer."
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.04604399995878339
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04715262493118644,
+          "text": "A short answer."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12947358284145594
+        }
+      ],
+      "fixture": 2,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.12965537491254508,
+      "completion_seconds": 0.13243016693741083,
+      "tts_requests": 1,
+      "audio_arrival_intervals_seconds": [],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04433995811268687,
+          "text": "A short answer."
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.044362958054989576
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.045704124961048365,
+          "text": "A short answer."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12965537491254508
+        }
+      ],
+      "fixture": 2,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.12912212498486042,
+      "completion_seconds": 0.1352989999577403,
+      "tts_requests": 1,
+      "audio_arrival_intervals_seconds": [],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.042304875096306205,
+          "text": "A short answer."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.044054083060473204,
+          "text": "A short answer."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12912212498486042
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.13396779098547995
+        }
+      ],
+      "fixture": 2,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.1331632921937853,
+      "completion_seconds": 0.13776491698808968,
+      "tts_requests": 1,
+      "audio_arrival_intervals_seconds": [],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04628416709601879,
+          "text": "A short answer."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04810983408242464,
+          "text": "A short answer."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.1331632921937853
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.13669354212470353
+        }
+      ],
+      "fixture": 2,
+      "repeat": 2
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.12462345813401043,
+      "completion_seconds": 0.1269537501502782,
+      "tts_requests": 1,
+      "audio_arrival_intervals_seconds": [],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04230904206633568,
+          "text": "A short answer."
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.042350750183686614
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04427425004541874,
+          "text": "A short answer."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12462345813401043
+        }
+      ],
+      "fixture": 2,
+      "repeat": 2
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.132628875086084,
+      "completion_seconds": 0.2641812500078231,
+      "tts_requests": 2,
+      "audio_arrival_intervals_seconds": [
+        0.12679616711102426
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04609695915132761,
+          "text": "The value is 42."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.0476096251513809,
+          "text": "The value is 42."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.132628875086084
+        },
+        {
+          "event": "text",
+          "seconds": 0.17508800001814961,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.17557033407501876
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.17804745910689235,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.25942504219710827
+        }
+      ],
+      "fixture": 3,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.13129991688765585,
+      "completion_seconds": 0.22696004202589393,
+      "tts_requests": 2,
+      "audio_arrival_intervals_seconds": [
+        0.08912783302366734
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04533429187722504,
+          "text": "The value is 42."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.0471196249127388,
+          "text": "The value is 42."
+        },
+        {
+          "event": "text",
+          "seconds": 0.08883091690950096,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.08885949989780784
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13129991688765585
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.13643733295612037,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.2204277499113232
+        }
+      ],
+      "fixture": 3,
+      "repeat": 0
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.12935549998655915,
+      "completion_seconds": 0.22414970910176635,
+      "tts_requests": 2,
+      "audio_arrival_intervals_seconds": [
+        0.0871958751231432
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04397183400578797,
+          "text": "The value is 42."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.0458302500192076,
+          "text": "The value is 42."
+        },
+        {
+          "event": "text",
+          "seconds": 0.08615179196931422,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.08619129192084074
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12935549998655915
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.13510466692969203,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.21655137510970235
+        }
+      ],
+      "fixture": 3,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.13161066686734557,
+      "completion_seconds": 0.261685875011608,
+      "tts_requests": 2,
+      "audio_arrival_intervals_seconds": [
+        0.1281414171680808
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.046438541961833835,
+          "text": "The value is 42."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.0481396249961108,
+          "text": "The value is 42."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.13161066686734557
+        },
+        {
+          "event": "text",
+          "seconds": 0.17647691699676216,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.17676962492987514
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.17849004198797047,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.2597520840354264
+        }
+      ],
+      "fixture": 3,
+      "repeat": 1
+    },
+    {
+      "overlap": false,
+      "first_audio_seconds": 0.12930737505666912,
+      "completion_seconds": 0.25984070799313486,
+      "tts_requests": 2,
+      "audio_arrival_intervals_seconds": [
+        0.1280694999732077
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04343075002543628,
+          "text": "The value is 42."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.04501166706904769,
+          "text": "The value is 42."
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.12930737505666912
+        },
+        {
+          "event": "text",
+          "seconds": 0.1746377081144601,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.17481779213994741
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.17631233297288418,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.25737687502987683
+        }
+      ],
+      "fixture": 3,
+      "repeat": 2
+    },
+    {
+      "overlap": true,
+      "first_audio_seconds": 0.1315807078499347,
+      "completion_seconds": 0.21657058293931186,
+      "tts_requests": 2,
+      "audio_arrival_intervals_seconds": [
+        0.08333066711202264
+      ],
+      "exact_output": true,
+      "trace": [
+        {
+          "event": "text",
+          "seconds": 0.04632195783779025,
+          "text": "The value is 42."
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.047744165873155,
+          "text": "The value is 42."
+        },
+        {
+          "event": "text",
+          "seconds": 0.08993254089727998,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "text_end",
+          "seconds": 0.0899694999679923
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.1315807078499347
+        },
+        {
+          "event": "tts_start",
+          "seconds": 0.13408025004900992,
+          "text": "Keep the remaining text"
+        },
+        {
+          "event": "audio_available",
+          "seconds": 0.21491137496195734
+        }
+      ],
+      "fixture": 3,
+      "repeat": 2
+    }
+  ],
+  "limits": [
+    "No real TTS, acoustic quality, playback gaps, API cost or GPU throughput measured.",
+    "Fixed synthetic sleeps model serialized provider consumption, not remote LLM generation.",
+    "Remote providers may already generate and buffer text while the client is busy.",
+    "First audio is provider availability, not physical speaker onset."
+  ]
+}
