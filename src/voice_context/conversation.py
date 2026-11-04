@@ -6,6 +6,7 @@ import hashlib
 import math
 from .gateway import Pipeline
 from .native import NativeRuntime
+from .text_prefetch import TextPrefetch
 from .sessions import StaleInteraction
 from .providers import Transcript,STTProvider,TextProvider,TTSProvider
 
@@ -21,8 +22,9 @@ class Conversation:
     STT provider: stream(audio_chunks, cancelled, request_id) -> Transcript events.
     A callback always rechecks durable ownership before native enqueue/render.
     """
-    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=True,audio_wait_seconds=.25,deadline_seconds=30,max_text_bytes=32000,max_audio_bytes=16777216,token_counter=None,publish_on_submit=True,redis_url=None):
+    def __init__(self,path,session,branch=None,budget=100,library=None,capacity=65536,incremental=True,audio_wait_seconds=.25,deadline_seconds=30,max_text_bytes=32000,max_audio_bytes=16777216,token_counter=None,publish_on_submit=True,redis_url=None,overlap_text=False):
         if not math.isfinite(deadline_seconds) or deadline_seconds<=0 or not math.isfinite(audio_wait_seconds) or audio_wait_seconds<0 or min(max_text_bytes,max_audio_bytes)<1:raise ValueError('positive operation limits required')
+        self.overlap_text=overlap_text
         self.token_counter=token_counter
         self.deadline_seconds=deadline_seconds;self.max_text_bytes=max_text_bytes;self.max_audio_bytes=max_audio_bytes
         self.lock=threading.RLock();self.pipeline=Pipeline(path,check_same_thread=False,publish_on_submit=publish_on_submit,redis_url=redis_url)
@@ -200,7 +202,11 @@ class Conversation:
         stream=None
         reason_active=0.
         try:
-            active=time.perf_counter();stream=iter(text_provider.stream(ticket['context'],cancel,reason_id))
+            active=time.perf_counter()
+            if self.overlap_text:
+                stream=TextPrefetch(lambda: text_provider.stream(ticket['context'],cancel,reason_id),
+                                    cancel,deadline,self.max_text_bytes)
+            else:stream=iter(text_provider.stream(ticket['context'],cancel,reason_id))
             reason_active+=time.perf_counter()-active
             while True:
                 active=time.perf_counter()
@@ -216,9 +222,9 @@ class Conversation:
                 if not self.pipeline.sessions.seal(ticket):raise StaleInteraction('response ended after cancellation')
         except Exception:
             self._abort(ticket)
-            self._finish(reason_id,tick,True,elapsed=reason_active)
+            self._finish(reason_id,tick,True,elapsed=stream.active_seconds if isinstance(stream,TextPrefetch) else reason_active)
             raise
-        else:self._finish(reason_id,tick,elapsed=reason_active)
+        else:self._finish(reason_id,tick,elapsed=stream.active_seconds if isinstance(stream,TextPrefetch) else reason_active)
         finally:
             try:
                 if stream is not None and hasattr(stream,'close'):stream.close()
