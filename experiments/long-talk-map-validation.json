@@ -1,0 +1,55 @@
+{
+  "mode": "demo; fixed replies; silent audio; no model calls",
+  "input": {
+    "turns": 24,
+    "characters": 1881,
+    "expected_topics": [
+      "commute",
+      "voice",
+      "gpu",
+      "paper"
+    ]
+  },
+  "observed": {
+    "records": 1,
+    "nodes": 24,
+    "voice_nodes": 24,
+    "within_topic_edges": 0,
+    "cross_topic_edges": 0,
+    "intact_source_turns": 24,
+    "sources_with_ids": 24,
+    "node_kind_counts": {
+      "voice": 24,
+      "idea": 0,
+      "question": 0,
+      "decision": 0,
+      "document": 0
+    },
+    "reload_persisted": true,
+    "resume_available": true,
+    "browser_errors": []
+  },
+  "acceptance": {
+    "source_capture": true,
+    "map_persistence_and_resume": true,
+    "semantic_topic_separation": false,
+    "summarized_concept_nodes": false,
+    "relationship_extraction": false,
+    "superseded_decision_identification": false,
+    "uncertainty_classification": false
+  },
+  "interpretation": "The shipped product stores one source node per turn in one branch record. It does not summarize or construct a semantic map. Semantic checks fail because no extraction stage exists, not because a tested LLM failed.",
+  "limitations": [
+    "Typed fixture only, no STT/TTS quality or real microphone test.",
+    "No model-quality or latency benchmark.",
+    "No user workspace modified."
+  ],
+  "screenshots": [
+    "/tmp/long-talk-outcome.png",
+    "/tmp/long-talk-map.png"
+  ],
+  "visual_findings": [
+    "Record title is derived from a source utterance rather than a synthesized topic title.",
+    "24 long raw-text nodes fit at low zoom, making the overview dense; there is no semantic condensation."
+  ]
+}
