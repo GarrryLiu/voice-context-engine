@@ -82,8 +82,8 @@ C++ 协调器同样支持 `Conversation(dsn, session, publish_on_submit=False, r
   `dead` 状态。外部模型调用可能重复，需供应商幂等键；不承诺外部 exactly-once。
 - 重复确认不重复写记忆；过时结果按 expected version 拒绝。
 - relay/worker 常驻模式在连接失败后关闭连接、重新建立 pipeline 并重试。
-  `--once` 失败直接退出，便于进程管理器检测。无效消息不提交 offset，会持续重试；
-  目前需要人工排查，没有 Kafka DLQ 或自动跳过。
+  `--once` 失败直接退出，便于进程管理器检测。默认无效消息不提交 offset；
+  可选 `--quarantine-invalid` 将确定损坏的 envelope 持久隔离后继续消费，详见下文。
 - Redis key 含数据库 namespace、全局 revision、branch/query/budget。所有影响
   上下文的表由 PostgreSQL trigger 更新 revision，旧 key 自然不可达并按 TTL 过期。
   其他 Pipeline 进程的写入同样使旧缓存失效；自定义 tokenizer 绕过缓存。
@@ -134,3 +134,42 @@ p50/p95 不能作为生产 SLA、语音延迟或规模化吞吐结论。
 实现依据：[Psycopg transactions](https://www.psycopg.org/psycopg3/docs/basic/transactions.html)、
 [Kafka producer acknowledgements](https://kafka.apache.org/27/configuration/producer-configs/)、
 [Redis cache-aside](https://redis.io/docs/latest/develop/use-cases/cache-aside/)。
+
+
+## 可选的坏消息隔离（本地 infra 版本）
+
+```sh
+PYTHONPATH=src .venv/bin/python -m voice_context.broker worker --quarantine-invalid
+PYTHONPATH=src .venv/bin/python -m voice_context.broker quarantine-status
+```
+
+使用上面的 `VOICE_DATABASE_URL` / `VOICE_KAFKA_BOOTSTRAP` 配置。此选项只改变独立
+Kafka worker，不会自动开启网页版的 Kafka 路径，也不需要真实语音或付费模型。
+
+- 默认保持严格重试。显式开启后，坏 JSON、空消息、超大消息（16 KiB 上限）、
+  错误形状、空 task ID 和 key 不匹配写入数据库 `kafka_quarantine`。
+- 隔离事务提交之后才同步提交 Kafka offset。任何数据库/提交错误继续抛出，由
+  worker 关闭 consumer 后重连；数据库失败时绝不跳过消息。
+- 已隔离但未提交 offset 的消息会重放。来源身份与 topic/partition/offset 的摘要
+  唯一键使隔离幂等。来源身份包括 bootstrap 字符串与消费组；部署需保持它们稳定。
+  同名 topic 删除重建或 broker 地址重用时应更换消费组，避免来源位置复用。
+- 未知协议版本、未知 outbox 引用、队列写入失败依然阻塞并重试：它们可能是版本
+  滚动升级、配置错误或暂时的状态问题，不能当坏消息丢弃。
+- 表只保存来源位置、固定错误码、payload SHA-256 和时间，不复制原始内容或 key。
+  它是隔离审计表，不是带完整原文的 Kafka DLQ。原文可在 Kafka retention 期限内
+  按位置调查；不会自动重放。修复后应从权威 outbox 发布正确的 ID 事件。
+- `quarantine-status` 显示数量和错误分类；隔离记录暂无自动保留期/清理任务。
+
+### 可复现故障实验
+
+```sh
+VOICE_TEST_KAFKA=127.0.0.1:59092 \
+VOICE_TEST_POSTGRES=postgresql://voice:local-dev-only@127.0.0.1:55432/voice \
+.venv/bin/python experiments/kafka_recovery.py
+```
+
+实验创建并清理独立 PostgreSQL schema 和单分区 topic，不重启共享服务、不清理用户
+数据。固定场景为一条坏消息后接一条正常事件；先验证默认模式连续三次重连仍阻塞，
+再注入隔离持久化后、offset 提交前的崩溃，验证重放只产生一条隔离记录，且后续正常
+提取任务完成。结果保存到 `experiments/kafka-recovery-results.json`。恢复时间包含
+消费组重新分配，仅是本机正确性场景记录，不代表生产 SLA 或吞吐优化。
