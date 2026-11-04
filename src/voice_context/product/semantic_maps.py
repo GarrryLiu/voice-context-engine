@@ -21,7 +21,7 @@ STRING={'type':'string'}
 EVIDENCE=object_schema({'source':STRING,'quote':STRING})
 NODE=object_schema({'key':STRING,'title':STRING,'content':STRING,'kind':{'type':'string','enum':['idea','question','decision']},'state':{'type':'string','enum':['noted','open','confirmed','tentative','superseded']},'evidence':array(EVIDENCE)})
 EDGE=object_schema({'from':STRING,'to':STRING,'relation':{'type':'string','enum':['related','supports','revises']},'evidence':array(EVIDENCE)})
-SCHEMA=object_schema({'title':STRING,'topics':array(object_schema({'key':STRING,'title':STRING,'summary':STRING,'nodes':array(NODE),'edges':array(EDGE)})),'links':array(EDGE)})
+SCHEMA=object_schema({'title':STRING,'topics':array(object_schema({'key':STRING,'title':STRING,'summary':STRING,'parent':{'type':['string','null']},'nodes':array(NODE),'edges':array(EDGE)})),'links':array(EDGE)})
 
 
 
@@ -96,7 +96,7 @@ def validate_map(value,sources):
     if not isinstance(value['topics'],list) or not 1<=len(value['topics'])<=8:raise ValueError('invalid topic count')
     topics=set();total=0
     for topic in value['topics']:
-        fields(topic,['key','title','summary','nodes','edges']);text(topic['key'],60);text(topic['title'],100);text(topic['summary'],1200)
+        fields(topic,['key','title','summary','nodes','edges']+(['parent'] if 'parent' in topic else []));text(topic['key'],60);text(topic['title'],100);text(topic['summary'],1200)
         if topic['key'] in topics:raise ValueError('duplicate topic')
         topics.add(topic['key'])
         if not isinstance(topic['nodes'],list) or not 1<=len(topic['nodes'])<=10:raise ValueError('invalid node count')
@@ -111,6 +111,12 @@ def validate_map(value,sources):
         for edge in topic['edges']:
             if edge['relation']=='revises' and (by_key[edge['to']]['state']!='superseded' or by_key[edge['from']]['state']=='superseded'):
                 raise ValueError('revision must point from current to superseded item')
+    parents={t['key']:t.get('parent') for t in value['topics']}
+    for key in parents:
+        seen={key};parent=parents[key]
+        while parent is not None:
+            if not isinstance(parent,str) or parent not in parents or parent in seen:raise ValueError('invalid topic hierarchy')
+            seen.add(parent);parent=parents[parent]
     if total>48:raise ValueError('too many map nodes')
     edges(value['links'],topics)
     return value
@@ -172,22 +178,42 @@ class SemanticMaps:
                 _,digest=self.snapshot(stores,row['branch']);current=stores.workspace.get()
                 if digest!=row['fingerprint'] or current['version']!=row['workspace_version']:raise WorkspaceConflict('sources or workspace changed')
                 value=json.loads(row['payload']);sources=json.loads(row['sources']);data=deepcopy(current['data'])
+                root_id=uuid.uuid4().hex
                 topic_ids={t['key']:uuid.uuid4().hex for t in value['topics']};provenance={};offset=len(data['sessions'])
-                if 'Topics' not in data['categories']:data['categories'].append('Topics')
-                for i,topic in enumerate(value['topics']):
+                root={'id':root_id,'title':value['title'],'kind':'session','category':'Inbox','branch':row['branch'],'demo':False,'x':60+(offset%3)*280,'y':70+(offset//3)*220,'nodes':[],'edges':[]}
+                containers={}
+                for topic in value['topics']:
                     node_ids={n['key']:uuid.uuid4().hex for n in topic['nodes']};nodes=[]
                     for j,node in enumerate(topic['nodes']):
                         source=next(s for s in sources if s['id']==node['evidence'][0]['source'])
                         nid=node_ids[node['key']];provenance[nid]=node
-                        nodes.append({'id':nid,'title':node['title'],'content':f"[{node['state']}] {node['content']}",'kind':node['kind'],'source':source['document_id'],'x':50+(j%3)*255,'y':70+(j//3)*200})
-                    data['sessions'].append({'id':topic_ids[topic['key']],'title':topic['title'],'category':'Topics','branch':row['branch'],'demo':False,'x':60+((offset+i)%3)*280,'y':70+((offset+i)//3)*220,'nodes':nodes,'edges':[[node_ids[e['from']],node_ids[e['to']]] for e in topic['edges']]})
-                data['links'].extend([[topic_ids[e['from']],topic_ids[e['to']]] for e in value['links']])
+                        nodes.append({'id':nid,'title':node['title'],'content':f"[{node['state']}] {node['content']}",'kind':'document','source':source['document_id'],'x':50+(j%3)*255,'y':70+(j//3)*200})
+                    containers[topic['key']]={'id':topic_ids[topic['key']],'title':topic['title'],'content':topic['summary'],'kind':'session','source':None,'x':50,'y':70,'nodes':nodes,'edges':[[node_ids[e['from']],node_ids[e['to']]] for e in topic['edges']]}
+                parents={t['key']:t.get('parent') for t in value['topics']}
+                for topic in value['topics']:
+                    parent=containers[parents[topic['key']]] if parents[topic['key']] else root
+                    item=containers[topic['key']];index=len(parent['nodes']);item['x']=50+(index%3)*255;item['y']=70+(index//3)*200;parent['nodes'].append(item)
+                def path(key):
+                    result=[key]
+                    while parents[result[0]] is not None:result.insert(0,parents[result[0]])
+                    return result
+                for edge in value['links']:
+                    left,right=path(edge['from']),path(edge['to']);owner=root
+                    while left and right and left[0]==right[0]:owner=containers[left.pop(0)];right.pop(0)
+                    # Ancestor/descendant relations are already represented by containment.
+                    if left and right:
+                        pair=[topic_ids[left[0]],topic_ids[right[0]]]
+                        if not any(set(e)==set(pair) for e in owner['edges']):owner['edges'].append(pair)
+                # Avoid imposing a redundant topic level on a single simple topic.
+                if len(value['topics'])==1:
+                    root['nodes']=next(iter(containers.values()))['nodes'];root['edges']=next(iter(containers.values()))['edges']
+                data['sessions'].append(root)
                 payload=stores.workspace.validate(data)
                 if len(payload.encode())>2000000:raise ValueError('workspace too large')
                 if current['version']==0:db.execute("INSERT INTO product_workspace VALUES ('local',1,?)",(payload,))
                 else:db.execute("UPDATE product_workspace SET version=version+1,payload=? WHERE id='local'",(payload,))
-                db.execute('UPDATE map_proposals SET applied=1,node_ids=? WHERE id=?',(json.dumps({'topics':topic_ids,'nodes':provenance}),identifier))
-            return {'workspace':stores.workspace.get(),'already_applied':False,'topic_ids':list(topic_ids.values())}
+                db.execute('UPDATE map_proposals SET applied=1,node_ids=? WHERE id=?',(json.dumps({'topics':{'session':root_id},'nodes':provenance}),identifier))
+            return {'workspace':stores.workspace.get(),'already_applied':False,'topic_ids':[root_id]}
 
     def provenance(self,session,node):
         with self.access.open(session) as stores:

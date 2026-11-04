@@ -39,9 +39,9 @@ def main():
                     topics=page.locator('.map-topic-preview').count();page.click('#map-proposal-apply')
                     expect(page.locator('.graph-node')).to_have_count(topics)
                     page.locator('.graph-node').first.click();nodes=page.locator('.graph-node').count()
-                    page.locator('.graph-node').first.click();page.click('#graph-source')
+                    page.locator('.graph-node').first.click();page.click('#map-document-source')
                     expect(page.locator('#map-evidence-items')).not_to_be_empty()
-                    page.click('#map-evidence-close');page.reload();expect(page.locator('.graph-node')).to_have_count(nodes)
+                    page.click('#map-evidence-close');page.click('#map-document-close');page.reload();expect(page.locator('.graph-node')).to_have_count(nodes)
                     page.screenshot(path='/tmp/daily-product-smoke.png',full_page=True)
                     checks={'speech_transcribed':'cedar' in transcript.lower(),'model_replied':'cedar' in answer.lower(),'map_saved':topics>0 and nodes>0,'no_browser_errors':not errors}
                     result={'protocol':'Synthetic speech upload; real STT, text, TTS and map model; headless WebAudio ended ACK; temporary database. Not a hardware microphone/speaker or commute evaluation.','checks':checks,'passed':all(checks.values()),'topics':topics,'nodes_in_first_topic':nodes,'seconds':round(time.monotonic()-started,2),'map_call':app.state.maps.provider.last_call,'transcript':transcript,'answer':answer,'browser_errors':errors}

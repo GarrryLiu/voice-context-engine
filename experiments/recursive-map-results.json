@@ -1,0 +1,150 @@
+{
+  "mode": "Synthetic Chinese conversation, real map model, temporary database; parent structure source-validated, not a general semantic quality evaluation.",
+  "sources": [
+    "今天完整讨论语音产品的发布。产品规划下面有用户旅程和定价两部分。用户旅程里分通勤学习和办公室复盘。",
+    "通勤学习的核心是不用看屏幕，听懂一份材料后留下自己的理解笔记。办公室复盘主要整理当天的决定和待办。",
+    "技术方案是另一个部分，里面有实时语音和记忆存储。实时语音需要支持打断，记忆存储需要保留原始发言和修改历史。",
+    "今天决定先做好通勤学习，定价还没决定。不要把办公室复盘也当成已经决定上线。"
+  ],
+  "model_call": {
+    "model": "gpt-6-luna",
+    "elapsed_seconds": 8.709,
+    "usage": {
+      "input_tokens": 932,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 889,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1821
+    }
+  },
+  "proposal": {
+    "title": "语音产品发布讨论",
+    "topics": [
+      {
+        "key": "journey",
+        "title": "用户旅程",
+        "summary": "语音产品规划包含通勤学习和办公室复盘两种用户旅程；当前决定优先做好通勤学习，办公室复盘尚未决定上线。",
+        "parent": null,
+        "nodes": [
+          {
+            "key": "journey_commute",
+            "title": "通勤学习",
+            "content": "通勤学习的目标是不看屏幕听懂材料，并留下自己的理解笔记；用户明确决定先做好这一旅程。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s2",
+                "quote": "不用看屏幕，听懂一份材料后留下自己的理解笔记"
+              },
+              {
+                "source": "s4",
+                "quote": "决定先做好通勤学习"
+              }
+            ]
+          },
+          {
+            "key": "journey_office",
+            "title": "办公室复盘",
+            "content": "办公室复盘主要用于整理当天的决定和待办，但用户明确表示不要将其视为已经决定上线。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s2",
+                "quote": "办公室复盘主要整理当天的决定和待办"
+              },
+              {
+                "source": "s4",
+                "quote": "不要把办公室复盘也当成已经决定上线"
+              }
+            ]
+          },
+          {
+            "key": "journey_office_launch",
+            "title": "办公室复盘上线",
+            "content": "办公室复盘是否上线仍未决定。",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s4",
+                "quote": "不要把办公室复盘也当成已经决定上线"
+              }
+            ]
+          }
+        ],
+        "edges": []
+      },
+      {
+        "key": "pricing",
+        "title": "定价",
+        "summary": "定价属于产品规划的一部分，但当前尚未决定。",
+        "parent": null,
+        "nodes": [
+          {
+            "key": "pricing_choice",
+            "title": "定价方案",
+            "content": "语音产品的定价方案尚未决定。",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s1",
+                "quote": "产品规划下面有用户旅程和定价两部分"
+              },
+              {
+                "source": "s4",
+                "quote": "定价还没决定"
+              }
+            ]
+          }
+        ],
+        "edges": []
+      },
+      {
+        "key": "technology",
+        "title": "技术方案",
+        "summary": "技术方案包括实时语音与记忆存储，分别涉及打断支持以及保留原始发言和修改历史。",
+        "parent": null,
+        "nodes": [
+          {
+            "key": "realtime_voice",
+            "title": "实时语音",
+            "content": "实时语音需要支持打断。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s3",
+                "quote": "实时语音需要支持打断"
+              }
+            ]
+          },
+          {
+            "key": "memory_storage",
+            "title": "记忆存储",
+            "content": "记忆存储需要保留原始发言和修改历史。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s3",
+                "quote": "记忆存储需要保留原始发言和修改历史"
+              }
+            ]
+          }
+        ],
+        "edges": []
+      }
+    ],
+    "links": []
+  },
+  "root_sessions": 1,
+  "max_node_levels": 3
+}

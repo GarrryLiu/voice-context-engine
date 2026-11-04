@@ -116,3 +116,41 @@ integrity and captures committed WAL data, including when the source is live.
   `experiments/daily-product-smoke-results.json`: real speech transcription,
   reply audio, reviewed map save, evidence view and reload passed. The input was
   synthetic speech; this is a functional smoke, not a quality or latency benchmark.
+
+## Recursive sessions and full documents
+
+The outer map holds complete sessions and standalone documents. A session can
+contain sections/subsessions and full document leaves; containers can themselves
+contain further containers. Clicking a container enters its graph, and clicking
+a document opens a full-text editor. Breadcrumbs, the sidebar tree and Back move
+between scopes. Container paths survive reload. Add section creates another level;
+Expand into a section preserves the original document in a new child document.
+Existing flat maps and original source documents remain readable without a migration.
+
+New AI suggestions save one complete session, rather than one top-level record
+per topic. The optional semantic `parent` field places subordinate topics within
+broader ones. A single topic does not create a redundant intermediate topic level.
+Containment is independent of association: links render in the nearest shared
+scope, and original model evidence remains in the saved proposal. Cyclic parents,
+unknown parents, invalid references and leaves containing child graphs are rejected.
+
+The additive workspace fields are root `kind` (`session`/`document`), optional
+root `content`/`source`/`document_id`, and recursive node `kind: session` with
+`nodes`/`edges`. Legacy roots without `kind` remain sessions. Edges reference
+siblings in their scope. There is no two-level product restriction; defensive
+limits are 32 nested container levels, 2,000 descendants per root and the existing
+2 MB workspace cap. Model suggestions retain their bounded eight-topic/48-note
+budget; this is separate from manually building deeper structures.
+
+Map document text is currently stored with the versioned workspace, not duplicated
+into the separate Documents catalog. Existing `document_id` references open that
+catalog's editor; original evidence always points to the preserved source document.
+Per-document revision history for embedded map documents, arbitrary reparenting,
+and automatic multi-session merging are not part of this iteration.
+
+Verification: 27 product tests, four contract tests and four connected voice browser
+tests. The new browser scenario enters five nested sections, reloads, edits a full
+document, expands it to another section, navigates back and creates a top-level
+document. `experiments/recursive_map.py --env-file ...` is the explicit paid smoke;
+the recorded synthetic conversation produced one root session and three node levels.
+That run verifies the real schema/API path, not a general hierarchy-quality score.

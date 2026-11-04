@@ -25,7 +25,7 @@ class BackupTests(unittest.TestCase):
             try:
                 self.assertEqual(recovered.product.workspace('test'),result['workspace'])
                 self.assertEqual(len(recovered.product.documents('test','list',{})['documents']),1)
-                node=result['workspace']['data']['sessions'][0]['nodes'][0]['id']
+                node=result['workspace']['data']['sessions'][0]['nodes'][0]['nodes'][0]['id']
                 self.assertTrue(SemanticMaps(recovered.product.access).provenance('test',node)['evidence'])
             finally:recovered.close()
 

@@ -30,8 +30,8 @@ class SemanticMapsTests(unittest.TestCase):
         self.assertEqual(self.service.product.workspace('test'),original)
         self.assertEqual(self.maps.propose('test','main')['id'],proposal['id']);self.assertEqual(self.provider.calls,1)
         result=self.maps.apply('test',proposal['id']);data=result['workspace']['data']
-        self.assertEqual(len(data['sessions']),2);self.assertEqual(len(data['links']),1)
-        nodes=data['sessions'][0]['nodes'];self.assertIn('[superseded]',nodes[0]['content'])
+        self.assertEqual(len(data['sessions']),1);self.assertEqual(len(data['sessions'][0]['edges']),1)
+        nodes=data['sessions'][0]['nodes'][0]['nodes'];self.assertIn('[superseded]',nodes[0]['content'])
         self.assertEqual(len(self.maps.provenance('test',nodes[0]['id'])['evidence']),2)
         self.assertTrue(self.maps.apply('test',proposal['id'])['already_applied'])
         self.assertEqual(self.maps.propose('test','main')['id'],proposal['id']);self.assertEqual(self.provider.calls,1)
@@ -88,7 +88,7 @@ class SemanticMapsTests(unittest.TestCase):
             self.assertEqual(proposal.status_code,200)
             result=client.post('/api/maps/apply',headers=headers,json={'id':proposal.json()['id']})
             self.assertEqual(result.status_code,200)
-            self.assertEqual(len(result.json()['workspace']['data']['sessions']),2)
+            self.assertEqual(len(result.json()['workspace']['data']['sessions']),1)
 
     def test_deleted_map_can_be_generated_again_without_resurrecting_edits(self):
         proposal=self.maps.propose('test','main');result=self.maps.apply('test',proposal['id'])
@@ -98,7 +98,7 @@ class SemanticMapsTests(unittest.TestCase):
         self.assertNotEqual(replacement['id'],proposal['id'])
         self.assertNotIn('already_applied',replacement)
         self.assertEqual(self.service.product.workspace('test')['data']['sessions'],[])
-        self.assertEqual(len(self.maps.apply('test',replacement['id'])['workspace']['data']['sessions']),2)
+        self.assertEqual(len(self.maps.apply('test',replacement['id'])['workspace']['data']['sessions']),1)
 
     def test_invalid_apply_identifier_is_rejected(self):
         for identifier in [None,{},[],1,'', 'x'*81]:
