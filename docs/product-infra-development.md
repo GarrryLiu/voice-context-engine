@@ -62,3 +62,7 @@ Product PRs include a reproducible UI flow and screenshots when appearance chang
 Only the runtime execution service has moved under `infra/`; context, broker and persistence modules retain compatible paths until a feature needs their migration. Capture/playback internals remain in the lab scripts behind explicit ports. These compatibility bridges are intentional and documented; the product can already be developed and tested independently through demo mode. No collaboration/account system, automatic semantic graph extraction or new routing optimization is introduced by this refactor.
 
 The root `AGENTS.md` carries these boundaries into future chats. Each PR should say which track changed and which profile passed; the shared contract job protects both consumers.
+
+### Optional semantic maps in the product demo
+
+`--map-llm --env-file /absolute/path/to/private/.env` is an explicit exception to the ordinary demo's no-provider behavior. It enables real, on-demand semantic map suggestions only; voice remains typed input, fixed replies and silent audio. The UI labels this distinction. Default product development/CI still does not read credentials or call providers. The map extraction adapter belongs to server composition; the product service takes an injected provider port and releases store locks during extraction. It does not change runtime routing, capture atomicity, confirmed memory, or branch semantics.

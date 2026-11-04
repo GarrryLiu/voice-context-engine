@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 import secrets
 from ..contracts import CONTRACT_VERSION
 
-def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None,product=None,mode='connected'):
+def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None,product=None,mode='connected',map_provider=None,map_llm=False):
     from fastapi import FastAPI,Request
     from fastapi.responses import Response
     from .compat import VoiceService
@@ -38,4 +38,11 @@ def create_app(path='voice-local.db',env_file='.env',service=None,redis_url=None
     static.register(app,token,mode)
     voice.register(app,service,token,mode)
     product_routes.register(app,product)
+    from ..product.semantic_maps import SemanticMaps
+    from .routes import maps as map_routes
+    if map_provider is None and (mode=='connected' or map_llm):
+        from .map_provider import OpenAIMapProvider
+        map_provider=OpenAIMapProvider(env_file)
+    app.state.maps=SemanticMaps(product.access,map_provider)
+    map_routes.register(app,app.state.maps)
     return app

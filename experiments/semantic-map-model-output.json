@@ -1,0 +1,622 @@
+{
+  "input_hash": "50fc2de23cab222149c316e0c793eecea98dc3926e6ff586365a096c4787b470",
+  "model_call": {
+    "model": "gpt-6-luna",
+    "elapsed_seconds": 38.292,
+    "usage": {
+      "input_tokens": 2147,
+      "input_tokens_details": {
+        "cache_write_tokens": 2144,
+        "cached_tokens": 0
+      },
+      "output_tokens": 4965,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7112
+    }
+  },
+  "proposal": {
+    "title": "个人规划、语音产品与推理学习",
+    "topics": [
+      {
+        "key": "commute",
+        "title": "通勤安排",
+        "summary": "周一和周三去学校，已确定七点起床、七点四十五出门；周一思考实验，周三学习论文。通勤安排先试行一周再评估，离线模式尚未决定。",
+        "nodes": [
+          {
+            "key": "commute.schedule.old",
+            "title": "较早作息设想",
+            "content": "曾初步考虑每天六点半起床、七点出门，后来明确修订。",
+            "kind": "idea",
+            "state": "superseded",
+            "evidence": [
+              {
+                "source": "s5",
+                "quote": "我的初步想法是每天六点半起床，七点出门"
+              }
+            ]
+          },
+          {
+            "key": "commute.schedule.current",
+            "title": "确定的作息与分工",
+            "content": "周一和周三去学校；七点起床、七点四十五出门。周一思考实验，周三学习论文；先试一周再判断。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s9",
+                "quote": "七点起床，七点四十五出门，这是我确定的安排"
+              },
+              {
+                "source": "s17",
+                "quote": "周一和周三去学校，七点起床，七点四十五出门"
+              },
+              {
+                "source": "s17",
+                "quote": "接下来先试一周再判断是否合理"
+              }
+            ]
+          },
+          {
+            "key": "commute.preferences",
+            "title": "通勤与日程偏好",
+            "content": "单程约四十分钟；路上回顾当天目标、避免持续盯屏幕，并一次聚焦一个主要问题。早上优先安排重要任务，晚上复盘，不填满所有空余时间。到校后再看详细记录。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s1",
+                "quote": "单程大约四十分钟"
+              },
+              {
+                "source": "s1",
+                "quote": "不能一直盯屏幕"
+              },
+              {
+                "source": "s1",
+                "quote": "晚上再复盘，不要把所有空余时间都塞满"
+              },
+              {
+                "source": "s5",
+                "quote": "路上只聊一个主要问题"
+              }
+            ]
+          },
+          {
+            "key": "commute.offline",
+            "title": "离线资料",
+            "content": "是否下载资料以便离线听尚未决定。",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s13",
+                "quote": "是否需要下载资料离线听，我还没有决定"
+              },
+              {
+                "source": "s17",
+                "quote": "不要把离线模式记成已经确定要做"
+              }
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "from": "commute.schedule.current",
+            "to": "commute.schedule.old",
+            "relation": "revises",
+            "evidence": [
+              {
+                "source": "s9",
+                "quote": "六点半太早，改成七点起床，七点四十五出门"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "voice_product",
+        "title": "语音知识产品",
+        "summary": "产品面向持续思考与话题切换，采用 Talk 和 Workspace 两个入口，并以知识地图呈现主题、想法和问题。第一版先服务个人通勤体验；主题边界及连续话题的拆分方式仍待确定。",
+        "nodes": [
+          {
+            "key": "product.concept",
+            "title": "交互与主题关联",
+            "content": "工具应能长期接续思考，入口只有 Talk 和 Workspace；用户直接说话，无需先新建 session，后台之后判断关联主题。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s2",
+                "quote": "能长期接着思考的工具"
+              },
+              {
+                "source": "s2",
+                "quote": "入口只有 Talk 和 Workspace"
+              },
+              {
+                "source": "s2",
+                "quote": "后台以后再判断应该关联哪些主题"
+              }
+            ]
+          },
+          {
+            "key": "product.workspace",
+            "title": "知识地图界面",
+            "content": "Workspace 采用大型知识地图，主题之间可连线；点入主题查看想法和问题，并可编辑内容。避免大量卡片列表；界面用英文、主按钮深色、不用绿色。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s6",
+                "quote": "Workspace 要有一张大的知识地图"
+              },
+              {
+                "source": "s6",
+                "quote": "主题之间有连线，点进去看到想法和问题"
+              },
+              {
+                "source": "s6",
+                "quote": "不要做成大量卡片列表"
+              },
+              {
+                "source": "s6",
+                "quote": "界面用英文，主按钮深色"
+              }
+            ]
+          },
+          {
+            "key": "product.scope",
+            "title": "首版范围与优先项",
+            "content": "首版先做个人通勤体验，不做 Slack 集成或团队权限；团队服务只是未来可能方向。当前优先解决打断、恢复上下文和结束后的成果整理。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s14",
+                "quote": "第一版先做我自己的通勤体验"
+              },
+              {
+                "source": "s14",
+                "quote": "不做 Slack 集成，不做团队权限"
+              },
+              {
+                "source": "s14",
+                "quote": "团队服务只是未来可能方向"
+              },
+              {
+                "source": "s14",
+                "quote": "优先解决打断、恢复上下文和结束后的成果整理"
+              }
+            ]
+          },
+          {
+            "key": "product.capture",
+            "title": "通勤语音体验",
+            "content": "回复应简短，用户说“继续”后再深入；到站自动保存，并支持随时被打断。离线资料是否纳入仍未确定。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s13",
+                "quote": "AI 回复应该短一点，我会说继续才深入"
+              },
+              {
+                "source": "s13",
+                "quote": "到站以后要自动保存，能随时被打断"
+              }
+            ]
+          },
+          {
+            "key": "product.boundaries",
+            "title": "主题划分待定",
+            "content": "尚未决定主题边界是否由用户确认，以及连续多个话题是否拆成不同记录。倾向于 AI 提议、用户确认，但还没有最终定案。",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s18",
+                "quote": "主题边界是否由用户确认"
+              },
+              {
+                "source": "s18",
+                "quote": "连续多个话题要不要拆分成不同记录"
+              },
+              {
+                "source": "s18",
+                "quote": "我的倾向是 AI 建议、用户确认，但暂时还没有最终定下来"
+              }
+            ]
+          },
+          {
+            "key": "product.provenance",
+            "title": "来源与修订规则",
+            "content": "原始发言永久保留；AI 总结应标出来源。改主意时，旧决定标为被修订，不默默覆盖；AI 提议不得记成用户确认的决定。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s10",
+                "quote": "原始发言永远保留"
+              },
+              {
+                "source": "s10",
+                "quote": "AI 总结要能指出来源"
+              },
+              {
+                "source": "s10",
+                "quote": "旧决定应该标为被修订，不能默默覆盖"
+              },
+              {
+                "source": "s10",
+                "quote": "不能把 AI 提议记成我确认的决定"
+              }
+            ]
+          },
+          {
+            "key": "product.test",
+            "title": "下一步测试清单",
+            "content": "整理测试清单，并录制包含话题切换和修改意见的对话；检查是否恢复正确主题、保留原始来源，且不把猜想写成决定。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s22",
+                "quote": "整理一个测试清单"
+              },
+              {
+                "source": "s22",
+                "quote": "录一段包含话题切换和修改意见的对话"
+              },
+              {
+                "source": "s22",
+                "quote": "总结中不把猜想写成决定"
+              }
+            ]
+          }
+        ],
+        "edges": []
+      },
+      {
+        "key": "gpu_project",
+        "title": "GPU 法律摘要推理",
+        "summary": "项目针对公开法律文档的摘要推理优化，不涉及训练模型。计划比较到达顺序 batching、长度分桶以及独立的 token budget batching 实验；测量尚未完成，硬件环境和瓶颈也需先核实。",
+        "nodes": [
+          {
+            "key": "gpu.scope",
+            "title": "项目范围与目标",
+            "content": "研究 GPU 法律文档摘要的推理优化，不训练模型；使用公开法律文档，比较相同模型下不同批处理策略的吞吐和延迟。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s3",
+                "quote": "想先做推理优化，不是训练模型"
+              },
+              {
+                "source": "s3",
+                "quote": "数据是公开法律文档"
+              },
+              {
+                "source": "s3",
+                "quote": "比较相同模型下不同批处理策略的吞吐和延迟"
+              }
+            ]
+          },
+          {
+            "key": "gpu.baseline",
+            "title": "基线与长度范围",
+            "content": "基线使用按到达顺序 batching，与按长度分桶比较。文档长度范围为一千至两万四千 token。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s7",
+                "quote": "基线先用原来的按到达顺序 batching"
+              },
+              {
+                "source": "s7",
+                "quote": "再比较按长度分桶"
+              },
+              {
+                "source": "s7",
+                "quote": "文档长度从一千到两万四千 token"
+              }
+            ]
+          },
+          {
+            "key": "gpu.comparison",
+            "title": "对照条件与批处理",
+            "content": "比较调度策略时固定输出长度和 batch size。token budget batching 应单独比较；分别报告相同 batch size 与相同显存预算结果，不能混在一起。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s7",
+                "quote": "要固定输出长度和 batch size"
+              },
+              {
+                "source": "s11",
+                "quote": "token budget batching，应该作为另一项实验单独比较"
+              },
+              {
+                "source": "s11",
+                "quote": "先报告相同 batch size 的结果，再报告相同显存预算的结果"
+              }
+            ]
+          },
+          {
+            "key": "gpu.measurement",
+            "title": "质量与成本测量",
+            "content": "摘要质量检查关键事实、日期、金额和裁判结论；先对二十篇做 smoke test，再扩大到四百篇，四百篇是目标而非已完成结果。需测量长文档中 prefill 与 decode 的相对成本。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s19",
+                "quote": "检查关键事实、日期、金额和裁判结论"
+              },
+              {
+                "source": "s19",
+                "quote": "先选二十篇做 smoke test，再扩大到四百篇"
+              },
+              {
+                "source": "s19",
+                "quote": "四百篇只是目标，现在不代表已经跑完"
+              },
+              {
+                "source": "s12",
+                "quote": "这个应该用测量回答"
+              }
+            ]
+          },
+          {
+            "key": "gpu.environment",
+            "title": "硬件核实与有效结果",
+            "content": "先核对学校服务器的 GPU 型号、可用显存和 CUDA 环境，不假定有 A100。未测得的百分之二十五提升不能作为结果；本地模拟时间不等于 GPU 实测。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s15",
+                "quote": "先看 GPU 型号、可用显存和 CUDA 环境"
+              },
+              {
+                "source": "s15",
+                "quote": "不能假定有 A100"
+              },
+              {
+                "source": "s15",
+                "quote": "没有测过的百分之二十五提升不能写进结果"
+              },
+              {
+                "source": "s15",
+                "quote": "不要把本地模拟时间当作 GPU 实测"
+              }
+            ]
+          },
+          {
+            "key": "gpu.next_steps",
+            "title": "下一步与性能瓶颈",
+            "content": "先确认学校机器登录并运行按到达顺序基线。自写 CUDA kernel 是后续探索；先用 profiler 确认瓶颈，不预设 attention kernel 最值得优化。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s23",
+                "quote": "确认学校机器登录，再跑按到达顺序的基线"
+              },
+              {
+                "source": "s23",
+                "quote": "自写 CUDA kernel 是后续探索"
+              },
+              {
+                "source": "s23",
+                "quote": "先看 profiler 确认瓶颈"
+              },
+              {
+                "source": "s23",
+                "quote": "不能直接认定 attention kernel 最值得优化"
+              }
+            ]
+          },
+          {
+            "key": "gpu.quantization",
+            "title": "量化路线未定",
+            "content": "尚不确定是否要做量化，不能把它视为已选定的实验路线。",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s20",
+                "quote": "暂时不确定要不要做量化"
+              },
+              {
+                "source": "s20",
+                "quote": "不能把量化写成已经选定的实验路线"
+              }
+            ]
+          }
+        ],
+        "edges": []
+      },
+      {
+        "key": "inference_learning",
+        "title": "推理概念学习",
+        "summary": "学习记录关注 KV cache、prefill 与 decode，并保留术语解释及开放问题。KV cache 与长度分桶的关系只是待验证理解；计划查阅原始论文和系统实现，将问题对应到 GPU profiling 指标。",
+        "nodes": [
+          {
+            "key": "learning.kv",
+            "title": "KV cache 理解",
+            "content": "读到的解释是，KV cache 能避免自回归生成时反复计算先前 token 的 key 和 value。它与文档长度分桶的关系还不清楚。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s4",
+                "quote": "能避免自回归生成时反复计算之前 token 的 key 和 value"
+              },
+              {
+                "source": "s4",
+                "quote": "还不太清楚它和文档长度分桶有什么关系"
+              }
+            ]
+          },
+          {
+            "key": "learning.hypothesis",
+            "title": "待验证的阶段理解",
+            "content": "暂时理解为 KV cache 主要影响生成过程中的重复计算，而长度分桶影响 padding 和批处理效率；须查原文验证，不作为实验结论。",
+            "kind": "idea",
+            "state": "tentative",
+            "evidence": [
+              {
+                "source": "s8",
+                "quote": "KV cache 主要影响生成过程的重复计算"
+              },
+              {
+                "source": "s8",
+                "quote": "长度分桶会影响 padding 和批处理效率"
+              },
+              {
+                "source": "s8",
+                "quote": "请先作为待验证笔记"
+              },
+              {
+                "source": "s8",
+                "quote": "不要作为实验结论"
+              }
+            ]
+          },
+          {
+            "key": "learning.prefill_decode",
+            "title": "Prefill 与 decode",
+            "content": "需要理解 prefill 和 decode 的区别，并通过测量判断长法律文档是否令 prefill 成为主要成本，或较长输出是否使 decode 更重要。",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s12",
+                "quote": "还需要理解 prefill 和 decode 的差别"
+              },
+              {
+                "source": "s12",
+                "quote": "长法律文档是否让 prefill 成为主要成本"
+              },
+              {
+                "source": "s12",
+                "quote": "还是输出足够长时 decode 更重要"
+              },
+              {
+                "source": "s12",
+                "quote": "这个应该用测量回答"
+              }
+            ]
+          },
+          {
+            "key": "learning.plan",
+            "title": "阅读与后续问题",
+            "content": "计划先找 KV cache 和推理调度的原始论文，再读一个系统实现；还要确认 KV cache 的适用阶段、理解 prefill 与 decode，并将问题对应到 GPU profiling 指标。量化是否纳入路线仍未确定。解释需能回到材料和原始发言。",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s20",
+                "quote": "先找 KV cache 和推理调度的原始论文，再读一个系统实现"
+              },
+              {
+                "source": "s24",
+                "quote": "确认 KV cache 的适用阶段"
+              },
+              {
+                "source": "s24",
+                "quote": "把这些问题对应到 GPU profiling 的指标"
+              },
+              {
+                "source": "s24",
+                "quote": "所有解释都要能回到材料和原始发言"
+              }
+            ]
+          },
+          {
+            "key": "learning.notes",
+            "title": "学习记录形式",
+            "content": "学习记录应单独保留术语解释和开放问题，并可与 GPU 实验项目建立连接；两者不是同一个项目。",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s4",
+                "quote": "想单独保留学习笔记"
+              },
+              {
+                "source": "s16",
+                "quote": "论文学习和 GPU 项目有关，但不是同一个东西"
+              },
+              {
+                "source": "s16",
+                "quote": "学习记录保留术语解释和开放问题"
+              }
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "from": "learning.hypothesis",
+            "to": "gpu.baseline",
+            "relation": "related",
+            "evidence": [
+              {
+                "source": "s8",
+                "quote": "长度分桶会影响 padding 和批处理效率"
+              }
+            ]
+          },
+          {
+            "from": "learning.prefill_decode",
+            "to": "gpu.measurement",
+            "relation": "related",
+            "evidence": [
+              {
+                "source": "s12",
+                "quote": "这个应该用测量回答"
+              }
+            ]
+          },
+          {
+            "from": "learning.plan",
+            "to": "gpu.next_steps",
+            "relation": "related",
+            "evidence": [
+              {
+                "source": "s24",
+                "quote": "把这些问题对应到 GPU profiling 的指标"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "from": "commute.schedule.current",
+        "to": "product.scope",
+        "relation": "related",
+        "evidence": [
+          {
+            "source": "s21",
+            "quote": "我自己上下学就是语音产品的第一批真实测试"
+          },
+          {
+            "source": "s21",
+            "quote": "这个日程属于个人规划，不应该被混进产品需求文档"
+          },
+          {
+            "source": "s21",
+            "quote": "可以保留两者之间的来源关联"
+          }
+        ]
+      }
+    ]
+  }
+}

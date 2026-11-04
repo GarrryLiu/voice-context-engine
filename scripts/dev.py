@@ -8,6 +8,7 @@ root=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('profile',choices=['product','infra','integration'])
 p.add_argument('--port',type=int);p.add_argument('--db');p.add_argument('--env-file',default='.env')
+p.add_argument('--map-llm',action='store_true',help='Enable real model map suggestions in product demo')
 a=p.parse_args()
 profiles={'product':('demo',8766,'/product'),'infra':('connected',8767,'/lab'),'integration':('connected',8765,'/product')}
 mode,port,route=profiles[a.profile];port=a.port or port
@@ -19,4 +20,4 @@ if mode=='demo':
 else:env.setdefault('VOICE_RUNTIME_LIBRARY',str(root/'build/libvoice_runtime.so'))
 print(f'{a.profile}: http://127.0.0.1:{port}{route} (mode={mode})',flush=True)
 os.chdir(root)
-os.execve(sys.executable,[sys.executable,'-m','voice_context.voice_server','--mode',mode,'--port',str(port),'--db',database,'--env-file',a.env_file],env)
+os.execve(sys.executable,[sys.executable,'-m','voice_context.voice_server','--mode',mode,'--port',str(port),'--db',database,'--env-file',a.env_file]+(['--map-llm'] if a.map_llm else []),env)

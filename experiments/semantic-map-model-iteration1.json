@@ -1,0 +1,524 @@
+{
+  "input_hash": "a2026cce2f2c6a41d2e5457cc17359ebbb8e92cd1c7e20d507302916c4ba44c9",
+  "model_call": {
+    "model": "gpt-6-luna",
+    "elapsed_seconds": 28.581,
+    "usage": {
+      "input_tokens": 2057,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 2054
+      },
+      "output_tokens": 3834,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 5891
+    }
+  },
+  "proposal": {
+    "title": "Planning, Product, and Inference Research",
+    "topics": [
+      {
+        "key": "commute",
+        "title": "Commute Routine",
+        "summary": "A confirmed Monday/Wednesday school routine with different focus for each commute, plus a one-week trial before evaluating it.",
+        "nodes": [
+          {
+            "key": "commute.schedule",
+            "title": "Weekly schedule",
+            "content": "The confirmed routine is to go to school Monday and Wednesday, waking at 7:00 and leaving at 7:45. Try it for one week before judging whether it works.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s17",
+                "quote": "周一和周三去学校，七点起床，七点四十五出门"
+              },
+              {
+                "source": "s17",
+                "quote": "先试一周再判断是否合理"
+              }
+            ]
+          },
+          {
+            "key": "commute.old-time",
+            "title": "Earlier timing",
+            "content": "The earlier 6:30 wake-up and 7:00 departure plan was superseded.",
+            "kind": "decision",
+            "state": "superseded",
+            "evidence": [
+              {
+                "source": "s5",
+                "quote": "每天六点半起床，七点出门"
+              },
+              {
+                "source": "s9",
+                "quote": "六点半太早"
+              }
+            ]
+          },
+          {
+            "key": "commute.focus",
+            "title": "Commute focus",
+            "content": "Use Monday morning to think about experiments and Wednesday travel to study papers; focus on one main question during the commute.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s9",
+                "quote": "周一早上讨论实验，周三路上学习论文"
+              },
+              {
+                "source": "s5",
+                "quote": "路上只聊一个主要问题"
+              }
+            ]
+          },
+          {
+            "key": "commute.usability",
+            "title": "Pacing and review",
+            "content": "Travel planning should allow brief reflection without staring at a screen, leave unscheduled time, and reserve detailed review for arrival or evening.",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s1",
+                "quote": "不能一直盯屏幕"
+              },
+              {
+                "source": "s1",
+                "quote": "不要把所有空余时间都塞满"
+              },
+              {
+                "source": "s5",
+                "quote": "到了之后再看详细记录"
+              }
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "from": "commute.old-time",
+            "to": "commute.schedule",
+            "relation": "revises",
+            "evidence": [
+              {
+                "source": "s9",
+                "quote": "不要把旧的六点半当作最终决定"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "voice-product",
+        "title": "Voice Knowledge Product",
+        "summary": "A personal-first voice tool for continuing thought across topics, with a knowledge-map interface, source-preserving summaries, and interruption recovery.",
+        "nodes": [
+          {
+            "key": "product.core",
+            "title": "Conversation model",
+            "content": "The proposed tool supports long-running thought through Talk and Workspace. Users speak directly without creating a session; topic association can be handled later.",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s2",
+                "quote": "入口只有 Talk 和 Workspace"
+              },
+              {
+                "source": "s2",
+                "quote": "用户直接说话，不用先新建 session"
+              },
+              {
+                "source": "s2",
+                "quote": "后台以后再判断应该关联哪些主题"
+              }
+            ]
+          },
+          {
+            "key": "product.interface",
+            "title": "Knowledge map interface",
+            "content": "Workspace should present a large connected knowledge map with editable ideas and questions, rather than many cards. The interface should be in English, avoid green, and use a dark primary button.",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s6",
+                "quote": "一张大的知识地图"
+              },
+              {
+                "source": "s6",
+                "quote": "不要做成大量卡片列表"
+              },
+              {
+                "source": "s6",
+                "quote": "界面用英文，主按钮深色"
+              }
+            ]
+          },
+          {
+            "key": "product.source-history",
+            "title": "Source and revision history",
+            "content": "Keep original utterances, show sources for AI summaries, and mark superseded decisions rather than silently replacing them. AI suggestions must not be recorded as user-confirmed decisions.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s10",
+                "quote": "原始发言永远保留"
+              },
+              {
+                "source": "s10",
+                "quote": "AI 总结要能指出来源"
+              },
+              {
+                "source": "s10",
+                "quote": "旧决定应该标为被修订，不能默默覆盖"
+              },
+              {
+                "source": "s10",
+                "quote": "不能把 AI 提议记成我确认的决定"
+              }
+            ]
+          },
+          {
+            "key": "product.scope",
+            "title": "First-version scope",
+            "content": "The first version is for personal commute use, not Slack integration or team permissions. Prioritize interruption, context recovery, and organizing outcomes afterward; team service is only a possible future direction.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s14",
+                "quote": "第一版先做我自己的通勤体验"
+              },
+              {
+                "source": "s14",
+                "quote": "不做 Slack 集成，不做团队权限"
+              },
+              {
+                "source": "s14",
+                "quote": "优先解决打断、恢复上下文和结束后的成果整理"
+              }
+            ]
+          },
+          {
+            "key": "product.boundaries",
+            "title": "Topic boundary rules",
+            "content": "Whether users confirm topic boundaries and whether consecutive topics are split into separate records remain unresolved. The tentative preference is AI suggestion followed by user confirmation.",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s18",
+                "quote": "主题边界是否由用户确认"
+              },
+              {
+                "source": "s18",
+                "quote": "连续多个话题要不要拆分成不同记录"
+              },
+              {
+                "source": "s18",
+                "quote": "我的倾向是 AI 建议、用户确认"
+              }
+            ]
+          },
+          {
+            "key": "product.testing",
+            "title": "Test and success criteria",
+            "content": "Next, prepare a test checklist and record a conversation with topic changes and revisions. Success means restoring the right topic, retaining original sources, and not turning guesses into decisions.",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s22",
+                "quote": "整理一个测试清单"
+              },
+              {
+                "source": "s22",
+                "quote": "录一段包含话题切换和修改意见的对话"
+              },
+              {
+                "source": "s22",
+                "quote": "总结中不把猜想写成决定"
+              }
+            ]
+          }
+        ],
+        "edges": []
+      },
+      {
+        "key": "gpu-inference",
+        "title": "GPU Inference Benchmark",
+        "summary": "A separate legal-document summarization project focused on measured inference scheduling comparisons, quality checks, and hardware-aware profiling.",
+        "nodes": [
+          {
+            "key": "gpu.scope",
+            "title": "Project scope",
+            "content": "This project concerns inference optimization, not model training, using public legal documents and the same model to compare batching strategies for throughput and latency.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s3",
+                "quote": "先做推理优化，不是训练模型"
+              },
+              {
+                "source": "s3",
+                "quote": "数据是公开法律文档"
+              },
+              {
+                "source": "s3",
+                "quote": "比较相同模型下不同批处理策略的吞吐和延迟"
+              }
+            ]
+          },
+          {
+            "key": "gpu.batching",
+            "title": "Batching comparisons",
+            "content": "Use arrival-order batching as the baseline and compare length bucketing for documents from 1,000 to 24,000 tokens. Keep same-batch-size results separate from token-budget batching results, and report same-memory-budget results separately.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s7",
+                "quote": "基线先用原来的按到达顺序 batching"
+              },
+              {
+                "source": "s7",
+                "quote": "文档长度从一千到两万四千 token"
+              },
+              {
+                "source": "s11",
+                "quote": "应该作为另一项实验单独比较"
+              },
+              {
+                "source": "s11",
+                "quote": "两者不能混在一起"
+              }
+            ]
+          },
+          {
+            "key": "gpu.controls",
+            "title": "Measurement controls",
+            "content": "Fix output length and batch size when attributing gains to scheduling. Check the school server's GPU model, available memory, and CUDA environment; do not assume an A100 or report unmeasured gains or local simulations as GPU measurements.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s7",
+                "quote": "要固定输出长度和 batch size"
+              },
+              {
+                "source": "s15",
+                "quote": "不能假定有 A100"
+              },
+              {
+                "source": "s15",
+                "quote": "没有测过的百分之二十五提升不能写进结果"
+              },
+              {
+                "source": "s15",
+                "quote": "不要把本地模拟时间当作 GPU 实测"
+              }
+            ]
+          },
+          {
+            "key": "gpu.quality",
+            "title": "Summary quality checks",
+            "content": "Check key facts, dates, amounts, and holdings. Start with a 20-document smoke test, then expand toward 400 documents; 400 is a target, not a completed run.",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s19",
+                "quote": "检查关键事实、日期、金额和裁判结论"
+              },
+              {
+                "source": "s19",
+                "quote": "先选二十篇做 smoke test"
+              },
+              {
+                "source": "s19",
+                "quote": "四百篇只是目标，现在不代表已经跑完"
+              }
+            ]
+          },
+          {
+            "key": "gpu.cost-question",
+            "title": "Prefill and decode costs",
+            "content": "Measure whether long legal documents make prefill the dominant cost, or whether decode matters more when output is long.",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s12",
+                "quote": "长法律文档是否让 prefill 成为主要成本"
+              },
+              {
+                "source": "s12",
+                "quote": "这个应该用测量回答"
+              }
+            ]
+          },
+          {
+            "key": "gpu.next-steps",
+            "title": "Next steps and profiling",
+            "content": "Confirm access to the school machine and run the arrival-order baseline. Treat writing a CUDA kernel as later exploration; profile first rather than presuming attention is the best target.",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s23",
+                "quote": "确认学校机器登录，再跑按到达顺序的基线"
+              },
+              {
+                "source": "s23",
+                "quote": "先看 profiler 确认瓶颈"
+              },
+              {
+                "source": "s23",
+                "quote": "不能直接认定 attention kernel 最值得优化"
+              }
+            ]
+          }
+        ],
+        "edges": []
+      },
+      {
+        "key": "paper-learning",
+        "title": "Inference Paper Learning",
+        "summary": "A learning record, distinct from the GPU experiment, for understanding KV cache, prefill/decode, and inference scheduling through source materials.",
+        "nodes": [
+          {
+            "key": "learning.kv-cache",
+            "title": "KV cache",
+            "content": "The initial understanding is that KV cache avoids recomputing prior tokens' keys and values during autoregressive generation. Its relation to length bucketing is still a question; the current distinction is tentative and should be checked against original papers.",
+            "kind": "idea",
+            "state": "tentative",
+            "evidence": [
+              {
+                "source": "s4",
+                "quote": "避免自回归生成时反复计算之前 token 的 key 和 value"
+              },
+              {
+                "source": "s4",
+                "quote": "不太清楚它和文档长度分桶有什么关系"
+              },
+              {
+                "source": "s8",
+                "quote": "请先作为待验证笔记"
+              },
+              {
+                "source": "s8",
+                "quote": "不要作为实验结论"
+              }
+            ]
+          },
+          {
+            "key": "learning.prefill-decode",
+            "title": "Prefill and decode",
+            "content": "Understand the difference between prefill and decode and confirm which stages KV cache applies to.",
+            "kind": "question",
+            "state": "open",
+            "evidence": [
+              {
+                "source": "s12",
+                "quote": "还需要理解 prefill 和 decode 的差别"
+              },
+              {
+                "source": "s24",
+                "quote": "确认 KV cache 的适用阶段"
+              }
+            ]
+          },
+          {
+            "key": "learning.reading",
+            "title": "Reading plan",
+            "content": "The planned reading order is original papers on KV cache and inference scheduling, followed by a systems implementation. Whether to do quantization remains undecided.",
+            "kind": "idea",
+            "state": "noted",
+            "evidence": [
+              {
+                "source": "s20",
+                "quote": "先找 KV cache 和推理调度的原始论文"
+              },
+              {
+                "source": "s20",
+                "quote": "再读一个系统实现"
+              },
+              {
+                "source": "s20",
+                "quote": "暂时不确定要不要做量化"
+              }
+            ]
+          },
+          {
+            "key": "learning.record",
+            "title": "Learning notes",
+            "content": "Keep terminology explanations and open questions in the learning record, with explanations traceable to materials and original utterances.",
+            "kind": "decision",
+            "state": "confirmed",
+            "evidence": [
+              {
+                "source": "s16",
+                "quote": "学习记录保留术语解释和开放问题"
+              },
+              {
+                "source": "s24",
+                "quote": "所有解释都要能回到材料和原始发言"
+              }
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "from": "learning.kv-cache",
+            "to": "learning.prefill-decode",
+            "relation": "related",
+            "evidence": [
+              {
+                "source": "s24",
+                "quote": "确认 KV cache 的适用阶段，理解 prefill 和 decode"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "from": "commute",
+        "to": "voice-product",
+        "relation": "related",
+        "evidence": [
+          {
+            "source": "s21",
+            "quote": "我自己上下学就是语音产品的第一批真实测试"
+          },
+          {
+            "source": "s21",
+            "quote": "这个日程属于个人规划，不应该被混进产品需求文档"
+          }
+        ]
+      },
+      {
+        "from": "paper-learning",
+        "to": "gpu-inference",
+        "relation": "related",
+        "evidence": [
+          {
+            "source": "s16",
+            "quote": "论文学习和 GPU 项目有关，但不是同一个东西"
+          },
+          {
+            "source": "s16",
+            "quote": "它们之间可以建立连接"
+          }
+        ]
+      }
+    ]
+  }
+}

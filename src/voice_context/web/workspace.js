@@ -6,8 +6,9 @@ const {$,ui,api,status,refresh,headers}=runtime;
 const {liveActive,endLive,stopAll}=live;
 let workspaceData={categories:['Inbox'],sessions:[],links:[]},workspaceVersion=0,workspaceLoaded=false,workspaceLoading=null,workspaceSaving=false,workspacePending=false,workspaceBlocked=false,workspaceSavePromise=null;
 let graphSession=null,graphSelected=null,graphCategory='',graphListMode=false,graphScale=1,graphPan={x:0,y:0},graphDrag=null,graphFormDirty=false,graphNameAction='session';
-let activeProductSession=null,graphFinishing=false;
+let activeProductSession=null,graphFinishing=false,mapEnabled=false,mapProposal=null,mapWorking=false;
 try{activeProductSession=localStorage.getItem('voiceline-active-product-session');}catch{}
+const stateLabels={noted:'Noted',open:'Open',confirmed:'Confirmed',tentative:'Tentative',superseded:'Replaced'};
 const graphTypes={idea:'Idea',question:'Open question',decision:'Decision',document:'Document',voice:'Voice note'};
 function graphEl(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
 function graphNotice(text,error=false){$('graph-notice').textContent=text;$('graph-notice').classList.toggle('error',error);}
@@ -93,7 +94,7 @@ function renderGraph(){
  $('graph-title').textContent=current?current.title:'Your thinking, connected.';
  $('graph-eyebrow').textContent=current?(current.demo?'EXAMPLE RECORD · '+current.category.toUpperCase():current.category.toUpperCase()+' / RECORD'):'CONNECTED THINKING';
  $('graph-subtitle').textContent=current?'Follow an idea. Find a connection. Pick up where you left off.':'Explore a topic. Follow a connection. Keep thinking.';
- $('graph-back').hidden=!current;$('graph-topic-settings').hidden=!current;$('graph-session-actions').hidden=!current;$('graph-demo').hidden=workspaceData.sessions.some(s=>s.demo);
+ $('graph-organize').hidden=!mapEnabled||!current?.branch;$('graph-back').hidden=!current;$('graph-topic-settings').hidden=!current;$('graph-session-actions').hidden=!current;$('graph-demo').hidden=workspaceData.sessions.some(s=>s.demo);
  $('graph-search').placeholder=current?'Find a thought…':'Find a topic…';
  $('graph-scope-label').textContent=current?'Ideas, questions & decisions':'Records connected by you';
  $('graph-categories').replaceChildren(...['',...workspaceData.categories].map(category=>{
@@ -112,7 +113,7 @@ function renderGraph(){
   const button=graphEl('button','graph-node'+(item.id===graphSelected?' selected':''));button.dataset.id=item.id;button.dataset.kind=item.kind||'session';button.style.left=item.x+'px';button.style.top=item.y+'px';button.setAttribute('aria-label',(current?'Select thought: ':'Select record: ')+item.title);
   const type=graphEl('span','node-type',current?graphTypes[item.kind]:item.category);if(!current&&item.demo)type.append(graphEl('span','demo-chip','EXAMPLE'));
   button.append(type,graphEl('strong','',item.title));
-  if(current)button.append(graphEl('span','node-preview',item.content||'A little room for your next idea.'));
+  if(current){const state=item.content?.match(/^\[(noted|open|confirmed|tentative|superseded)\] /);if(state)button.append(graphEl('span','node-state state-'+state[1],stateLabels[state[1]]));button.append(graphEl('span','node-preview',item.content?.replace(/^\[(noted|open|confirmed|tentative|superseded)\] /,'')||'A little room for your next idea.'));}
   else button.append(graphEl('small','',item.nodes.length+' thoughts · '+item.edges.length+' connections'));
   button.onclick=()=>{if(graphDrag?.moved)return;if(current)selectGraphItem(item.id);else openSessionMap(item.id);};
   button.onpointerdown=event=>{if(event.button!==0)return;event.stopPropagation();graphDrag={id:item.id,clientX:event.clientX,clientY:event.clientY,x:item.x,y:item.y,moved:false};button.setPointerCapture(event.pointerId);};
@@ -172,7 +173,16 @@ graphDelete.onclick=()=>{const item=selectedGraphItem();if(!item||!window.confir
  if(graphSession&&item.id!==graphSession){const s=selectedGraphSession();s.nodes=s.nodes.filter(n=>n.id!==item.id);s.edges=s.edges.filter(e=>!e.includes(item.id));}
  else{workspaceData.sessions=workspaceData.sessions.filter(s=>s.id!==item.id);workspaceData.links=workspaceData.links.filter(e=>!e.includes(item.id));if(activeProductSession===item.id){activeProductSession=null;try{localStorage.removeItem('voiceline-active-product-session');}catch{}}}
  graphFormDirty=false;graphSelected=null;if(!selectedGraphSession())graphSession=null;persistWorkspace();renderGraph();graphHash();};
-$('graph-source').onclick=()=>{const source=selectedGraphItem()?.source;if(source&&graphCanLeave()){graphFormDirty=false;showDocuments(source);}};
+$('graph-source').onclick=async()=>{
+ const item=selectedGraphItem();if(!item||!graphCanLeave())return;
+ try{const result=await api('/api/maps/provenance?node='+encodeURIComponent(item.id));
+  if(result.evidence.length){$('map-evidence-items').replaceChildren(...result.evidence.map(e=>{
+   const row=graphEl('article','outcome-item');row.append(graphEl('p','',e.quote));const open=graphEl('button','','Open full voice note ↗');open.onclick=async()=>{if(await showDocuments(e.document_id))$('map-evidence-dialog').close();};row.append(open);return row;
+  }));$('map-evidence-dialog').showModal();}
+  else if(item.source){graphFormDirty=false;await showDocuments(item.source);}
+ }catch{graphNotice('Could not open sources. Your notes are kept.',true);}
+};
+$('map-evidence-close').onclick=()=>$('map-evidence-dialog').close();
 function showGraph(id=null){return navigate('workspace',id);}
 registerView('workspace',enterGraph);addNavigationGuard(graphCanLeave);onNavigation(name=>{if(name!=='workspace')graphFormDirty=false;});
 $('graph-topic-settings').onclick=()=>selectGraphItem(graphSession);
@@ -204,6 +214,7 @@ async function finishProductSession(){
  try{
   if(liveActive())await endLive('Microphone paused for review.');else if(runtime.busy)await stopAll();
   await loadWorkspace();await refresh();const branch=$('branch').value;
+  if(mapEnabled){await generateMap(branch);return;}
   let item=workspaceData.sessions.find(s=>s.id===activeProductSession&&s.branch===branch)||workspaceData.sessions.find(s=>s.branch===branch);
   const documents=[];let offset=0;
   do{const result=await documentAPI('?'+new URLSearchParams({branch,status:'active',offset:String(offset)}));documents.push(...result.documents);offset=result.next_offset;}while(offset!==null);
@@ -266,3 +277,49 @@ loadWorkspace().catch(()=>{});
 
 
 const graphResizeObserver=new ResizeObserver(()=>{if(document.body.dataset.view==='workspace'){graphReset();drawGraphEdges();}});graphResizeObserver.observe($('graph-canvas'));window.addEventListener('pagehide',()=>graphResizeObserver.disconnect());
+
+// Suggestions are stored separately; only explicit Apply changes the workspace.
+function mapConnections(edges,titles,label='Suggested connections'){
+ const details=graphEl('details','map-connections');details.append(graphEl('summary','',label+' · '+edges.length));
+ for(const edge of edges){const row=graphEl('div','map-connection');row.append(graphEl('p','',titles.get(edge.from)+' → '+titles.get(edge.to)+' · '+edge.relation));for(const source of edge.evidence)row.append(graphEl('blockquote','',source.quote));details.append(row);}
+ return details;
+}
+async function generateMap(branch){
+ if(mapWorking||!graphCanLeave()||workspaceBlocked)return;
+ if(workspaceSaving&&!await workspaceSavePromise)return;
+ mapWorking=true;mapProposal=null;$('map-proposal-topics').replaceChildren();
+ $('map-proposal-title').textContent='Organizing your conversation…';$('map-proposal-notice').textContent='Reading saved voice notes. This calls your configured text model.';
+ $('map-proposal-apply').disabled=true;$('map-proposal-cancel').disabled=true;$('map-proposal-dialog').showModal();
+ try{
+  const notes=await documentAPI('?'+new URLSearchParams({branch,kind:'voice',status:'active'}));
+  if(!notes.documents.length){$('map-proposal-title').textContent='A thought starts with your voice';$('map-proposal-notice').textContent='There are no saved voice notes in this conversation yet. Start talking, then return here.';return;}
+  const result=await api('/api/maps/propose',{branch},{signal:AbortSignal.timeout(150000)});mapProposal=result;
+  $('map-proposal-title').textContent=result.proposal.title;
+  const sourceById=new Map(result.sources.map(s=>[s.id,s]));
+  $('map-proposal-topics').replaceChildren(...result.proposal.topics.map(topic=>{
+   const card=graphEl('section','map-topic-preview');card.append(graphEl('h3','',topic.title),graphEl('p','',topic.summary));
+   for(const node of topic.nodes){
+    const row=graphEl('article','map-node-preview');row.append(graphEl('small','',graphTypes[node.kind]+' · '+(stateLabels[node.state]||node.state)),graphEl('strong','',node.title),graphEl('p','',node.content));
+    const evidence=graphEl('details');evidence.append(graphEl('summary','',node.evidence.length+' source excerpts'));
+    for(const e of node.evidence){const quote=graphEl('blockquote','',e.quote);quote.title='Source '+e.source;const open=graphEl('button','','Read source ↗');open.onclick=async()=>{if(await showDocuments(sourceById.get(e.source).document_id))$('map-proposal-dialog').close();};evidence.append(quote,open);}
+    row.append(evidence);card.append(row);
+   }
+   const connections=mapConnections(topic.edges,new Map(topic.nodes.map(n=>[n.key,n.title])));card.append(connections);return card;
+  }));
+  if(result.proposal.links.length)$('map-proposal-topics').append(mapConnections(result.proposal.links,new Map(result.proposal.topics.map(t=>[t.key,t.title])),'Connections between topics'));
+  $('map-proposal-notice').textContent=result.already_applied?'This conversation already has a saved map. Saving again will not duplicate it.':result.proposal.topics.length+' topics · '+result.proposal.links.length+' cross-topic connections. Review the suggestions and evidence, then save or close.';
+  $('map-proposal-apply').disabled=false;
+ }catch{$('map-proposal-title').textContent='Could not generate a map';$('map-proposal-notice').textContent='No map changes were saved. Your voice notes are kept. Check model configuration, or try again if the conversation changed.';}
+ finally{mapWorking=false;$('map-proposal-cancel').disabled=false;}
+}
+$('map-proposal-cancel').onclick=()=>$('map-proposal-dialog').close();
+$('map-proposal-dialog').addEventListener('cancel',event=>{if(mapWorking)event.preventDefault();});
+$('map-proposal-apply').onclick=async()=>{
+ if(!mapProposal||mapWorking)return;mapWorking=true;$('map-proposal-apply').disabled=true;$('map-proposal-cancel').disabled=true;
+ try{const result=await api('/api/maps/apply',{id:mapProposal.id});workspaceData=result.workspace.data;workspaceVersion=result.workspace.version;workspaceLoaded=true;workspacePending=false;workspaceBlocked=false;
+  $('map-proposal-dialog').close();graphFormDirty=false;updateSessionStrip();await showGraph();graphNotice(result.already_applied?'This map was already saved.':'Suggested map saved. Open a topic to review and edit its ideas.');
+ }catch{$('map-proposal-notice').textContent='Could not save: the conversation or workspace may have changed. Close and generate a fresh suggestion. Original notes are kept.';}
+ finally{mapWorking=false;$('map-proposal-cancel').disabled=false;$('map-proposal-apply').disabled=false;}
+};
+$('graph-organize').onclick=()=>generateMap(selectedGraphSession()?.branch);
+api('/api/maps/status').then(result=>{mapEnabled=result.enabled;if(mapEnabled){$('finish-session').textContent='Finish & organize ↗';document.querySelector('.talk-save-hint').textContent='Your words are saved as you go. Finish to review AI-suggested topics and source excerpts before saving.';if(document.body.dataset.mode==='demo')document.querySelector('.demo-mode-banner').textContent='VOICE DEMO · Typed input, fixed replies and silent audio · Map suggestions use a real model on request';}if(document.body.dataset.view==='workspace')renderGraph();}).catch(()=>{});
