@@ -1,0 +1,11 @@
+{
+  "baseline_restarts_blocked": 3,
+  "baseline_tasks": 0,
+  "quarantine_rows_after_crash_replay": 1,
+  "recovered_tasks": 1,
+  "recovered_task_state": "succeeded",
+  "restart_to_two_records_seconds": 3.1884,
+  "broker_source_sha256": "0a0071c9fd0a64e63081792092f188d67bc68e045abf6ba5e06f961d0eeaa844",
+  "scope": "one synthetic poison + one valid event; local single-partition Kafka and PostgreSQL",
+  "limits": "Correctness experiment, not throughput, voice latency, or production SLA evidence."
+}
